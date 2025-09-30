@@ -1,4 +1,9 @@
-CREATE TYPE "public"."post_status" AS ENUM('DRAFT', 'PUBLISHED');--> statement-breakpoint
+DO $$ BEGIN
+  CREATE TYPE "public"."post_status" AS ENUM('DRAFT', 'PUBLISHED');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
 CREATE TABLE "admin_users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"username" text NOT NULL,

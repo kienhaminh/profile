@@ -1,0 +1,320 @@
+import { db } from '../db';
+import {
+  posts,
+  postTopics,
+  postHashtags,
+  topics,
+  hashtags,
+  authorProfiles,
+  type Post,
+  type NewPost,
+  type PostWithRelations,
+  type Topic,
+  type Hashtag,
+} from '../db/schema';
+import { eq, and, inArray, or, ilike, sql, desc } from 'drizzle-orm';
+import type {
+  CreateBlogRequest,
+  UpdateBlogRequest,
+  BlogFilterParams,
+} from '../lib/validation';
+
+/**
+ * Blog service - Pure functions for blog post management
+ * Handles blog CRUD operations with topic and hashtag associations
+ * All functions follow functional programming principles
+ */
+
+interface PaginatedResult<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export async function createBlog(
+  data: CreateBlogRequest,
+  authorId: string
+): Promise<PostWithRelations> {
+  // Use transaction to ensure atomicity
+  return await db.transaction(async (tx) => {
+    // Create the blog post
+    const newPost: NewPost = {
+      title: data.title,
+      slug: data.slug,
+      content: data.content,
+      status: data.status,
+      publishDate: data.publishDate ? new Date(data.publishDate) : null,
+      excerpt: data.excerpt || null,
+      readTime: data.readTime || null,
+      coverImage: data.coverImage || null,
+      authorId,
+    };
+
+    try {
+      const [post] = await tx.insert(posts).values(newPost).returning();
+
+      // Associate topics
+      if (data.topicIds && data.topicIds.length > 0) {
+        await tx.insert(postTopics).values(
+          data.topicIds.map((topicId) => ({
+            postId: post.id,
+            topicId,
+          }))
+        );
+      }
+
+      // Associate hashtags
+      if (data.hashtagIds && data.hashtagIds.length > 0) {
+        await tx.insert(postHashtags).values(
+          data.hashtagIds.map((hashtagId) => ({
+            postId: post.id,
+            hashtagId,
+          }))
+        );
+      }
+
+      // Return post with relations
+      return await getBlogById(post.id, tx);
+    } catch (error: any) {
+      if (error.code === '23505') {
+        throw new Error('Blog post with this slug already exists');
+      }
+      throw error;
+    }
+  });
+}
+
+export async function getBlog(slug: string): Promise<PostWithRelations | null> {
+  const [post] = await db.select().from(posts).where(eq(posts.slug, slug));
+
+  if (!post) {
+    return null;
+  }
+
+  return await getBlogById(post.id);
+}
+
+export async function getBlogById(
+  id: string,
+  transaction?: any
+): Promise<PostWithRelations> {
+  const txOrDb = transaction || db;
+
+  const post = await txOrDb.query.posts.findFirst({
+    where: eq(posts.id, id),
+    with: {
+      author: true,
+      postTopics: {
+        with: {
+          topic: true,
+        },
+      },
+      postHashtags: {
+        with: {
+          hashtag: true,
+        },
+      },
+    },
+  });
+
+  if (!post) {
+    throw new Error('Blog post not found');
+  }
+
+  // Transform to PostWithRelations
+  return {
+    ...post,
+    topics: post.postTopics.map((pt) => pt.topic),
+    hashtags: post.postHashtags.map((ph) => ph.hashtag),
+  };
+}
+
+export async function listBlogs(
+  filters: BlogFilterParams
+): Promise<PaginatedResult<PostWithRelations>> {
+  const { page, limit, status, topicId, hashtagId, search } = filters;
+
+  // Build WHERE conditions
+  const conditions = [];
+
+  if (status) {
+    conditions.push(eq(posts.status, status));
+  }
+
+  if (topicId) {
+    const postsWithTopic = await db
+      .select({ id: postTopics.postId })
+      .from(postTopics)
+      .where(eq(postTopics.topicId, topicId));
+    const postIds = postsWithTopic.map((p) => p.id);
+    if (postIds.length > 0) {
+      conditions.push(inArray(posts.id, postIds));
+    } else {
+      // No posts with this topic
+      return {
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      };
+    }
+  }
+
+  if (hashtagId) {
+    const postsWithHashtag = await db
+      .select({ id: postHashtags.postId })
+      .from(postHashtags)
+      .where(eq(postHashtags.hashtagId, hashtagId));
+    const postIds = postsWithHashtag.map((p) => p.id);
+    if (postIds.length > 0) {
+      conditions.push(inArray(posts.id, postIds));
+    } else {
+      return {
+        data: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      };
+    }
+  }
+
+  if (search) {
+    conditions.push(
+      or(
+        ilike(posts.title, `%${search}%`),
+        ilike(posts.content, `%${search}%`)
+      )!
+    );
+  }
+
+  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+  // Get total count
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(posts)
+    .where(whereClause);
+
+  // Get paginated results
+  const result = await db.query.posts.findMany({
+    where: whereClause,
+    with: {
+      author: true,
+      postTopics: {
+        with: {
+          topic: true,
+        },
+      },
+      postHashtags: {
+        with: {
+          hashtag: true,
+        },
+      },
+    },
+    orderBy: [desc(posts.createdAt)],
+    limit,
+    offset: page * limit,
+  });
+
+  const data: PostWithRelations[] = result.map((post) => ({
+    ...post,
+    topics: post.postTopics.map((pt) => pt.topic),
+    hashtags: post.postHashtags.map((ph) => ph.hashtag),
+  }));
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total: count,
+      totalPages: Math.ceil(count / limit),
+    },
+  };
+}
+
+export async function updateBlog(
+  id: string,
+  data: UpdateBlogRequest
+): Promise<PostWithRelations> {
+  return await db.transaction(async (tx) => {
+    // Check if post exists
+    const existing = await tx.select().from(posts).where(eq(posts.id, id));
+    if (existing.length === 0) {
+      throw new Error('Blog post not found');
+    }
+
+    // Build update object
+    const updateData: Partial<NewPost> = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.slug !== undefined) updateData.slug = data.slug;
+    if (data.content !== undefined) updateData.content = data.content;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.publishDate !== undefined) {
+      updateData.publishDate = data.publishDate
+        ? new Date(data.publishDate)
+        : null;
+    }
+    if (data.excerpt !== undefined) updateData.excerpt = data.excerpt || null;
+    if (data.readTime !== undefined)
+      updateData.readTime = data.readTime || null;
+    if (data.coverImage !== undefined) {
+      updateData.coverImage = data.coverImage || null;
+    }
+
+    // Update post if there are changes
+    if (Object.keys(updateData).length > 0) {
+      try {
+        await tx.update(posts).set(updateData).where(eq(posts.id, id));
+      } catch (error: any) {
+        if (error.code === '23505') {
+          throw new Error('Blog post with this slug already exists');
+        }
+        throw error;
+      }
+    }
+
+    // Update topics if provided
+    if (data.topicIds !== undefined) {
+      // Remove existing associations
+      await tx.delete(postTopics).where(eq(postTopics.postId, id));
+      // Add new associations
+      if (data.topicIds.length > 0) {
+        await tx.insert(postTopics).values(
+          data.topicIds.map((topicId) => ({
+            postId: id,
+            topicId,
+          }))
+        );
+      }
+    }
+
+    // Update hashtags if provided
+    if (data.hashtagIds !== undefined) {
+      // Remove existing associations
+      await tx.delete(postHashtags).where(eq(postHashtags.postId, id));
+      // Add new associations
+      if (data.hashtagIds.length > 0) {
+        await tx.insert(postHashtags).values(
+          data.hashtagIds.map((hashtagId) => ({
+            postId: id,
+            hashtagId,
+          }))
+        );
+      }
+    }
+
+    // Return updated post with relations
+    return await getBlogById(id, tx);
+  });
+}
+
+export async function deleteBlog(id: string): Promise<void> {
+  const existing = await db.select().from(posts).where(eq(posts.id, id));
+  if (existing.length === 0) {
+    throw new Error('Blog post not found');
+  }
+
+  // Cascade delete will handle associations automatically
+  await db.delete(posts).where(eq(posts.id, id));
+}

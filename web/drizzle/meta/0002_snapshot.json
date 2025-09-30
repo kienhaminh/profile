@@ -1,0 +1,14 @@
+{
+  "id": "0002_add_junction_tables",
+  "prevId": "0001_add_blog_project_metadata",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {},
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

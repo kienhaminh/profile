@@ -1,90 +1,84 @@
-import { db } from '@/db';
-import { topics, postTopics } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
+import { db } from '../db';
+import { topics, type Topic, type NewTopic } from '../db/schema';
+import { eq } from 'drizzle-orm';
+import type { CreateTopicRequest, UpdateTopicRequest } from '../lib/validation';
 
-export interface Topic {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-}
+/**
+ * Topic service - Pure functions for topic management
+ * All functions follow functional programming principles:
+ * - Clear input/output
+ * - No hidden state changes
+ * - Explicit error handling
+ */
 
-export async function getAllTopics(): Promise<Topic[]> {
-  const result = await db.select().from(topics).orderBy(asc(topics.name));
+export async function createTopic(data: CreateTopicRequest): Promise<Topic> {
+  const newTopic: NewTopic = {
+    name: data.name,
+    slug: data.slug,
+    description: data.description || null,
+  };
 
-  return result;
-}
-
-export async function getTopicByName(name: string): Promise<Topic | null> {
-  const result = await db
-    .select()
-    .from(topics)
-    .where(eq(topics.name, name))
-    .limit(1);
-
-  return result.length > 0 ? result[0] : null;
-}
-
-export async function createTopic(
-  name: string,
-  description?: string
-): Promise<Topic> {
-  const slug = name.toLowerCase().replace(/\s+/g, '-');
-
-  const [topic] = await db
-    .insert(topics)
-    .values({
-      name,
-      slug,
-      description: description || null,
-    })
-    .returning();
-
-  if (!topic) {
-    throw new Error('Failed to create topic');
-  }
-
-  return topic;
-}
-
-export async function assignTopicsToPost(
-  postId: string,
-  topicNames: string[]
-): Promise<void> {
-  // First, remove existing topic assignments
-  await db.delete(postTopics).where(eq(postTopics.postId, postId));
-
-  // Then create new assignments
-  for (const topicName of topicNames) {
-    // Check if topic exists
-    const existingTopic = await db
-      .select()
-      .from(topics)
-      .where(eq(topics.name, topicName))
-      .limit(1);
-
-    let topicId: string;
-    if (existingTopic.length > 0) {
-      topicId = existingTopic[0].id;
-    } else {
-      // Create new topic
-      const [newTopic] = await db
-        .insert(topics)
-        .values({
-          name: topicName,
-          slug: topicName.toLowerCase().replace(/\s+/g, '-'),
-        })
-        .returning();
-
-      if (!newTopic) {
-        throw new Error(`Failed to create topic: ${topicName}`);
-      }
-      topicId = newTopic.id;
+  try {
+    const [topic] = await db.insert(topics).values(newTopic).returning();
+    return topic;
+  } catch (error: any) {
+    if (error.code === '23505') {
+      // Unique constraint violation
+      throw new Error('Topic with this name or slug already exists');
     }
-
-    await db.insert(postTopics).values({
-      postId,
-      topicId,
-    });
+    throw error;
   }
+}
+
+export async function listTopics(): Promise<Topic[]> {
+  const allTopics = await db.select().from(topics).orderBy(topics.name);
+  return allTopics;
+}
+
+export async function getTopic(id: string): Promise<Topic | null> {
+  const [topic] = await db.select().from(topics).where(eq(topics.id, id));
+  return topic || null;
+}
+
+export async function updateTopic(
+  id: string,
+  data: UpdateTopicRequest
+): Promise<Topic> {
+  const existingTopic = await getTopic(id);
+  if (!existingTopic) {
+    throw new Error('Topic not found');
+  }
+
+  const updateData: Partial<NewTopic> = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.slug !== undefined) updateData.slug = data.slug;
+  if (data.description !== undefined) updateData.description = data.description;
+
+  try {
+    const [updatedTopic] = await db
+      .update(topics)
+      .set(updateData)
+      .where(eq(topics.id, id))
+      .returning();
+    return updatedTopic;
+  } catch (error: any) {
+    if (error.code === '23505') {
+      throw new Error('Topic with this name or slug already exists');
+    }
+    throw error;
+  }
+}
+
+export async function deleteTopic(id: string): Promise<void> {
+  const existingTopic = await getTopic(id);
+  if (!existingTopic) {
+    throw new Error('Topic not found');
+  }
+
+  await db.delete(topics).where(eq(topics.id, id));
+}
+
+// Legacy function for backward compatibility
+export async function getAllTopics(): Promise<Topic[]> {
+  return listTopics();
 }

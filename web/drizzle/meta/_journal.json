@@ -8,6 +8,20 @@
       "when": 1759212474934,
       "tag": "0000_tranquil_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759213000000,
+      "tag": "0001_add_blog_project_metadata",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759213100000,
+      "tag": "0002_add_junction_tables",
+      "breakpoints": true
     }
   ]
 }

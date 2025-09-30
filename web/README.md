@@ -5,7 +5,7 @@ A modern, full-stack developer portfolio website with blog functionality built w
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL (Supabase)
 - **ORM**: Drizzle ORM
 - **Styling**: Tailwind CSS
 - **TypeScript**: Strict mode enabled
@@ -16,18 +16,30 @@ A modern, full-stack developer portfolio website with blog functionality built w
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL database running locally or via Docker
+- Supabase account (for database hosting)
 - npm or pnpm
+
+### Supabase Setup
+
+1. Create a new Supabase project at https://supabase.com
+2. Get your DATABASE_URL from Project Settings → Database → Connection String (Direct Connection)
+3. The connection string should look like: `postgresql://postgres:[YOUR-PASSWORD]@[HOST]:[PORT]/postgres`
 
 ### Environment Setup
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the web directory:
 
 ```env
-# Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/portfolio
+# Supabase Database Connection
+# Get this from Supabase Project Settings → Database → Connection String (Direct Connection)
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@[HOST]:[PORT]/postgres
 
-# Google Analytics 4
+# Admin Credentials (for seeding)
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@portfolio.local
+ADMIN_PASSWORD=yourpassword
+
+# Google Analytics 4 (optional)
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 
 # Google Ads (optional)
@@ -38,6 +50,9 @@ NEXT_PUBLIC_GOOGLE_ADS_SLOT_ID=XXXXXXXXXX
 ADMIN_JWT_SECRET=your-secure-random-secret-here
 ```
 
+**For production**, create `.env.production` with your production Supabase credentials.
+**For staging**, create `.env.staging` with your staging Supabase credentials.
+
 ### Installation
 
 ```bash
@@ -46,50 +61,26 @@ npm install
 
 ### Database Setup
 
-1. **Generate migrations** from the Drizzle schema:
+1. **Seed Supabase database** with initial schema and data:
 
 ```bash
-npm run db:generate
+npm run db:seed:supabase
 ```
 
-2. **Run migrations** to create tables:
+This will:
+
+- Create all required tables (posts, topics, post_topics, author_profiles, admin_users)
+- Create indexes
+- Seed an admin user (credentials from .env.local)
+- Seed sample topics
+
+2. **Optional: Run Drizzle migrations** (if you prefer migration files):
 
 ```bash
-npm run db:migrate
-```
-
-3. **Seed admin user** (optional):
-
-```bash
-npm run db:seed
-```
-
-You can customize the admin credentials using environment variables:
-
-```env
-ADMIN_USERNAME=admin
-ADMIN_EMAIL=admin@portfolio.local
-ADMIN_PASSWORD=yourpassword
+npm run db:migrate:run
 ```
 
 ### Development
-
-#### Option 1: Using Docker Compose (Recommended)
-
-```bash
-# Start all services (database + web app)
-docker-compose up
-
-# The web app will automatically run migrations and start on http://localhost:3000
-```
-
-#### Option 2: Local Development
-
-Start the database:
-
-```bash
-docker-compose up db -d
-```
 
 Run the development server:
 
@@ -97,9 +88,7 @@ Run the development server:
 npm run dev
 ```
 
-The dev server automatically runs migrations on startup.
-
-Open [http://localhost:3000](http://localhost:3000) to view the site.
+The dev server automatically runs migrations on startup and will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Building for Production
 
@@ -112,7 +101,8 @@ npm start
 
 - `npm run db:generate` - Generate migrations from schema changes
 - `npm run db:migrate:run` - Apply pending migrations programmatically
-- `npm run db:seed` - Seed the admin user
+- `npm run db:seed` - Seed the admin user (legacy)
+- `npm run db:seed:supabase` - Seed Supabase with initial schema and data
 - `npm run db:setup` - Run migrations and seed (convenient for fresh setup)
 
 ## Testing

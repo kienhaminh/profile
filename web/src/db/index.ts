@@ -24,13 +24,19 @@ const connectionConfig = process.env.DATABASE_URL
       password: 'postgres',
     };
 
+// Detect if we're connecting to Supabase (production/staging)
+const isSupabase = process.env.DATABASE_URL?.includes('supabase.co');
+const isProduction = process.env.NODE_ENV === 'production';
+
 const poolConfig: PoolConfig = {
   ...connectionConfig,
+  // SSL configuration (required for Supabase in production, optional for dev)
+  ssl: isSupabase || isProduction ? { rejectUnauthorized: false } : undefined,
   // Connection pool configuration
   max: 10, // Maximum number of clients in the pool
   min: 2, // Minimum number of clients in the pool
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
 };
 
 const pool = new Pool(poolConfig);

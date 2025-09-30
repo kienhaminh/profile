@@ -7,6 +7,8 @@ Auto-generated from all feature plans. Last updated: 2025-09-28
 - TypeScript 5.x, Next.js 14 (App Router) + Next.js (App Router), Tailwind CSS, shadcn/ui (001-build-a-full)
 - PostgreSQL (via docker-compose) (001-build-a-full)
 - TypeScript 5.x, Next.js 14 (App Router) + Next.js (App Router), Tailwind CSS, shadcn/ui (CLI setup preferred) (001-build-a-full)
+- TypeScript 5.x, Node.js 20+ + Next.js 14+, React, Drizzle ORM, PostgreSQL (Supabase) (003-i-want-to)
+- PostgreSQL (Supabase) - existing connection established (003-i-want-to)
 
 ## Project Structure
 ```
@@ -22,9 +24,9 @@ npm test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNO
 TypeScript 5.x: Follow standard conventions
 
 ## Recent Changes
+- 003-i-want-to: Added TypeScript 5.x, Node.js 20+ + Next.js 14+, React, Drizzle ORM, PostgreSQL (Supabase)
 - 001-build-a-full: Added TypeScript 5.x, Next.js 14 (App Router) + Next.js (App Router), Tailwind CSS, shadcn/ui (CLI setup preferred)
 - 001-build-a-full: Added TypeScript 5.x, Next.js 14 (App Router) + Next.js (App Router), Tailwind CSS, shadcn/ui
-- 001-build-a-full: Added TypeScript 5.x + React 18, (web framework TBD in Phase 1)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
