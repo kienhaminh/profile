@@ -1,6 +1,6 @@
 # Implementation Plan: [FEATURE]
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `001-build-a-full` | **Date**: 2025-09-28 | **Spec**: /Users/kien.ha/Code/porfolio/specs/001-build-a-full/spec.md
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 ## Execution Flow (/plan command scope)
@@ -33,25 +33,30 @@
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Build a minimalist, modern portfolio website with a multi-topic blog, including an admin CMS/dashboard for creating and managing posts. Track visits and post metrics via GA4; allow Google Ads on blog pages. Technical approach: Next.js (App Router) with CLI setup for Tailwind/shadcn/ui, PostgreSQL, strict typing, TDD-first, and performance/accessibility budgets per constitution.
 
 ## Technical Context
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: TypeScript 5.x, Next.js 14 (App Router)
+**Primary Dependencies**: Next.js (App Router), Tailwind CSS, shadcn/ui (CLI setup preferred), Drizzle ORM (drizzle-orm, drizzle-kit)
+**Storage/ORM**: PostgreSQL (via docker-compose) using Drizzle ORM
+**Testing**: Jest/Vitest (unit), Playwright (integration)
+**Target Platform**: Web (SSR/SSG via Next.js)
+**Project Type**: web (single)
+**Performance Goals**: LCP < 2.5s (p75), TTI < 3s, CLS < 0.1
+**Constraints**: <200ms p95 backend where applicable; <200KB gzipped JS per route
+**Scale/Scope**: Personal site; low to moderate traffic
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-[Gates determined based on constitution file]
+- Code Quality: pure functions in services, no business logic in controllers; strict typing enforced.
+- Testing: TDD required; failing tests precede implementation; minimum coverage 85% lines / 80% branches on changed files.
+- UX Consistency: use single design system; WCAG 2.1 AA accessibility; consistent loading/empty/error states.
+- Performance: p95 < 200ms (backend), LCP < 2.5s/TTI < 3s/CLS < 0.1 (frontend); JS budget ≤ 200KB per route.
+- Observability: structured logs; GA4 metrics surfaced in admin dashboard.
+- Governance: semantic versioning; PRs must pass lint/tests/coverage/perf gates.
 
 ## Project Structure
 
@@ -112,8 +117,7 @@ ios/ or android/
 └── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Next.js (App Router) project. Use `src/app/` routing, `src/services/` for pure functions, `src/app/api` route handlers delegating to services, and `src/components/` built with Tailwind + shadcn/ui (CLI setup preferred). Database access via Drizzle ORM with schema and migrations under `src/db` (or `drizzle/` for generated artifacts) managed by `drizzle-kit`.
 
 ## Phase 0: Outline & Research
 
@@ -223,8 +227,8 @@ _This checklist is updated during execution flow_
 
 **Phase Status**:
 
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
 - [ ] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
@@ -232,8 +236,8 @@ _This checklist is updated during execution flow_
 
 **Gate Status**:
 
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
 - [ ] All NEEDS CLARIFICATION resolved
 - [ ] Complexity deviations documented
 
