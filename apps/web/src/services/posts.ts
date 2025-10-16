@@ -44,6 +44,7 @@ export interface PostWithTopics {
       id: string;
       name: string;
       slug: string;
+      description: string | null;
     };
   }>;
 }
@@ -140,6 +141,7 @@ export async function getPostBySlug(
         id: pt.topicId,
         name: pt.topicName,
         slug: pt.topicSlug,
+        description: null, // Topics fetched via join don't include description
       },
     })),
   } as PostWithTopics;

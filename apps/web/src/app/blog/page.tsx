@@ -21,7 +21,7 @@ export default function Blog() {
 
   useEffect(() => {
     fetchPosts();
-  }, [selectedTopic]);
+  }, [selectedTopic]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchPosts = async () => {
     try {
@@ -166,7 +166,7 @@ export default function Blog() {
                     <span className="text-sm text-gray-500">
                       {formatDate(post.publishDate)}
                     </span>
-                    <Button variant="outline" size="sm" asChild>
+                    <Button variant="outline" size="sm">
                       <Link href={`/blog/${post.slug}`}>Read More</Link>
                     </Button>
                   </div>

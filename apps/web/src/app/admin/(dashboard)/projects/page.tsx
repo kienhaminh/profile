@@ -26,7 +26,7 @@ export default function ProjectsListPage() {
 
   useEffect(() => {
     fetchProjects();
-  }, [filter]);
+  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProjects = async () => {
     try {
@@ -41,8 +41,8 @@ export default function ProjectsListPage() {
       
       const data = await response.json();
       setProjects(data.items || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -65,8 +65,8 @@ export default function ProjectsListPage() {
       if (!response.ok) throw new Error('Failed to delete project');
       
       setProjects((prev) => prev.filter((project) => project.id !== id));
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
+    } catch (err) {
+      alert(`Error: ${err instanceof Error ? err.message : 'An error occurred'}`);
     }
   };
 

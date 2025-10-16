@@ -3,18 +3,27 @@ description: Shadcn-compliant design system guidelines for apps/web (Next.js)
 globs: apps/web/src/**/*.tsx,apps/web/src/**/*.ts,apps/web/src/**/*.css
 alwaysApply: false
 ---
+
 # Shadcn Design System for `apps/web`
 
 This rule standardizes how UI is built using the shadcn/ui approach in this project. Follow it for all UI work in `apps/web`.
 
 ## Source of Truth
+
 - Reuse existing primitives from `apps/web/src/components/ui/`:
   - [button.tsx](mdc:apps/web/src/components/ui/button.tsx)
   - [card.tsx](mdc:apps/web/src/components/ui/card.tsx)
 - Add new primitives to `apps/web/src/components/ui/`.
 - Build composite, feature-specific components in `apps/web/src/components/` (outside `ui`).
 
+### Types and Models
+
+- Reuse shared domain models and payload types from `@/types/*`.
+- Do not define component-local duplicates for shared shapes (e.g., `Blog`, `Project`).
+- If a component needs a narrow type, derive it from `@/types` instead of redefining.
+
 ## Utilities & Tokens
+
 - Always use the `cn` utility to merge class names:
   - [utils.ts](mdc:apps/web/src/lib/utils.ts)
 - Use Tailwind classes and CSS variables defined in:
@@ -22,6 +31,7 @@ This rule standardizes how UI is built using the shadcn/ui approach in this proj
 - Prefer semantic tokens (background, foreground, primary, muted, etc.) and spacing/radius scales already used by shadcn.
 
 ## Component Authoring Rules
+
 - Implement as functional components with strict typing and `forwardRef`.
 - Support `asChild` when appropriate to allow composition via Slot.
 - Co-locate variants with `class-variance-authority` (cva) in the same file.
@@ -29,70 +39,79 @@ This rule standardizes how UI is built using the shadcn/ui approach in this proj
 - Keep components free of business logic; UI only.
 
 ### Variants with cva (pattern)
+
 ```ts
-import { cva, type VariantProps } from 'class-variance-authority'
+import { cva, type VariantProps } from "class-variance-authority";
 
 export const badgeVariants = cva(
-  'inline-flex items-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50',
+  "inline-flex items-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground',
-        outline: 'border border-input bg-background'
+        default: "bg-primary text-primary-foreground",
+        outline: "border border-input bg-background",
       },
       size: {
-        sm: 'h-5 px-2 text-xs',
-        md: 'h-6 px-2.5 text-xs',
-        lg: 'h-7 px-3 text-sm'
-      }
+        sm: "h-5 px-2 text-xs",
+        md: "h-6 px-2.5 text-xs",
+        lg: "h-7 px-3 text-sm",
+      },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'md'
-    }
+      variant: "default",
+      size: "md",
+    },
   }
-)
+);
 
-export type BadgeVariants = VariantProps<typeof badgeVariants>
+export type BadgeVariants = VariantProps<typeof badgeVariants>;
 ```
 
 ### Using primitives (example)
+
 ```tsx
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 
 export function SaveButton() {
   return (
     <Button variant="default" size="sm">
       Save
     </Button>
-  )
+  );
 }
 ```
 
 ## Accessibility
+
 - Prefer Radix UI primitives where applicable for focus management, keyboard support, and ARIA.
 - Ensure all interactive components have focus styles and ARIA attributes as needed.
-- Use role/aria-* attributes consistent with WAI-ARIA Authoring Practices.
+- Use role/aria-\* attributes consistent with WAI-ARIA Authoring Practices.
 
 ## Styling Rules
+
 - Use Tailwind utility classes; do not introduce CSS-in-JS for primitives.
 - Use `data-[state]` and `aria-*` selectors for state styling.
 - Respect dark mode and theming through CSS variables in `globals.css`.
 
 ## File & Folder Conventions
+
 - `apps/web/src/components/ui/*` — low-level, reusable primitives (shadcn style).
 - `apps/web/src/components/*` — composite components specific to features/pages.
 - Keep file names in kebab/lowercase (e.g., `alert-dialog.tsx`).
 
 ## Adding New shadcn Components
+
 - Use the shadcn generator configured by [components.json](mdc:apps/web/components.json).
 - Example (workspace uses pnpm):
+
 ```bash
 pnpm dlx shadcn@latest add button
 ```
+
 - Prefer generating via CLI, then align with our variants/tokens.
 
 ## Do / Don’t
+
 - Do: reuse `ui/*` primitives; keep APIs consistent (props, variants, sizes).
 - Do: compose with `asChild` when wrapping native elements/links.
 - Do: keep components purely presentational.
@@ -100,6 +119,7 @@ pnpm dlx shadcn@latest add button
 - Don’t: hardcode colors; use semantic tokens and Tailwind utilities.
 
 ## Performance & DX
+
 - Co-locate minimal logic; lift data-fetching out of components.
 - Use React.lazy/dynamic imports for heavy composites if needed.
 - Keep components small and focused; favor composition over configuration.

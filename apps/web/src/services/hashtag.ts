@@ -26,11 +26,14 @@ export async function createHashtag(
   try {
     const [hashtag] = await db.insert(hashtags).values(newHashtag).returning();
     return hashtag;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode =
+      error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       // Unique constraint violation
       throw new Error('Hashtag with this name or slug already exists');
@@ -48,12 +51,15 @@ export async function listHashtags(): Promise<Hashtag[]> {
       allHashtags.length
     );
     return allHashtags;
-  } catch (error: any) {
+  } catch (error) {
     console.error('[hashtag.ts] Error fetching hashtags:', error);
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode =
+      error && typeof error === 'object' && 'code' in error ? error.code : '';
     console.error('[hashtag.ts] Error details:', {
-      message: error.message,
-      code: error.code,
-      stack: error.stack,
+      message: errorMessage,
+      code: errorCode,
+      stack: error instanceof Error ? error.stack : undefined,
     });
     throw error;
   }
@@ -85,11 +91,14 @@ export async function updateHashtag(
       .where(eq(hashtags.id, id))
       .returning();
     return updatedHashtag;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode =
+      error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       throw new Error('Hashtag with this name or slug already exists');
     }

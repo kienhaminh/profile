@@ -3,10 +3,23 @@
 import { useRouter } from 'next/navigation';
 import { BlogForm } from '@/components/admin/BlogForm';
 
+interface BlogFormData {
+  title: string;
+  slug: string;
+  content: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  publishDate?: string;
+  excerpt?: string;
+  readTime?: number;
+  coverImage?: string;
+  topicIds: string[];
+  hashtagIds: string[];
+}
+
 export default function NewBlogPage() {
   const router = useRouter();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: BlogFormData) => {
     const token = localStorage.getItem('admin_token');
     
     const response = await fetch('/api/blog', {

@@ -33,11 +33,13 @@ export async function createTechnology(
       .values(newTechnology)
       .returning();
     return technology;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       // Unique constraint violation
       throw new Error('Technology with this name or slug already exists');
@@ -83,11 +85,13 @@ export async function updateTechnology(
       .where(eq(technologies.id, id))
       .returning();
     return updatedTechnology;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       throw new Error('Technology with this name or slug already exists');
     }

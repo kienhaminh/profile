@@ -38,6 +38,7 @@ async function getPosts(): Promise<Post[]> {
 
       return {
         ...post,
+        publishDate: post.publishDate ? post.publishDate.toISOString() : null,
         topics: postTopicsData,
       };
     })

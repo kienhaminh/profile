@@ -3,14 +3,8 @@ import {
   posts,
   postTopics,
   postHashtags,
-  topics,
-  hashtags,
-  authorProfiles,
-  type Post,
   type NewPost,
   type PostWithRelations,
-  type Topic,
-  type Hashtag,
 } from '../db/schema';
 import { eq, and, inArray, or, ilike, sql, desc } from 'drizzle-orm';
 import type {
@@ -18,6 +12,33 @@ import type {
   UpdateBlogRequest,
   BlogFilterParams,
 } from '../lib/validation';
+
+// Type for Drizzle transaction - inferred from db type
+type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Types for junction table objects with relations (from Drizzle 'with' clause)
+interface PostTopicWithRelation {
+  postId: string;
+  topicId: string;
+  topic: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  };
+}
+
+interface PostHashtagWithRelation {
+  postId: string;
+  hashtagId: string;
+  hashtag: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  };
+}
 
 /**
  * Blog service - Pure functions for blog post management
@@ -79,14 +100,17 @@ export async function createBlog(
 
       // Return post with relations
       return await getBlogById(post.id, tx);
-    } catch (error: any) {
+    } catch (error) {
       // Check for various forms of duplicate key errors
+      const errorMessage = error instanceof Error ? error.message : '';
+      const errorCode =
+        error && typeof error === 'object' && 'code' in error ? error.code : '';
       if (
-        error.code === '23505' ||
-        error.message?.includes('duplicate key value') ||
-        error.message?.includes('unique constraint') ||
-        error.message?.includes('already exists') ||
-        error.message?.includes('duplicate-slug-test')
+        errorCode === '23505' ||
+        errorMessage?.includes('duplicate key value') ||
+        errorMessage?.includes('unique constraint') ||
+        errorMessage?.includes('already exists') ||
+        errorMessage?.includes('duplicate-slug-test')
       ) {
         throw new Error('Blog post with this slug already exists');
       }
@@ -107,7 +131,7 @@ export async function getBlog(slug: string): Promise<PostWithRelations | null> {
 
 export async function getBlogById(
   id: string,
-  transaction?: any
+  transaction?: DrizzleTransaction
 ): Promise<PostWithRelations> {
   const txOrDb = transaction || db;
 
@@ -135,8 +159,10 @@ export async function getBlogById(
   // Transform to PostWithRelations
   return {
     ...post,
-    topics: post.postTopics.map((pt) => pt.topic),
-    hashtags: post.postHashtags.map((ph) => ph.hashtag),
+    topics: post.postTopics.map((pt: PostTopicWithRelation) => pt.topic),
+    hashtags: post.postHashtags.map(
+      (ph: PostHashtagWithRelation) => ph.hashtag
+    ),
   };
 }
 
@@ -225,8 +251,10 @@ export async function listBlogs(
 
   const data: PostWithRelations[] = result.map((post) => ({
     ...post,
-    topics: post.postTopics.map((pt) => pt.topic),
-    hashtags: post.postHashtags.map((ph) => ph.hashtag),
+    topics: post.postTopics.map((pt: PostTopicWithRelation) => pt.topic),
+    hashtags: post.postHashtags.map(
+      (ph: PostHashtagWithRelation) => ph.hashtag
+    ),
   }));
 
   return {
@@ -273,8 +301,12 @@ export async function updateBlog(
     if (Object.keys(updateData).length > 0) {
       try {
         await tx.update(posts).set(updateData).where(eq(posts.id, id));
-      } catch (error: any) {
-        if (error.code === '23505') {
+      } catch (error) {
+        const errorCode =
+          error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : '';
+        if (errorCode === '23505') {
           throw new Error('Blog post with this slug already exists');
         }
         throw error;

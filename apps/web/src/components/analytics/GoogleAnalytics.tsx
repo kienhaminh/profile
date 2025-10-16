@@ -8,7 +8,7 @@ interface GoogleAnalyticsProps {
 
 export function GoogleAnalytics({
   measurementId,
-}: GoogleAnalyticsProps): JSX.Element | null {
+}: GoogleAnalyticsProps) {
   if (!measurementId) {
     return null;
   }

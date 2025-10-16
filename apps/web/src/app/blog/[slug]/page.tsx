@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { GoogleAds } from '@/components/ads/GoogleAds';
 
 interface BlogPost {
@@ -30,7 +29,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
 
   useEffect(() => {
     fetchPost();
-  }, [params.slug]);
+  }, [params.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchPost = async () => {
     try {

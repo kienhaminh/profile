@@ -14,7 +14,7 @@ export function GoogleAds({
   style,
   format = 'auto',
   responsive = true,
-}: GoogleAdsProps): JSX.Element | null {
+}: GoogleAdsProps) {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADS_CLIENT_ID;
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export function GoogleAds({
   );
 }
 
-export function GoogleAdsScript(): JSX.Element | null {
+export function GoogleAdsScript() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADS_CLIENT_ID;
 
   if (!clientId) {

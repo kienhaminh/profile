@@ -55,13 +55,15 @@ export async function POST(request: NextRequest) {
     });
 
     // Set HTTP-only cookie for server-side authentication
-    response.cookies.set('admin-token', result.token, {
+    if (result.token) {
+      response.cookies.set('admin-token', result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    });
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+    }
 
     return response;
   } catch (error) {

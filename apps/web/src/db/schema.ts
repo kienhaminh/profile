@@ -285,12 +285,35 @@ export type NewProjectTechnology = typeof projectTechnologies.$inferInsert;
 
 // Extended types with relations
 export type PostWithRelations = Post & {
-  topics: Topic[];
-  hashtags: Hashtag[];
+  topics: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  }>;
+  hashtags: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  }>;
   author: AuthorProfile;
 };
 
 export type ProjectWithRelations = Project & {
-  technologies: Technology[];
-  hashtags: Hashtag[];
+  technologies: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  }>;
+  hashtags: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  }>;
 };

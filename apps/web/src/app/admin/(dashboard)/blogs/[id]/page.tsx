@@ -4,6 +4,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BlogForm } from '@/components/admin/BlogForm';
 
+interface BlogFormData {
+  title: string;
+  slug: string;
+  content: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  publishDate?: string;
+  excerpt?: string;
+  readTime?: number;
+  coverImage?: string;
+  topicIds: string[];
+  hashtagIds: string[];
+}
+
 interface BlogData {
   id: string;
   title: string;
@@ -26,7 +39,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchBlog();
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchBlog = async () => {
     try {
@@ -37,14 +50,14 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
       
       const data = await response.json();
       setBlog(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: BlogFormData) => {
     const token = localStorage.getItem('admin_token');
     
     const response = await fetch(`/api/blog/${params.id}`, {

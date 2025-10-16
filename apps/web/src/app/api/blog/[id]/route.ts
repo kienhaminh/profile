@@ -14,15 +14,16 @@ export async function GET(
     const { id } = await params;
     const blog = await getBlogById(id);
     return NextResponse.json(blog, { status: 200 });
-  } catch (error: any) {
-    if (error.message === 'Blog post not found') {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    if (errorMessage === 'Blog post not found') {
       return NextResponse.json(
-        { error: 'Not Found', message: error.message },
+        { error: 'Not Found', message: errorMessage },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }
@@ -40,30 +41,31 @@ export async function PUT(
 
     const blog = await updateBlog(id, data);
     return NextResponse.json(blog, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation Error', message: error.errors },
+        { error: 'Validation Error', message: error.issues },
         { status: 400 }
       );
     }
-    if (error.message === 'Blog post not found') {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    if (errorMessage === 'Blog post not found') {
       return NextResponse.json(
-        { error: 'Not Found', message: error.message },
+        { error: 'Not Found', message: errorMessage },
         { status: 404 }
       );
     }
-    if (error.message.includes('already exists')) {
+    if (errorMessage.includes('already exists')) {
       return NextResponse.json(
-        { error: 'Conflict', message: error.message },
+        { error: 'Conflict', message: errorMessage },
         { status: 409 }
       );
     }
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }
@@ -78,18 +80,19 @@ export async function DELETE(
     const { id } = await params;
     await deleteBlog(id);
     return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (error.message === 'Blog post not found') {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    if (errorMessage === 'Blog post not found') {
       return NextResponse.json(
-        { error: 'Not Found', message: error.message },
+        { error: 'Not Found', message: errorMessage },
         { status: 404 }
       );
     }
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }

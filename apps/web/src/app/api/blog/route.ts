@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBlog, listBlogs } from '@/services/blog';
 import { db } from '@/db';
 import { authorProfiles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
 import { createBlogSchema, blogFilterSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import { ZodError } from 'zod';
@@ -23,15 +22,16 @@ export async function GET(request: NextRequest) {
 
     const result = await listBlogs(filters);
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation Error', message: error.errors },
+        { error: 'Validation Error', message: error.issues },
         { status: 400 }
       );
     }
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }
@@ -64,25 +64,26 @@ export async function POST(request: NextRequest) {
     }
     const blog = await createBlog(data, authorId);
     return NextResponse.json(blog, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation Error', message: error.errors },
+        { error: 'Validation Error', message: error.issues },
         { status: 400 }
       );
     }
-    const msg = String(error.message || '');
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const msg = String(errorMessage || '');
     if (/already exists|duplicate key value|unique constraint/i.test(msg)) {
       return NextResponse.json(
-        { error: 'Conflict', message: error.message },
+        { error: 'Conflict', message: errorMessage },
         { status: 409 }
       );
     }
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }

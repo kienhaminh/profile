@@ -4,6 +4,21 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 
+interface ProjectFormData {
+  title: string;
+  slug: string;
+  description: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  images: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  isOngoing: boolean;
+  technologyIds: string[];
+  hashtagIds: string[];
+}
+
 interface ProjectData {
   id: string;
   title: string;
@@ -28,7 +43,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
 
   useEffect(() => {
     fetchProject();
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProject = async () => {
     try {
@@ -39,14 +54,14 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
       
       const data = await response.json();
       setProject(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ProjectFormData) => {
     const token = localStorage.getItem('admin_token');
     
     const response = await fetch(`/api/projects/${params.id}`, {

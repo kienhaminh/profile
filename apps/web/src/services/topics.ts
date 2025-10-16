@@ -21,11 +21,13 @@ export async function createTopic(data: CreateTopicRequest): Promise<Topic> {
   try {
     const [topic] = await db.insert(topics).values(newTopic).returning();
     return topic;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       // Unique constraint violation
       throw new Error('Topic with this name or slug already exists');
@@ -65,11 +67,13 @@ export async function updateTopic(
       .where(eq(topics.id, id))
       .returning();
     return updatedTopic;
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '';
+    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
     if (
-      error.code === '23505' ||
-      String(error.message || '').includes('duplicate key value') ||
-      String(error.message || '').includes('unique constraint')
+      errorCode === '23505' ||
+      String(errorMessage || '').includes('duplicate key value') ||
+      String(errorMessage || '').includes('unique constraint')
     ) {
       throw new Error('Topic with this name or slug already exists');
     }

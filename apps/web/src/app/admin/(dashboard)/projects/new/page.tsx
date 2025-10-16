@@ -3,10 +3,25 @@
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 
+interface ProjectFormData {
+  title: string;
+  slug: string;
+  description: string;
+  status: 'DRAFT' | 'PUBLISHED';
+  images: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+  startDate?: string;
+  endDate?: string;
+  isOngoing: boolean;
+  technologyIds: string[];
+  hashtagIds: string[];
+}
+
 export default function NewProjectPage() {
   const router = useRouter();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ProjectFormData) => {
     const token = localStorage.getItem('admin_token');
     
     const response = await fetch('/api/projects', {

@@ -7,7 +7,8 @@ interface Hashtag {
   id: string;
   name: string;
   slug: string;
-  description?: string | null;
+  description: string | null;
+  createdAt: Date;
 }
 
 interface HashtagSelectProps {
@@ -55,16 +56,19 @@ export function HashtagSelect({
       if (!response.ok) throw new Error('Failed to fetch hashtags');
       const data = await response.json();
       setHashtags(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
   };
 
   const createHashtag = async (name: string) => {
-    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
+    const slug = name
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+
     try {
       setIsLoading(true);
       setError(null);
@@ -87,8 +91,8 @@ export function HashtagSelect({
       onChange([...value, newHashtag.id]);
       setSearchQuery('');
       return newHashtag;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
     } finally {
       setIsLoading(false);
@@ -98,7 +102,7 @@ export function HashtagSelect({
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       e.preventDefault();
-      
+
       const existingHashtag = filteredHashtags.find(
         (h) => h.name.toLowerCase() === searchQuery.toLowerCase()
       );
@@ -174,9 +178,7 @@ export function HashtagSelect({
         />
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 mt-1">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">

@@ -22,6 +22,13 @@ You are an expert developer proficient in TypeScript, React and Next.js, Expo (R
 - Avoid enums; use literal types or maps instead.
 - Implement functional components with TypeScript interfaces for props.
 
+### Shared Types Location (`@/types`)
+
+- Centralize reusable domain models and payload types under `apps/web/src/types/`.
+- Import shared types via the alias `@/types/*` across components, services, API routes, and tests.
+- Colocate Zod schemas with their corresponding interfaces in the same `types/*` module and derive types with `z.infer` when appropriate.
+- Do not redefine object shapes in components or routes; reuse from `@/types`.
+
 ## Syntax and Formatting
 
 - Use the `function` keyword for pure functions.

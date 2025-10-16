@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HashtagSelect } from './HashtagSelect';
 import { TechnologySelect } from './TechnologySelect';
+import type { CreateProjectRequest } from '@/lib/validation';
 
 interface ProjectFormData {
   title: string;
@@ -19,8 +20,14 @@ interface ProjectFormData {
   hashtagIds: string[];
 }
 
+// Type that matches the form data but allows optional fields for editing
+type ProjectFormEditData = Partial<CreateProjectRequest> & {
+  technologyIds?: string[];
+  hashtagIds?: string[];
+};
+
 interface ProjectFormProps {
-  initialData?: Partial<ProjectFormData>;
+  initialData?: ProjectFormEditData;
   onSubmit: (data: ProjectFormData) => Promise<void>;
   onCancel?: () => void;
   mode: 'create' | 'edit';
@@ -69,14 +76,14 @@ export function ProjectForm({
     >
   ) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-    
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
@@ -146,8 +153,11 @@ export function ProjectForm({
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
-    } catch (error: any) {
-      setErrors({ submit: error.message || 'Failed to save project' });
+    } catch (error) {
+      setErrors({
+        submit:
+          error instanceof Error ? error.message : 'Failed to save project',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -233,7 +243,10 @@ export function ProjectForm({
         </div>
 
         <div className="flex items-center pt-7">
-          <label htmlFor="isOngoing" className="flex items-center cursor-pointer">
+          <label
+            htmlFor="isOngoing"
+            className="flex items-center cursor-pointer"
+          >
             <input
               type="checkbox"
               id="isOngoing"

@@ -55,8 +55,8 @@ export function TechnologySelect({
       if (!response.ok) throw new Error('Failed to fetch technologies');
       const data = await response.json();
       setTechnologies(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -87,8 +87,8 @@ export function TechnologySelect({
       onChange([...value, newTechnology.id]);
       setSearchQuery('');
       return newTechnology;
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
     } finally {
       setIsLoading(false);

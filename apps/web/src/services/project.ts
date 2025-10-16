@@ -3,11 +3,10 @@ import {
   projects,
   projectTechnologies,
   projectHashtags,
-  technologies,
-  hashtags,
-  type Project,
   type NewProject,
   type ProjectWithRelations,
+  type Technology,
+  type Hashtag,
 } from '../db/schema';
 import { eq, and, inArray, or, ilike, sql, desc } from 'drizzle-orm';
 import type {
@@ -15,6 +14,34 @@ import type {
   UpdateProjectRequest,
   ProjectFilterParams,
 } from '../lib/validation';
+
+// Type for Drizzle transaction - inferred from db type
+type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Types for junction table objects with relations (from Drizzle 'with' clause)
+interface ProjectTechnologyWithRelation {
+  projectId: string;
+  technologyId: string;
+  technology: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  };
+}
+
+interface ProjectHashtagWithRelation {
+  projectId: string;
+  hashtagId: string;
+  hashtag: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    createdAt: Date;
+  };
+}
 
 /**
  * Project service - Pure functions for project management
@@ -30,6 +57,19 @@ interface PaginatedResult<T> {
     total: number;
     totalPages: number;
   };
+}
+
+// Types for junction table objects with relations (from Drizzle 'with' clause)
+interface ProjectTechnologyWithRelation {
+  projectId: string;
+  technologyId: string;
+  technology: Technology;
+}
+
+interface ProjectHashtagWithRelation {
+  projectId: string;
+  hashtagId: string;
+  hashtag: Hashtag;
 }
 
 export async function createProject(
@@ -79,8 +119,10 @@ export async function createProject(
 
       // Return project with relations
       return await getProjectById(project.id, tx);
-    } catch (error: any) {
-      if (error.code === '23505') {
+    } catch (error) {
+      const errorCode =
+        error && typeof error === 'object' && 'code' in error ? error.code : '';
+      if (errorCode === '23505') {
         throw new Error('Project with this slug already exists');
       }
       throw error;
@@ -105,7 +147,7 @@ export async function getProject(
 
 export async function getProjectById(
   id: string,
-  transaction?: any
+  transaction?: DrizzleTransaction
 ): Promise<ProjectWithRelations> {
   const txOrDb = transaction || db;
 
@@ -132,8 +174,12 @@ export async function getProjectById(
   // Transform to ProjectWithRelations
   return {
     ...project,
-    technologies: project.projectTechnologies.map((pt) => pt.technology),
-    hashtags: project.projectHashtags.map((ph) => ph.hashtag),
+    technologies: project.projectTechnologies.map(
+      (pt: ProjectTechnologyWithRelation) => pt.technology
+    ),
+    hashtags: project.projectHashtags.map(
+      (ph: ProjectHashtagWithRelation) => ph.hashtag
+    ),
   };
 }
 
@@ -221,8 +267,12 @@ export async function listProjects(
 
   const data: ProjectWithRelations[] = result.map((project) => ({
     ...project,
-    technologies: project.projectTechnologies.map((pt) => pt.technology),
-    hashtags: project.projectHashtags.map((ph) => ph.hashtag),
+    technologies: project.projectTechnologies.map(
+      (pt: ProjectTechnologyWithRelation) => pt.technology
+    ),
+    hashtags: project.projectHashtags.map(
+      (ph: ProjectHashtagWithRelation) => ph.hashtag
+    ),
   }));
 
   return {
@@ -275,8 +325,12 @@ export async function updateProject(
     if (Object.keys(updateData).length > 0) {
       try {
         await tx.update(projects).set(updateData).where(eq(projects.id, id));
-      } catch (error: any) {
-        if (error.code === '23505') {
+      } catch (error) {
+        const errorCode =
+          error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : '';
+        if (errorCode === '23505') {
           throw new Error('Project with this slug already exists');
         }
         throw error;

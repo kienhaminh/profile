@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HashtagSelect } from './HashtagSelect';
 import { TopicSelect } from './TopicSelect';
+import type { CreateBlogRequest } from '@/lib/validation';
 
 interface BlogFormData {
   title: string;
@@ -17,8 +18,14 @@ interface BlogFormData {
   hashtagIds: string[];
 }
 
+// Type that matches the form data but allows optional fields for editing
+type BlogFormEditData = Partial<CreateBlogRequest> & {
+  topicIds?: string[];
+  hashtagIds?: string[];
+};
+
 interface BlogFormProps {
-  initialData?: Partial<BlogFormData>;
+  initialData?: BlogFormEditData;
   onSubmit: (data: BlogFormData) => Promise<void>;
   onCancel?: () => void;
   mode: 'create' | 'edit';
@@ -67,11 +74,7 @@ export function BlogForm({
     setFormData((prev) => ({
       ...prev,
       [name]:
-        type === 'number'
-          ? value === ''
-            ? undefined
-            : Number(value)
-          : value,
+        type === 'number' ? (value === '' ? undefined : Number(value)) : value,
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -102,7 +105,10 @@ export function BlogForm({
       newErrors.coverImage = 'Cover image must be a valid URL';
     }
 
-    if (formData.readTime && (formData.readTime <= 0 || !Number.isInteger(formData.readTime))) {
+    if (
+      formData.readTime &&
+      (formData.readTime <= 0 || !Number.isInteger(formData.readTime))
+    ) {
       newErrors.readTime = 'Read time must be a positive integer';
     }
 
@@ -120,8 +126,11 @@ export function BlogForm({
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
-    } catch (error: any) {
-      setErrors({ submit: error.message || 'Failed to save blog post' });
+    } catch (error) {
+      setErrors({
+        submit:
+          error instanceof Error ? error.message : 'Failed to save blog post',
+      });
     } finally {
       setIsSubmitting(false);
     }

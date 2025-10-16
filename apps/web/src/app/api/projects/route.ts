@@ -20,15 +20,16 @@ export async function GET(request: NextRequest) {
 
     const result = await listProjects(filters);
     return NextResponse.json(result, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation Error', message: error.errors },
+        { error: 'Validation Error', message: error.issues },
         { status: 400 }
       );
     }
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }
@@ -42,19 +43,20 @@ export async function POST(request: NextRequest) {
 
     const project = await createProject(data);
     return NextResponse.json(project, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { error: 'Validation Error', message: error.errors },
+        { error: 'Validation Error', message: error.issues },
         { status: 400 }
       );
     }
-    const msg = String(error.message || '');
-    const causeMsg = String((error.cause && error.cause.message) || '');
-    const causeCode = (error.cause && (error.cause as any).code) || '';
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const msg = String(errorMessage || '');
+    const causeMsg = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause ? String(error.cause.message) : '';
+    const causeCode = error instanceof Error && error.cause && typeof error.cause === 'object' && 'code' in error.cause ? String(error.cause.code) : '';
     if (
       msg.includes('already exists') ||
       /duplicate key value|unique constraint/i.test(msg) ||
@@ -62,12 +64,12 @@ export async function POST(request: NextRequest) {
       causeCode === '23505'
     ) {
       return NextResponse.json(
-        { error: 'Conflict', message: error.message },
+        { error: 'Conflict', message: errorMessage },
         { status: 409 }
       );
     }
     return NextResponse.json(
-      { error: 'Internal Server Error', message: error.message },
+      { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
     );
   }
