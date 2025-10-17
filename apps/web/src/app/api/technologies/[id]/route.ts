@@ -91,6 +91,18 @@ export async function DELETE(
         { status: 404 }
       );
     }
+    if (error instanceof TechnologyConflictError) {
+      return NextResponse.json(
+        { error: 'Technology Conflict', message: error.message },
+        { status: 409 }
+      );
+    }
+    if (error instanceof ConflictError) {
+      return NextResponse.json(
+        { error: 'Conflict', message: error.message },
+        { status: 409 }
+      );
+    }
     const errorMessage =
       error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(

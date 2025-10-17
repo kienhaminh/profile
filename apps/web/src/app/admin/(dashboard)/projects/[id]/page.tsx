@@ -93,6 +93,15 @@ export default function EditProjectPage({
         processedData.endDate = null;
       }
 
+      // Validate date range
+      if (processedData.startDate && processedData.endDate) {
+        const start = new Date(processedData.startDate);
+        const end = new Date(processedData.endDate);
+        if (end < start) {
+          throw new Error('End date cannot be before start date');
+        }
+      }
+
       const response = await authFetch(`/api/projects/${params.id}`, {
         method: 'PUT',
         headers: {

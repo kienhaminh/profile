@@ -27,7 +27,7 @@ export function generateCSRFToken(): string {
   const signature = createHmac('sha256', getSecret())
     .update(payloadStr)
     .digest('base64url');
-  
+
   return `${Buffer.from(payloadStr).toString('base64url')}.${signature}`;
 }
 
@@ -48,7 +48,11 @@ function verifyCSRFToken(signedToken: string): TokenPayload | null {
     if (!timingSafeEqual(sigBuffer, expectedBuffer)) return null;
 
     const payload: TokenPayload = JSON.parse(payloadStr);
-    
+
+    if (payload.timestamp > Date.now()) {
+      return null;
+    }
+
     if (Date.now() - payload.timestamp > TOKEN_EXPIRY) {
       return null;
     }

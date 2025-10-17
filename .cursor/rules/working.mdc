@@ -1,5 +1,5 @@
 ---
-description: How to work with this codebase
+globs: apps/web/src/**/*.ts,apps/web/src/**/*.tsx
 alwaysApply: false
 ---
 
@@ -14,6 +14,7 @@ You are an expert developer proficient in TypeScript, React and Next.js, Expo (R
 - Structure files with exported components, subcomponents, helpers, static content, and types.
 - Favor named exports for components and functions.
 - Use lowercase with dashes for directory names (e.g., `components/auth-wizard`).
+- DO NOT use `fetch` directly inside components. Define a separate request function that uses fetch internally, and call that instead.
 
 ## TypeScript and Zod Usage
 

@@ -10,6 +10,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
+// ADMIN_PASSWORD environment variable is mandatory for seeding admin user
 const password = process.env.ADMIN_PASSWORD;
 if (!password) {
   throw new Error('ADMIN_PASSWORD environment variable is required');
@@ -19,9 +20,9 @@ async function seedAdmin(): Promise<void> {
   try {
     const username = process.env.ADMIN_USERNAME || 'admin';
     const email = process.env.ADMIN_EMAIL || 'admin@portfolio.local';
-    const password = process.env.ADMIN_PASSWORD || 'password123';
+    // Use the validated password variable (ADMIN_PASSWORD is required)
 
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(password!);
 
     // Enforce single-admin policy before creating/updating admin
     await enforceSingleAdminPolicy();

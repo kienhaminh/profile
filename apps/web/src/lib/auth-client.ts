@@ -33,9 +33,9 @@ export async function authPost<T = unknown>(
   options: AuthFetchOptions = {}
 ) {
   return authFetch(url, {
+    ...options,
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined,
-    ...options,
   });
 }
 
@@ -48,9 +48,9 @@ export async function authPut<T = unknown>(
   options: AuthFetchOptions = {}
 ) {
   return authFetch(url, {
+    ...options,
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined,
-    ...options,
   });
 }
 
@@ -59,7 +59,7 @@ export async function authPut<T = unknown>(
  */
 export async function authDelete(url: string, options: AuthFetchOptions = {}) {
   return authFetch(url, {
-    method: 'DELETE',
     ...options,
+    method: 'DELETE',
   });
 }

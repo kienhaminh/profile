@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createBlog, listBlogs } from '@/services/blog';
 import { db } from '@/db';
 import { authorProfiles } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 import { createBlogSchema, blogFilterSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import { ZodError } from 'zod';
@@ -48,39 +49,40 @@ export async function POST(request: NextRequest) {
     // Resolve authorId: use provided one, else find or create a default author
     let authorId = data.authorId || '';
     if (!authorId) {
-      import { eq } from 'drizzle-orm';
+      const existing = await db
+        .select()
+        .from(authorProfiles)
+        .where(eq(authorProfiles.email, 'default@example.com'))
+        .limit(1);
 
-      if (!authorId) {
-        const existing = await db
-          .select()
-          .from(authorProfiles)
-          .where(eq(authorProfiles.email, 'default@example.com'))
-          .limit(1);
+      if (existing.length > 0) {
+        authorId = existing[0].id;
+      } else {
+        const [created] = await db
+          .insert(authorProfiles)
+          .values({
+            name: 'Default Author',
+            bio: 'Auto-created for tests',
+            email: 'default@example.com',
+          })
+          .onConflictDoNothing()
+          .returning();
 
-        if (existing.length > 0) {
-          authorId = existing[0].id;
+        if (created) {
+          authorId = created.id;
         } else {
-          const [created] = await db
-            .insert(authorProfiles)
-            .values({
-              name: 'Default Author',
-              bio: 'Auto-created for tests',
-              email: 'default@example.com',
-            })
-            .onConflictDoNothing()
-            .returning();
+          // Conflict occurred, fetch the existing one
+          const [existingAfterConflict] = await db
+            .select()
+            .from(authorProfiles)
+            .where(eq(authorProfiles.email, 'default@example.com'))
+            .limit(1);
 
-          if (created) {
-            authorId = created.id;
-          } else {
-            // Conflict occurred, fetch the existing one
-            const [existing] = await db
-              .select()
-              .from(authorProfiles)
-              .where(eq(authorProfiles.email, 'default@example.com'))
-              .limit(1);
-            authorId = existing.id;
+          if (existingAfterConflict.length === 0) {
+            throw new Error('Failed to find or create default author profile');
           }
+
+          authorId = existingAfterConflict[0].id;
         }
       }
     }

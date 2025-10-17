@@ -14,14 +14,14 @@ interface DatabaseConnectionConfig {
 // Custom error types for better error handling
 class DatabaseConnectionError extends Error {
   constructor(message: string, cause?: Error) {
-    super(message, cause);
+    super(message, cause ? { cause } : undefined);
     this.name = 'DatabaseConnectionError';
   }
 }
 
 class DatabaseURLParseError extends DatabaseConnectionError {
   constructor(message: string, cause?: Error) {
-    super(message, cause);
+    super(message, cause ? { cause } : undefined);
     this.name = 'DatabaseURLParseError';
   }
 }

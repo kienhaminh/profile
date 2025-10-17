@@ -2,10 +2,64 @@ import { db } from '@/db';
 import { posts, topics, postTopics, Topic } from '@/db/schema';
 import { eq, desc, inArray, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
+import { generateUniqueSlug } from '@/lib/slug';
 
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export type PostStatus = 'draft' | 'published' | 'archived';
+
+/**
+ * Helper function to build topics map from post-topic relations
+ * @param postTopicRelations Array of post-topic relation objects
+ * @returns Map keyed by postId with arrays of topic objects
+ */
+function buildTopicsMap(
+  postTopicRelations: Array<{
+    postId: string;
+    topicId: string;
+    topicName: string;
+    topicSlug: string;
+    topicDescription: string | null;
+  }>
+): Map<
+  string,
+  Array<{
+    topic: {
+      id: string;
+      name: string;
+      slug: string;
+      description: string | null;
+    };
+  }>
+> {
+  const topicsMap = new Map<
+    string,
+    Array<{
+      topic: {
+        id: string;
+        name: string;
+        slug: string;
+        description: string | null;
+      };
+    }>
+  >();
+
+  for (const relation of postTopicRelations) {
+    if (!topicsMap.has(relation.postId)) {
+      topicsMap.set(relation.postId, []);
+    }
+    topicsMap.get(relation.postId)!.push({
+      topic: {
+        id: relation.topicId,
+        name: relation.topicName,
+        slug: relation.topicSlug,
+        description: relation.topicDescription,
+      },
+    });
+  }
+
+  return topicsMap;
+}
 
 /**
  * Helper function to batch process topics - handles existing topic lookup and creation of missing topics
@@ -38,14 +92,22 @@ async function processTopicsBatch(
     (name) => !existingTopicsMap.has(name)
   );
 
-  // Batch insert missing topics
+  // Get existing slugs to avoid collisions when creating new topics
+  const existingSlugs = existingTopics.map((topic) => topic.slug);
+
+  // Batch insert missing topics with proper slug generation
   if (missingTopics.length > 0) {
-    await tx.insert(topics).values(
-      missingTopics.map((name) => ({
+    const topicsWithSlugs = await Promise.all(
+      missingTopics.map(async (name) => ({
         name,
-        slug: name.toLowerCase().replace(/\s+/g, '-'),
+        slug: await generateUniqueSlug(name, existingSlugs),
       }))
     );
+
+    await tx.insert(topics).values(topicsWithSlugs);
+
+    // Update existingSlugs with the newly created slugs
+    existingSlugs.push(...topicsWithSlugs.map((t) => t.slug));
   }
 
   // Get all topic IDs (both existing and newly created)
@@ -146,13 +208,30 @@ export async function createPost(
       );
     }
 
-    const createdPost = await getPostBySlug(newPost.slug);
+    // Get the topics that were just inserted/associated using the transaction
+    const postTopicRelations = await tx
+      .select({
+        topicId: postTopics.topicId,
+        topicName: topics.name,
+        topicSlug: topics.slug,
+        topicDescription: topics.description,
+      })
+      .from(postTopics)
+      .innerJoin(topics, eq(postTopics.topicId, topics.id))
+      .where(eq(postTopics.postId, newPost.id));
 
-    if (!createdPost) {
-      throw new Error(
-        `Failed to retrieve created post with slug: ${newPost.slug}`
-      );
-    }
+    // Assemble the complete PostWithTopics response using transaction data
+    const createdPost: PostWithTopics = {
+      ...newPost,
+      topics: postTopicRelations.map((pt) => ({
+        topic: {
+          id: pt.topicId,
+          name: pt.topicName,
+          slug: pt.topicSlug,
+          description: pt.topicDescription,
+        },
+      })),
+    };
 
     return createdPost;
   });
@@ -254,38 +333,11 @@ export async function getPosts(filters?: {
       .innerJoin(topics, eq(postTopics.topicId, topics.id))
       .where(inArray(postTopics.postId, postIds));
 
-    // Group topics by post ID in a single pass
-    const topicsMap = new Map<
-      string,
-      Array<{
-        topic: {
-          id: string;
-          name: string;
-          slug: string;
-          description: string | null;
-        };
-      }>
-    >();
+    // Build topics map from post-topic relations
+    const topicsMap = buildTopicsMap(postTopicRelations);
 
-    for (const relation of postTopicRelations) {
-      if (!topicsMap.has(relation.postId)) {
-        topicsMap.set(relation.postId, []);
-      }
-      topicsMap.get(relation.postId)!.push({
-        topic: {
-          id: relation.topicId,
-          name: relation.topicName,
-          slug: relation.topicSlug,
-          description: relation.topicDescription,
-        },
-      });
-    }
-
-    // Get full post data for each post ID (since the join only gave us partial data)
-    const fullPosts = await db
-      .select()
-      .from(posts)
-      .where(inArray(posts.id, postIds));
+    // Use the existing post data from filteredPosts (no need for redundant DB query)
+    const fullPosts = filteredPosts.map((fp) => fp.posts);
 
     // Build result with topics attached
     const result: PostWithTopics[] = [];
@@ -328,32 +380,8 @@ export async function getPosts(filters?: {
     .innerJoin(topics, eq(postTopics.topicId, topics.id))
     .where(inArray(postTopics.postId, postIds));
 
-  // Build a map of post ID to topics for efficient lookup
-  const topicsMap = new Map<
-    string,
-    Array<{
-      topic: {
-        id: string;
-        name: string;
-        slug: string;
-        description: string | null;
-      };
-    }>
-  >();
-
-  for (const relation of postTopicRelations) {
-    if (!topicsMap.has(relation.postId)) {
-      topicsMap.set(relation.postId, []);
-    }
-    topicsMap.get(relation.postId)!.push({
-      topic: {
-        id: relation.topicId,
-        name: relation.topicName,
-        slug: relation.topicSlug,
-        description: relation.topicDescription,
-      },
-    });
-  }
+  // Build topics map from post-topic relations
+  const topicsMap = buildTopicsMap(postTopicRelations);
 
   // Build the result by attaching topics to each post
   const result: PostWithTopics[] = [];
@@ -421,7 +449,32 @@ export async function updatePost(
       }
     }
 
-    return getPostBySlug(updatedPost.slug);
+    // Get the topics that were just inserted/associated using the transaction
+    const postTopicRelations = await tx
+      .select({
+        topicId: postTopics.topicId,
+        topicName: topics.name,
+        topicSlug: topics.slug,
+        topicDescription: topics.description,
+      })
+      .from(postTopics)
+      .innerJoin(topics, eq(postTopics.topicId, topics.id))
+      .where(eq(postTopics.postId, updatedPost.id));
+
+    // Assemble the complete PostWithTopics response using transaction data
+    const updatedPostWithTopics: PostWithTopics = {
+      ...updatedPost,
+      topics: postTopicRelations.map((pt) => ({
+        topic: {
+          id: pt.topicId,
+          name: pt.topicName,
+          slug: pt.topicSlug,
+          description: pt.topicDescription,
+        },
+      })),
+    };
+
+    return updatedPostWithTopics;
   });
 }
 

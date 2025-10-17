@@ -33,7 +33,7 @@ export class TechnologyConflictError extends ConflictError {
 }
 
 /**
- * Checks if an error represents a database conflict (duplicate key/unique constraint violation)
+ * Checks if an error represents a database conflict (duplicate key/unique constraint violation or foreign key constraint violation)
  * Performs the same tolerant checks as the original inline code but in a reusable function
  */
 export function isConflictError(error: unknown): boolean {
@@ -49,7 +49,11 @@ export function isConflictError(error: unknown): boolean {
     return true;
   }
 
-  if (/duplicate key value|unique constraint/i.test(msg)) {
+  if (
+    /duplicate key value|unique constraint|foreign key|violates foreign key constraint/i.test(
+      msg
+    )
+  ) {
     return true;
   }
 
@@ -59,11 +63,15 @@ export function isConflictError(error: unknown): boolean {
       'message' in error.cause ? String(error.cause.message) : '';
     const causeCode = 'code' in error.cause ? String(error.cause.code) : '';
 
-    if (/duplicate key value|unique constraint/i.test(causeMsg)) {
+    if (
+      /duplicate key value|unique constraint|foreign key|violates foreign key constraint/i.test(
+        causeMsg
+      )
+    ) {
       return true;
     }
 
-    if (causeCode === '23505') {
+    if (causeCode === '23505' || causeCode === '23503') {
       return true;
     }
   }

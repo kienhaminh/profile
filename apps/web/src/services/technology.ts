@@ -46,6 +46,28 @@ function handleUniqueConstraintError(error: unknown): never {
   throw error;
 }
 
+/**
+ * Helper function to handle foreign key constraint errors during deletion
+ * Throws a normalized error for referential integrity violations or rethrows the original error
+ */
+function handleForeignKeyConstraintError(error: unknown): never {
+  const errorMessage = error instanceof Error ? error.message : '';
+  const errorCode =
+    error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  if (
+    errorCode === '23503' ||
+    String(errorMessage || '').includes('foreign key') ||
+    String(errorMessage || '').includes('violates foreign key constraint')
+  ) {
+    throw new TechnologyConflictError(
+      'Cannot delete technology as it is being used by existing projects'
+    );
+  }
+
+  throw error;
+}
+
 export async function createTechnology(
   data: CreateTechnologyRequest
 ): Promise<Technology> {
@@ -114,5 +136,9 @@ export async function deleteTechnology(id: string): Promise<void> {
     throw new TechnologyNotFoundError('Technology not found');
   }
 
-  await db.delete(technologies).where(eq(technologies.id, id));
+  try {
+    await db.delete(technologies).where(eq(technologies.id, id));
+  } catch (error) {
+    handleForeignKeyConstraintError(error);
+  }
 }

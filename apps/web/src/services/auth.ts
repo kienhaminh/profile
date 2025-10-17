@@ -20,9 +20,9 @@ export interface AuthResult {
   };
 }
 
-// Dummy bcrypt hash for non-existent users to prevent timing attacks
-const DUMMY_HASH =
-  '$2a$12$dummy.hash.that.will.never.match.real.passwords.and.has.correct.bcrypt.format';
+// Generate a proper bcrypt hash for non-existent users to prevent timing attacks
+// This ensures consistent timing regardless of user existence by using a real hash
+const DUMMY_HASH = bcrypt.hashSync('dummy-password', 12);
 
 export async function authenticateUser(
   credentials: LoginCredentials

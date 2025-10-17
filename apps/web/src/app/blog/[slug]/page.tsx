@@ -198,7 +198,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 Blog
               </Link>
               <Link
-                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kien@example.com'}`}
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || ''}`}
                 className="text-gray-600 hover:text-gray-900"
               >
                 Contact

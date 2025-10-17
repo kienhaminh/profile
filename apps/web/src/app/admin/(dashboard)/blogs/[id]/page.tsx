@@ -58,46 +58,51 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   };
 
   const handleSubmit = async (data: BlogFormData) => {
-    const response = await fetch(`/api/blog/${params.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        ...data,
-        publishDate: data.publishDate
-          ? new Date(data.publishDate).toISOString()
-          : null,
-      }),
-    });
-
-    // Check for network errors first
-    if (!response) {
-      throw new Error('Network error: Unable to connect to server');
-    }
-
-    // Parse response as JSON (this can also throw)
-    let errorData;
     try {
-      errorData = await response.json();
-    } catch {
+      const response = await fetch(`/api/blog/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...data,
+          publishDate: data.publishDate
+            ? new Date(data.publishDate).toISOString()
+            : null,
+        }),
+      });
+
+      // Parse response as JSON (this can also throw)
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            `Server error (${response.status}): ${response.statusText}`
+          );
+        }
+        throw new Error('Invalid response from server');
+      }
+
       if (!response.ok) {
         throw new Error(
-          `Server error (${response.status}): ${response.statusText}`
+          errorData.message || `Failed to update blog post (${response.status})`
         );
       }
-      throw new Error('Invalid response from server');
-    }
 
-    if (!response.ok) {
-      throw new Error(
-        errorData.message || `Failed to update blog post (${response.status})`
-      );
+      // Success - navigate to blogs list
+      router.push('/admin/blogs');
+    } catch (error) {
+      // Handle errors and show feedback to user
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to update blog post. Please try again.';
+      setError(errorMessage);
+      throw error; // Re-throw to prevent form submission
     }
-
-    // Success - navigate to blogs list
-    router.push('/admin/blogs');
   };
 
   if (isLoading) {

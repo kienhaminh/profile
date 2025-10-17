@@ -70,13 +70,18 @@ export function verifyAdminToken(token: string): {
       exp: decoded.exp,
     };
   } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      throw error;
+    }
     if (error instanceof jwt.JsonWebTokenError) {
       throw new UnauthorizedError('Invalid JWT token');
     }
     if (error instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError('JWT token expired');
     }
-    throw new UnauthorizedError('JWT verification failed');
+     throw new UnauthorizedError('JWT verification failed');
+   }
+ }
   }
 }
 
@@ -174,8 +179,6 @@ export async function ensureAdminOrThrow(request: NextRequest): Promise<void> {
     }
     throw new UnauthorizedError('JWT verification failed');
   }
-
-  throw new UnauthorizedError('Unauthorized');
 }
 
 /**

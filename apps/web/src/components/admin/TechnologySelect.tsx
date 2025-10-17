@@ -168,14 +168,13 @@ export function TechnologySelect({
           <span
             key={technology.id}
             className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-800 rounded"
-            role="option"
-            aria-selected="true"
           >
             {technology.name}
             <button
               type="button"
               onClick={() => handleRemove(technology.id)}
               className="hover:text-green-600"
+              aria-label={`Remove ${technology.name}`}
             >
               <X size={14} />
             </button>

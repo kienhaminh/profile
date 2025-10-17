@@ -1,7 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getPosts, createPost, type PostStatus } from '@/services/posts';
-import { ensureAdminOrThrow } from '@/lib/admin-auth';
+import { ensureAdminOrThrow, verifyAdminToken } from '@/lib/admin-auth';
+
+/**
+ * Extracts the admin ID from the request token
+ */
+function getAdminIdFromRequest(request: NextRequest): string {
+  // First, try to get token from httpOnly cookie (preferred method)
+  const cookieToken = request.cookies.get('admin-token')?.value || '';
+
+  // Fallback to Authorization header for backward compatibility
+  const headerAuth = request.headers.get('authorization') || '';
+  const headerToken = request.headers.get('x-admin-token') || '';
+
+  const bearerToken = headerAuth.toLowerCase().startsWith('bearer ')
+    ? headerAuth.slice(7)
+    : '';
+
+  const token = cookieToken || bearerToken || headerToken;
+  const configuredToken = process.env.ADMIN_API_TOKEN || '';
+
+  // Allow either a configured static token, or a mock token returned by /api/admin/login
+  if (!token) {
+    throw new Error('Missing admin token');
+  }
+
+  if (configuredToken && token === configuredToken) {
+    // For configured static tokens, we can't determine the admin ID from the token
+    // This should not happen in normal operation since ensureAdminOrThrow would have failed
+    throw new Error('Cannot determine admin ID from static token');
+  }
+
+  // Verify JWT token and extract admin ID
+  const decoded = verifyAdminToken(token);
+  return decoded.adminId;
+}
 
 // Zod schema for post validation
 const postSchema = z.object({
@@ -85,6 +119,9 @@ export async function POST(request: NextRequest) {
   try {
     // Ensure admin authentication and authorization
     await ensureAdminOrThrow(request);
+
+    // Get the admin ID from the request token
+    const adminId = getAdminIdFromRequest(request);
 
     let body;
     try {

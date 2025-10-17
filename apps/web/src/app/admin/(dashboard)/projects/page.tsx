@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
 interface Project {
@@ -23,6 +23,8 @@ export default function ProjectsListPage() {
     status: '',
     search: '',
   });
+  const [searchInput, setSearchInput] = useState(filter.search);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -47,6 +49,31 @@ export default function ProjectsListPage() {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
+
+  // Debounce search input changes
+  useEffect(() => {
+    // Clear existing timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    // Set new timer to update filter after 300ms
+    debounceTimer.current = setTimeout(() => {
+      setFilter((prev) => ({ ...prev, search: searchInput }));
+    }, 300);
+
+    // Cleanup function to clear timer on unmount or dependency change
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [searchInput]);
+
+  // Keep search input in sync when filter changes externally
+  useEffect(() => {
+    setSearchInput(filter.search);
+  }, [filter.search]);
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) {
@@ -86,10 +113,8 @@ export default function ProjectsListPage() {
           <input
             type="text"
             placeholder="Search projects..."
-            value={filter.search}
-            onChange={(e) =>
-              setFilter((prev) => ({ ...prev, search: e.target.value }))
-            }
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
