@@ -25,31 +25,23 @@ export function generateSlug(
     return allowEmpty ? '' : 'untitled';
   }
 
+  // Preprocess: Remove ASCII special characters but preserve non-Latin characters for transliteration
+  const cleanInput = input
+    .replace(/[!@#$%^&*()_+{}|:<>?[\]\\;"',.]/g, '') // Remove ASCII special characters
+    .toLowerCase();
+
   // First try: Use slugify with transliteration for non-Latin characters
-  let slug = slugify(input, {
+  let slug = slugify(cleanInput, {
     lower: true,
     strict: true,
     locale: 'en',
     trim: true,
   });
 
-  // Clean up any remaining special characters and word-based conversions
-  // Remove common word conversions that slugify produces for special characters
-  slug = slug
-    .replace(
-      /dollar|percent|and|or|less|greater|at|plus|equal|star|hash|bang|pipe|slash|backslash|colon|semicolon|question|exclamation|quote|apos|caret|tilde|grave|acute|circumflex|underscore|brace|bracket|paren|angle|comma|period/g,
-      ''
-    ) // Remove word-based conversions
-    .replace(/[^\w\s-]/g, '') // Remove any remaining special characters
-    .replace(/\s+/g, '-') // Replace spaces with dashes
-    .replace(/-+/g, '-') // Replace multiple dashes with single dash
-    .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
-
-  // If slug is empty after transliteration and cleanup, try basic fallback
+  // If slug is empty after transliteration, try basic fallback
   if (!slug.trim()) {
     // Basic fallback: replace spaces with dashes and remove non-alphanumeric chars
-    slug = input
-      .toLowerCase()
+    slug = cleanInput
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '') // Keep letters, numbers, and dashes
       .replace(/-+/g, '-') // Replace multiple dashes with single dash
