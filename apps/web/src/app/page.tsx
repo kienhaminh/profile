@@ -1,42 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INFORMATION } from '@/constants/information';
-
-interface Project {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  status: string;
-  technologies: Array<{ name: string }>;
-  liveUrl?: string | null;
-}
+import { trpc } from '@/trpc/react';
 
 export default function Home() {
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data,
+    isLoading,
+    isError,
+  } = trpc.projects.list.useQuery(
+    { limit: 2, status: 'PUBLISHED' },
+    {
+      staleTime: 60_000,
+    }
+  );
 
-  useEffect(() => {
-    const fetchFeaturedProjects = async () => {
-      try {
-        const response = await fetch('/api/projects?limit=2&status=COMPLETED');
-        if (response.ok) {
-          const data = await response.json();
-          setFeaturedProjects(data.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching featured projects:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeaturedProjects();
-  }, []);
+  const featuredProjects = data?.data ?? [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -129,9 +111,15 @@ export default function Home() {
               </p>
             </div>
             <div className="mt-12">
-              {loading ? (
+              {isLoading ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">Loading projects...</p>
+                </div>
+              ) : isError ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    Unable to load featured projects right now.
+                  </p>
                 </div>
               ) : featuredProjects.length > 0 ? (
                 <div className="grid gap-8 lg:grid-cols-2">

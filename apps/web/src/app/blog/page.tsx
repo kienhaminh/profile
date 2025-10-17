@@ -1,50 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  publishDate: string | null;
-  topics: Array<{ topic: { name: string } }>;
-}
+import { trpc } from '@/trpc/react';
 
 export default function Blog() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
 
-  const fetchPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const url = selectedTopic
-        ? `/api/blog/posts?topic=${encodeURIComponent(selectedTopic)}`
-        : '/api/blog/posts';
-
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setPosts(data);
-      } else {
-        console.error('Failed to fetch posts:', response.status);
-        setPosts([]);
-      }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedTopic]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  const {
+    data: posts = [],
+    isLoading,
+    isError,
+  } = trpc.blog.posts.useQuery(
+    {
+      topic: selectedTopic || undefined,
+      limit: 10,
+    },
+    { keepPreviousData: true }
+  );
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';
@@ -135,9 +110,15 @@ export default function Blog() {
 
       {/* Blog Posts */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {loading ? (
+        {isLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-500">Loading posts...</p>
+          </div>
+        ) : isError ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">
+              Unable to load posts right now. Please try again later.
+            </p>
           </div>
         ) : posts.length > 0 ? (
           <div className="grid gap-8 lg:grid-cols-2">

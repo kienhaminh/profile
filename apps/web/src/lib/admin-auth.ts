@@ -192,3 +192,92 @@ export function createTestAdminToken(
 
   return generateAdminToken(adminId);
 }
+
+function getCookieValueFromHeader(headers: Headers, name: string): string {
+  const cookieHeader = headers.get('cookie');
+  if (!cookieHeader) {
+    return '';
+  }
+
+  const cookies = cookieHeader.split(';');
+  for (const cookie of cookies) {
+    const [cookieName, ...rest] = cookie.trim().split('=');
+    if (cookieName === name) {
+      return decodeURIComponent(rest.join('='));
+    }
+  }
+
+  return '';
+}
+
+/**
+ * Extracts the admin authentication token from standard HTTP headers.
+ */
+export function extractAdminTokenFromHeaders(headers: Headers): string | null {
+  const cookieToken = getCookieValueFromHeader(headers, 'admin-token') || '';
+  const headerAuth = headers.get('authorization') || '';
+  const headerToken = headers.get('x-admin-token') || '';
+
+  const bearerToken = headerAuth.toLowerCase().startsWith('bearer ')
+    ? headerAuth.slice(7)
+    : '';
+
+  const token = cookieToken || bearerToken || headerToken;
+  return token || null;
+}
+
+/**
+ * Attempts to resolve the admin context from incoming request headers.
+ * Returns null when no valid admin token is provided.
+ */
+export async function getAdminFromHeaders(
+  headers: Headers
+): Promise<{ adminId: string } | null> {
+  const token = extractAdminTokenFromHeaders(headers);
+  if (!token) {
+    return null;
+  }
+
+  const configuredToken = process.env.ADMIN_API_TOKEN || '';
+  if (configuredToken && token === configuredToken) {
+    // Static tokens authenticate the request but do not reveal an admin identity.
+    return null;
+  }
+
+  try {
+    const { adminId } = verifyAdminToken(token);
+    const [admin] = await db
+      .select()
+      .from(adminUsers)
+      .where(eq(adminUsers.id, adminId))
+      .limit(1);
+
+    if (!admin) {
+      return null;
+    }
+
+    return { adminId: admin.id };
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return null;
+    }
+
+    // Normalize unexpected failures to null to keep context resolution tolerant.
+    return null;
+  }
+}
+
+/**
+ * Ensures that a valid admin identity is present in the supplied headers.
+ * Throws an UnauthorizedError if authentication fails.
+ */
+export async function requireAdminFromHeaders(
+  headers: Headers
+): Promise<{ adminId: string }> {
+  const admin = await getAdminFromHeaders(headers);
+  if (!admin) {
+    throw new UnauthorizedError('Missing or invalid admin token');
+  }
+
+  return admin;
+}

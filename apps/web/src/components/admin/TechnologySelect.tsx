@@ -3,14 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { generateSlug, isValidSlug } from '@/lib/slug';
-import { authFetch, authPost } from '@/lib/auth-client';
-
-interface Technology {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-}
+import { trpc } from '@/trpc/react';
 
 interface TechnologySelectProps {
   value: string[];
@@ -23,19 +16,28 @@ export function TechnologySelect({
   onChange,
   className = '',
 }: TechnologySelectProps) {
-  const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const utils = trpc.useUtils();
 
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchTechnologies(controller.signal);
-    return () => controller.abort();
-  }, []);
+  const {
+    data: technologies = [],
+    isLoading: isFetchingTechnologies,
+  } = trpc.technologies.list.useQuery(undefined, {
+    staleTime: 60_000,
+    onError: (err) => setError(err.message),
+  });
+
+  const createTechnologyMutation = trpc.technologies.create.useMutation({
+    onError: (err) => {
+      setError(err.message);
+    },
+  });
+
+  const isLoading = isFetchingTechnologies || createTechnologyMutation.isPending;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -51,25 +53,6 @@ export function TechnologySelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchTechnologies = async (signal?: AbortSignal) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authFetch('/api/technologies', { signal });
-      if (!response.ok) throw new Error('Failed to fetch technologies');
-      const data = await response.json();
-      setTechnologies(data);
-    } catch (err) {
-      // Skip state updates if the request was aborted
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const createTechnology = async (name: string) => {
     const slug = generateSlug(name);
 
@@ -81,25 +64,21 @@ export function TechnologySelect({
     }
 
     try {
-      setIsLoading(true);
       setError(null);
-      const response = await authPost('/api/technologies', { name, slug });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create technology');
-      }
-
-      const newTechnology = await response.json();
-      setTechnologies((prev) => [...prev, newTechnology]);
+      const newTechnology = await createTechnologyMutation.mutateAsync({
+        name,
+        slug,
+      });
+      utils.technologies.list.setData(undefined, (prev) => [
+        ...(prev ?? []),
+        newTechnology,
+      ]);
       onChange([...value, newTechnology.id]);
       setSearchQuery('');
       return newTechnology;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   };
 
