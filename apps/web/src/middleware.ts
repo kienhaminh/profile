@@ -63,5 +63,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: PROTECTED_ROUTES.map((route) => `${route}/:path*`),
+  matcher: [
+    '/api/blog/:path*',
+    '/api/projects/:path*',
+    '/api/hashtags/:path*',
+    '/api/topics/:path*',
+    '/api/technologies/:path*',
+  ],
 };

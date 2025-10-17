@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     );
 
     const posts = await getPosts({
-      status: 'PUBLISHED', // Only published posts for public API
+      status: 'published', // Only published posts for public API
       topic: topic || undefined,
       limit,
       offset,

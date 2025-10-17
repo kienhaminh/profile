@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
@@ -60,12 +60,17 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: '#000000',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
+  other: {
+    'theme-color': '#000000',
   },
 };
+
+export function generateViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+  };
+}
 
 export default function RootLayout({
   children,

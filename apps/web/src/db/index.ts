@@ -13,15 +13,15 @@ interface DatabaseConnectionConfig {
 
 // Custom error types for better error handling
 class DatabaseConnectionError extends Error {
-  constructor(message: string, cause?: Error) {
-    super(message, cause ? { cause } : undefined);
+  constructor(message: string, options?: { cause?: Error }) {
+    super(message, options);
     this.name = 'DatabaseConnectionError';
   }
 }
 
 class DatabaseURLParseError extends DatabaseConnectionError {
-  constructor(message: string, cause?: Error) {
-    super(message, cause ? { cause } : undefined);
+  constructor(message: string, options?: { cause?: Error }) {
+    super(message, options);
     this.name = 'DatabaseURLParseError';
   }
 }
@@ -39,7 +39,7 @@ function parseConnectionString(url: string): DatabaseConnectionConfig {
   } catch (error) {
     throw new DatabaseURLParseError(
       `Failed to parse database URL: ${error instanceof Error ? error.message : 'Invalid URL format'}`,
-      error instanceof Error ? error : undefined
+      error instanceof Error ? { cause: error } : undefined
     );
   }
 
@@ -88,7 +88,7 @@ function parseConnectionString(url: string): DatabaseConnectionConfig {
   } catch (error) {
     throw new DatabaseURLParseError(
       `Failed to decode password in database URL: ${error instanceof Error ? error.message : 'Invalid password encoding'}`,
-      error instanceof Error ? error : undefined
+      error instanceof Error ? { cause: error } : undefined
     );
   }
 

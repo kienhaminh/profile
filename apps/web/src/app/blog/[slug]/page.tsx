@@ -19,9 +19,9 @@ interface BlogPost {
 }
 
 interface BlogPostPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
@@ -37,7 +37,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     return () => {
       controller.abort();
     };
-  }, [params.slug]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check bookmark status from localStorage when post loads
   useEffect(() => {
@@ -52,7 +52,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/blog/posts/${params.slug}`, {
+      const { slug } = await params;
+      const response = await fetch(`/api/blog/posts/${slug}`, {
         signal,
       });
       if (response.ok) {

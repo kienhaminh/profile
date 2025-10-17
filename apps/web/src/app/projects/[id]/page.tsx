@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INFORMATION } from '@/constants/information';
@@ -199,11 +200,13 @@ export default function ProjectDetail() {
                       </h3>
                       <div className="grid gap-4">
                         {project.images.map((image, index) => (
-                          <img
+                          <Image
                             key={index}
                             src={image}
                             alt={`${project.title} screenshot ${index + 1}`}
                             className="rounded-lg shadow-md w-full"
+                            width={800}
+                            height={600}
                           />
                         ))}
                       </div>

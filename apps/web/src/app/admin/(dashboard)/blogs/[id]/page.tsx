@@ -31,7 +31,11 @@ interface BlogData {
   hashtags: Array<{ id: string }>;
 }
 
-export default function EditBlogPage({ params }: { params: { id: string } }) {
+export default function EditBlogPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
   const [blog, setBlog] = useState<BlogData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,13 +43,14 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchBlog();
-  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchBlog = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/blog/${params.id}`);
+      const { id } = await params;
+      const response = await fetch(`/api/blog/${id}`);
       if (!response.ok) throw new Error('Failed to fetch blog');
 
       const data = await response.json();
@@ -58,8 +63,10 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   };
 
   const handleSubmit = async (data: BlogFormData) => {
+    setIsLoading(true);
     try {
-      const response = await fetch(`/api/blog/${params.id}`, {
+      const { id } = await params;
+      const response = await fetch(`/api/blog/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

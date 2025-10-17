@@ -39,7 +39,7 @@ interface ProjectData {
 export default function EditProjectPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
   const [project, setProject] = useState<ProjectData | null>(null);
@@ -50,7 +50,8 @@ export default function EditProjectPage({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/projects/${params.id}`);
+      const { id } = await params;
+      const response = await fetch(`/api/projects/${id}`);
       if (!response.ok) throw new Error('Failed to fetch project');
 
       const data = await response.json();
@@ -60,7 +61,7 @@ export default function EditProjectPage({
     } finally {
       setIsLoading(false);
     }
-  }, [params.id]);
+  }, []);
 
   useEffect(() => {
     fetchProject();
@@ -102,7 +103,8 @@ export default function EditProjectPage({
         }
       }
 
-      const response = await authFetch(`/api/projects/${params.id}`, {
+      const { id } = await params;
+      const response = await authFetch(`/api/projects/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

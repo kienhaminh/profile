@@ -4,7 +4,6 @@ import { updateHashtagSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import { ZodError } from 'zod';
 
-export const runtime = 'nodejs';
 
 export async function PUT(
   request: NextRequest,

@@ -125,7 +125,7 @@ export function ProjectForm({
       if (errors.images) {
         setErrors((prev) => ({ ...prev, images: '' }));
       }
-    } catch (error) {
+    } catch {
       setErrors((prev) => ({
         ...prev,
         images: 'Please enter a valid URL',

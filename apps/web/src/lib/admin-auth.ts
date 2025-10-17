@@ -79,9 +79,7 @@ export function verifyAdminToken(token: string): {
     if (error instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError('JWT token expired');
     }
-     throw new UnauthorizedError('JWT verification failed');
-   }
- }
+    throw new UnauthorizedError('JWT verification failed');
   }
 }
 

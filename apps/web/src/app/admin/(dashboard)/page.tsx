@@ -68,8 +68,8 @@ export default function AdminDashboard() {
     }
   };
 
-  const publishedPosts = posts.filter((p) => p.status === 'PUBLISHED').length;
-  const draftPosts = posts.filter((p) => p.status === 'DRAFT').length;
+  const publishedPosts = posts.filter((p) => p.status === 'published').length;
+  const draftPosts = posts.filter((p) => p.status === 'draft').length;
 
   return (
     <div className="p-6">
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
                           <div className="flex gap-2 mt-2">
                             <span
                               className={`px-2 py-1 text-xs rounded ${
-                                post.status === 'PUBLISHED'
+                                post.status === 'published'
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}

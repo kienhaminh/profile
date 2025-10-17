@@ -10,8 +10,6 @@ import type {
   UpdateTechnologyRequest,
 } from '../lib/validation';
 import {
-  NotFoundError,
-  ConflictError,
   TechnologyNotFoundError,
   TechnologyConflictError,
 } from '../lib/error-utils';

@@ -3,14 +3,11 @@ import { updateTechnology, deleteTechnology } from '@/services/technology';
 import { updateTechnologySchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import {
-  NotFoundError,
-  ConflictError,
   TechnologyNotFoundError,
   TechnologyConflictError,
 } from '@/lib/error-utils';
 import { ZodError } from 'zod';
 
-export const runtime = 'nodejs';
 
 export async function PUT(
   request: NextRequest,
@@ -45,18 +42,6 @@ export async function PUT(
         { status: 409 }
       );
     }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: 'Not Found', message: error.message },
-        { status: 404 }
-      );
-    }
-    if (error instanceof ConflictError) {
-      return NextResponse.json(
-        { error: 'Conflict', message: error.message },
-        { status: 409 }
-      );
-    }
     const errorMessage =
       error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
@@ -85,21 +70,9 @@ export async function DELETE(
         { status: 404 }
       );
     }
-    if (error instanceof NotFoundError) {
-      return NextResponse.json(
-        { error: 'Not Found', message: error.message },
-        { status: 404 }
-      );
-    }
     if (error instanceof TechnologyConflictError) {
       return NextResponse.json(
         { error: 'Technology Conflict', message: error.message },
-        { status: 409 }
-      );
-    }
-    if (error instanceof ConflictError) {
-      return NextResponse.json(
-        { error: 'Conflict', message: error.message },
         { status: 409 }
       );
     }
@@ -111,3 +84,4 @@ export async function DELETE(
     );
   }
 }
+export const runtime = 'nodejs';

@@ -10,7 +10,6 @@ import { updateProjectSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import { ZodError } from 'zod';
 
-export const runtime = 'nodejs';
 
 export async function GET(
   request: NextRequest,
@@ -106,3 +105,4 @@ export async function DELETE(
     );
   }
 }
+export const runtime = 'nodejs';
