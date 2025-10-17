@@ -1,0 +1,96 @@
+---
+description: Centralize shared TypeScript types and schemas in apps/web/src/types and reuse via @/types
+globs: apps/web/src/**/*.ts,apps/web/src/**/*.tsx
+alwaysApply: false
+---
+
+# Shared Types and Models (`@/types`)
+
+Centralize reusable TypeScript types (interfaces, literal unions) and validation schemas under `apps/web/src/types/`. Import them via the `@/types/*` alias everywhere instead of redefining shapes inline.
+
+## Location
+
+```
+apps/web/src/types/
+├── index.ts        # barrel exports (optional, keep small)
+├── common.ts       # ultra-shared primitives (IDs, Slugs, Pagination)
+├── blog.ts         # blog-specific interfaces and zod schemas
+├── project.ts      # project-specific interfaces and zod schemas
+└── ...
+```
+
+## TSConfig alignment (apps/web/tsconfig.json)
+
+- **Path alias (`@/*`)**: The alias `@/*` maps to `apps/web/src/*` per `paths`. Import types as `@/types/...`.
+- **Strict mode** (`"strict": true`):
+  - Always annotate exported function return types and public APIs.
+  - Be explicit about nullability: prefer `field?: T` for optional, or `field: T | null` if `null` is a valid state.
+  - Avoid `any`; if unavoidable, use `unknown` and narrow.
+- **Isolated modules** (`"isolatedModules": true`):
+  - Use type-only imports/exports to avoid runtime artifacts: `import type { X } from "@/types/..."`, `export type { X }`.
+  - Avoid `const enum`; use literal unions (already preferred here).
+  - Keep `types` files side-effect free; no imperative initialization code besides Zod schema declarations.
+- **Bundler resolution** (`"moduleResolution": "bundler"`):
+  - Do not use `require` or Node-specific resolution in `types` modules.
+  - Use named exports; avoid default exports for types/schemas to keep tree-shakeability clear.
+- **Allow JS / JSX**: Prefer `.ts`/`.tsx` for shared models; avoid placing JS in `types/`.
+
+## Rules
+
+- Define object shapes as TypeScript interfaces; avoid duplicate definitions.
+- Use Zod for runtime validation; colocate the Zod schema with its interface.
+- Derive types from Zod schemas when helpful using `z.infer<typeof schema>`.
+- Import from `@/types/...` in components, services, API routes, and tests.
+- Keep components free of ad-hoc types; prefer importing shared ones.
+- Prefer literal unions over enums (see working guidelines).
+- Name request/response payloads explicitly (e.g., `CreateBlogInput`, `UpdateProjectInput`).
+- Use type-only imports and exports for type shapes: `import type {...} from "@/types/..."`, `export type {...}` from barrels.
+- In client components (`"use client"`), import only types from `@/types`. Import Zod schemas only in server code or API routes to avoid unnecessary client bundle weight.
+- Keep `types/index.ts` re-exports minimal and type-only to avoid dragging values into runtime graphs.
+
+## Import Examples
+
+```ts
+// Type-only imports (preferred)
+import type { Blog, BlogId, CreateBlogInput } from "@/types/blog";
+import type { Pagination, Uuid } from "@/types/common";
+
+// Importing a schema (do this in server/API code only)
+import { createBlogInputSchema } from "@/types/blog";
+```
+
+## Zod Pattern
+
+```ts
+// blog.ts
+import { z } from "zod";
+
+export const blogIdSchema = z.string().uuid();
+export type BlogId = z.infer<typeof blogIdSchema>;
+
+export const createBlogInputSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  content: z.string().min(1),
+});
+export type CreateBlogInput = z.infer<typeof createBlogInputSchema>;
+
+export interface Blog {
+  id: BlogId;
+  title: string;
+  slug: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+## Do / Don’t
+
+- Do: reuse `@/types` across UI, services, API, and tests.
+- Do: colocate Zod schema next to the interface it validates.
+- Do: re-export select types from `types/index.ts` if it improves DX.
+- Don’t: declare component-local interfaces for shared domain models.
+- Don’t: import from deep relative paths like `../../types/...`; use `@/types`.
+- Don’t: default-export types or schemas from `types/` modules; use named exports.
+- Don’t: import Zod schemas in client components unless absolutely required.
