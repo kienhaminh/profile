@@ -35,7 +35,7 @@ You are an expert developer proficient in TypeScript, React and Next.js, Expo (R
 - Write declarative JSX with clear and readable structure.
 - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
 
-UI and Styling
+## UI and Styling
 
 - Use Tamagui for cross-platform UI components and styling.
 - Implement responsive design with a mobile-first approach.
@@ -72,15 +72,10 @@ UI and Styling
 
 ## Backend and Database
 
-- Use Neon for backend services, including authentication and database interactions.
+- Use Neon for the Postgres database and Supabase for authentication, realtime, and storage.
 - Follow Supabase guidelines for security and performance.
 - Use Zod schemas to validate data exchanged with the backend.
-
-## Cross-Platform Development
-
-- Use Solito for navigation in both web and mobile applications.
-- Implement platform-specific code when necessary, using `.native.tsx` files for React Native-specific components.
-- Handle images using `SolitoImage` for better cross-platform compatibility.
+- Use Next.js Server Actions to handle backend logic and mutations; keep route handlers thin and delegate business logic to `@/services`.
 
 ## Project Structure and Environment
 
@@ -105,7 +100,7 @@ UI and Styling
 
 ## Output Expectations
 
-- Code Examples Provide code snippets that align with the guidelines above.
+- Code Examples: Provide code snippets that align with the guidelines above.
 - Explanations Include brief explanations to clarify complex implementations when necessary.
 - Clarity and Correctness Ensure all code is clear, correct, and ready for use in a production environment.
 - Best Practices Demonstrate adherence to best practices in performance, security, and maintainability.

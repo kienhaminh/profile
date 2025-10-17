@@ -6,6 +6,29 @@ import type {
   UpdateHashtagRequest,
 } from '../lib/validation';
 
+// Custom error classes for better error handling
+export class ConflictError extends Error {
+  constructor(message: string = 'Resource conflict') {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
+/**
+ * Helper function to check if an error is a unique constraint violation
+ */
+function isUniqueConstraintError(error: unknown): boolean {
+  const errorMessage = error instanceof Error ? error.message : '';
+  const errorCode =
+    error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  return (
+    errorCode === '23505' ||
+    String(errorMessage || '').includes('duplicate key value') ||
+    String(errorMessage || '').includes('unique constraint')
+  );
+}
+
 /**
  * Hashtag service - Pure functions for hashtag management
  * All functions follow functional programming principles:
@@ -27,16 +50,8 @@ export async function createHashtag(
     const [hashtag] = await db.insert(hashtags).values(newHashtag).returning();
     return hashtag;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '';
-    const errorCode =
-      error && typeof error === 'object' && 'code' in error ? error.code : '';
-    if (
-      errorCode === '23505' ||
-      String(errorMessage || '').includes('duplicate key value') ||
-      String(errorMessage || '').includes('unique constraint')
-    ) {
-      // Unique constraint violation
-      throw new Error('Hashtag with this name or slug already exists');
+    if (isUniqueConstraintError(error)) {
+      throw new ConflictError('Hashtag with this name or slug already exists');
     }
     throw error;
   }
@@ -92,15 +107,8 @@ export async function updateHashtag(
       .returning();
     return updatedHashtag;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '';
-    const errorCode =
-      error && typeof error === 'object' && 'code' in error ? error.code : '';
-    if (
-      errorCode === '23505' ||
-      String(errorMessage || '').includes('duplicate key value') ||
-      String(errorMessage || '').includes('unique constraint')
-    ) {
-      throw new Error('Hashtag with this name or slug already exists');
+    if (isUniqueConstraintError(error)) {
+      throw new ConflictError('Hashtag with this name or slug already exists');
     }
     throw error;
   }

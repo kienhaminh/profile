@@ -22,10 +22,7 @@ const nextConfig: NextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
+
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
@@ -34,6 +31,11 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value:
               'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value:
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';",
           },
         ],
       },

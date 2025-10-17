@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
       { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
@@ -47,19 +48,40 @@ export async function POST(request: NextRequest) {
     // Resolve authorId: use provided one, else find or create a default author
     let authorId = data.authorId || '';
     if (!authorId) {
-      const existing = await db.select().from(authorProfiles).limit(1);
-      if (existing.length > 0) {
-        authorId = existing[0].id;
-      } else {
-        const [created] = await db
-          .insert(authorProfiles)
-          .values({
-            name: 'Default Author',
-            bio: 'Auto-created for tests',
-            email: 'default@example.com',
-          })
-          .returning();
-        authorId = created.id;
+      import { eq } from 'drizzle-orm';
+
+      if (!authorId) {
+        const existing = await db
+          .select()
+          .from(authorProfiles)
+          .where(eq(authorProfiles.email, 'default@example.com'))
+          .limit(1);
+
+        if (existing.length > 0) {
+          authorId = existing[0].id;
+        } else {
+          const [created] = await db
+            .insert(authorProfiles)
+            .values({
+              name: 'Default Author',
+              bio: 'Auto-created for tests',
+              email: 'default@example.com',
+            })
+            .onConflictDoNothing()
+            .returning();
+
+          if (created) {
+            authorId = created.id;
+          } else {
+            // Conflict occurred, fetch the existing one
+            const [existing] = await db
+              .select()
+              .from(authorProfiles)
+              .where(eq(authorProfiles.email, 'default@example.com'))
+              .limit(1);
+            authorId = existing.id;
+          }
+        }
       }
     }
     const blog = await createBlog(data, authorId);
@@ -74,9 +96,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    const msg = String(errorMessage || '');
-    if (/already exists|duplicate key value|unique constraint/i.test(msg)) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
+
+    // Check for PostgreSQL unique constraint violation (error code 23505)
+    const isUniqueConstraintViolation =
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === '23505';
+
+    if (isUniqueConstraintViolation) {
       return NextResponse.json(
         { error: 'Conflict', message: errorMessage },
         { status: 409 }

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { GoogleAds } from '@/components/ads/GoogleAds';
+import DOMPurify from 'isomorphic-dompurify';
+import { Share2, Bookmark, BookmarkCheck } from 'lucide-react';
 
 interface BlogPost {
   id: string;
@@ -26,27 +28,57 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
-    fetchPost();
+    const controller = new AbortController();
+    fetchPost(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [params.slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchPost = async () => {
+  // Check bookmark status from localStorage when post loads
+  useEffect(() => {
+    if (post) {
+      const bookmarked = localStorage.getItem(`bookmark-${post.slug}`);
+      setIsBookmarked(bookmarked === 'true');
+    }
+  }, [post]);
+
+  const fetchPost = async (signal: AbortSignal) => {
     try {
-      const response = await fetch(`/api/blog/posts/${params.slug}`);
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`/api/blog/posts/${params.slug}`, {
+        signal,
+      });
       if (response.ok) {
         const data = await response.json();
-        setPost(data);
+        // Sanitize the content to prevent XSS attacks
+        const sanitizedContent = DOMPurify.sanitize(data.content);
+        setPost({ ...data, content: sanitizedContent });
       } else if (response.status === 404) {
         setError('Post not found');
       } else {
         setError('Failed to load post');
       }
     } catch (error) {
+      // Handle AbortError separately to avoid showing error for cancelled requests
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Post fetch was aborted');
+        return;
+      }
+
       console.error('Error fetching post:', error);
       setError('Failed to load post');
     } finally {
-      setLoading(false);
+      // Only update loading state if the request was not aborted
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -58,6 +90,59 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       day: 'numeric',
     });
   };
+
+  // Share handler with Web Share API fallback to clipboard
+  const handleShare = useCallback(async () => {
+    if (!post) return;
+
+    const shareData = {
+      title: post.title,
+      text: post.excerpt || `Check out this article: ${post.title}`,
+      url: window.location.href,
+    };
+
+    try {
+      // Try Web Share API first
+      if (navigator.share) {
+        await navigator.share(shareData);
+        alert('Post shared successfully!');
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Post URL copied to clipboard!');
+      }
+    } catch (error) {
+      // Handle cases where user cancels sharing or clipboard fails
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Share failed:', error);
+        alert('Share failed. Please try again.');
+      }
+    }
+  }, [post]);
+
+  // Bookmark handler with debouncing and localStorage persistence
+  const handleBookmark = useCallback(async () => {
+    if (!post) return;
+
+    const newBookmarkState = !isBookmarked;
+
+    // Update state immediately for responsive UI
+    setIsBookmarked(newBookmarkState);
+
+    // Persist to localStorage
+    try {
+      if (newBookmarkState) {
+        localStorage.setItem(`bookmark-${post.slug}`, 'true');
+      } else {
+        localStorage.removeItem(`bookmark-${post.slug}`);
+      }
+    } catch (error) {
+      // Revert state if localStorage fails
+      setIsBookmarked(!newBookmarkState);
+      console.error('Failed to update bookmark:', error);
+      alert('Failed to update bookmark. Please try again.');
+    }
+  }, [post, isBookmarked]);
 
   if (loading) {
     return (
@@ -99,7 +184,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link href="/" className="text-xl font-bold">
-                Kien Ha
+                {process.env.NEXT_PUBLIC_SITE_NAME || 'Kien Ha'}
               </Link>
             </div>
             <div className="flex items-center space-x-8">
@@ -113,7 +198,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
                 Blog
               </Link>
               <Link
-                href="mailto:kien@example.com"
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kien@example.com'}`}
                 className="text-gray-600 hover:text-gray-900"
               >
                 Contact
@@ -157,11 +242,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
 
         {/* Google Ads - Non-intrusive placement */}
-        <GoogleAds
-          slot={process.env.NEXT_PUBLIC_GOOGLE_ADS_SLOT_ID || ''}
-          format="auto"
-          responsive={true}
-        />
+        {(() => {
+          const adSlotId = process.env.NEXT_PUBLIC_GOOGLE_ADS_SLOT_ID;
+          return adSlotId && adSlotId.trim() !== '' ? (
+            <GoogleAds slot={adSlotId} format="auto" responsive={true} />
+          ) : null;
+        })()}
 
         <div className="mt-12 pt-8 border-t">
           <div className="flex justify-between items-center">
@@ -169,11 +255,32 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               <Button variant="outline">← Back to Blog</Button>
             </Link>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShare}
+                aria-label={`Share post: ${post.title}`}
+              >
+                <Share2 className="w-4 h-4 mr-2" />
                 Share
               </Button>
-              <Button variant="outline" size="sm">
-                Bookmark
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBookmark}
+                aria-label={
+                  isBookmarked
+                    ? `Remove bookmark for post: ${post.title}`
+                    : `Bookmark post: ${post.title}`
+                }
+                aria-pressed={isBookmarked}
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck className="w-4 h-4 mr-2" />
+                ) : (
+                  <Bookmark className="w-4 h-4 mr-2" />
+                )}
+                {isBookmarked ? 'Bookmarked' : 'Bookmark'}
               </Button>
             </div>
           </div>
@@ -189,7 +296,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               Interested in working together? Get in touch.
             </p>
             <div className="mt-6">
-              <Link href="mailto:kien@example.com">
+              <Link
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kien@example.com'}`}
+              >
                 <Button
                   variant="outline"
                   className="text-white border-white hover:bg-white hover:text-gray-900"

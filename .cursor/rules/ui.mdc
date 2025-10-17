@@ -29,7 +29,7 @@ You are an expert in UI and UX design principles for software development.
 - Ensure keyboard navigability for all interactive elements.
 - Test with various assistive technologies.
 
-## Performance Optimization
+## Performance — Asset & Load Optimization
 
 - Optimize images and assets to minimize load times.
 - Implement lazy loading for non-critical resources.
@@ -64,7 +64,7 @@ You are an expert in UI and UX design principles for software development.
 - Maintain consistent positioning of recurring elements.
 - Ensure visual consistency across different sections.
 
-## Testing and Iteration
+## User Testing & Feedback
 
 - Conduct A/B testing for critical design decisions.
 - Use heatmaps and session recordings to analyze user behavior.
@@ -108,7 +108,7 @@ You are an expert in UI and UX design principles for software development.
 - Provide adequate spacing between touch targets.
 - Consider hover states for desktop and focus states for touch/keyboard.
 
-## Performance
+## Performance — Monitoring & Metrics
 
 - Optimize assets for faster loading on mobile networks.
 - Use CSS animations instead of JavaScript when possible.
@@ -132,7 +132,7 @@ You are an expert in UI and UX design principles for software development.
 - Use appropriate input types for better mobile experiences.
 - Implement inline validation and clear error messaging.
 
-## Testing
+## A/B & Behavioral Analysis
 
 - Use browser developer tools to test responsiveness.
 - Test on actual devices, not just emulators.

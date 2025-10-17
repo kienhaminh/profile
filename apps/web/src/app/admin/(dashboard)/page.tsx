@@ -1,54 +1,73 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { db } from '@/db';
-import { posts as postsTable, postTopics, topics } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
+import { authFetch, authDelete } from '@/lib/auth-client';
+import type { PostWithTopics } from '@/services/posts';
 
-interface Post {
-  id: string;
-  title: string;
-  slug: string;
-  status: 'DRAFT' | 'PUBLISHED';
-  publishDate: string | null;
-  topics: Array<{ topic: { name: string } }>;
-}
+export default function AdminDashboard() {
+  const [posts, setPosts] = useState<PostWithTopics[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const router = useRouter();
 
-async function getPosts(): Promise<Post[]> {
-  const allPosts = await db
-    .select({
-      id: postsTable.id,
-      title: postsTable.title,
-      slug: postsTable.slug,
-      status: postsTable.status,
-      publishDate: postsTable.publishDate,
-    })
-    .from(postsTable);
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await authFetch('/api/admin/posts');
+      if (!response.ok) throw new Error('Failed to fetch posts');
+      const data = await response.json();
+      setPosts(data);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      logger.error('Failed to fetch posts:', err as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const postsWithTopics = await Promise.all(
-    allPosts.map(async (post) => {
-      const postTopicsData = await db
-        .select({
-          topic: {
-            name: topics.name,
-          },
-        })
-        .from(postTopics)
-        .innerJoin(topics, eq(postTopics.topicId, topics.id))
-        .where(eq(postTopics.postId, post.id));
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
-      return {
-        ...post,
-        publishDate: post.publishDate ? post.publishDate.toISOString() : null,
-        topics: postTopicsData,
-      };
-    })
-  );
+  const handleEdit = (postId: string) => {
+    router.push(`/admin/blogs/${postId}`);
+  };
 
-  return postsWithTopics;
-}
+  const handleDelete = async (post: PostWithTopics) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${post.title}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
 
-export default async function AdminDashboard() {
-  const posts = await getPosts();
+    setDeletingPostId(post.id);
+    try {
+      const response = await authDelete(`/api/admin/posts/${post.slug}`);
+
+      if (!response.ok) throw new Error('Failed to delete post');
+
+      // Remove the post from state
+      setPosts((prev) => prev.filter((p) => p.id !== post.id));
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An error occurred';
+      alert(`Error: ${errorMessage}`);
+      logger.error('Failed to delete post:', err as Error);
+    } finally {
+      setDeletingPostId(null);
+    }
+  };
+
   const publishedPosts = posts.filter((p) => p.status === 'PUBLISHED').length;
   const draftPosts = posts.filter((p) => p.status === 'DRAFT').length;
 
@@ -123,44 +142,66 @@ export default async function AdminDashboard() {
               <CardTitle>Blog Posts ({posts.length})</CardTitle>
             </CardHeader>
             <CardContent>
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
               <div className="space-y-4">
-                {posts.map((post) => (
-                  <div key={post.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-semibold">{post.title}</h3>
-                        <p className="text-sm text-gray-600">/{post.slug}</p>
-                        <div className="flex gap-2 mt-2">
-                          <span
-                            className={`px-2 py-1 text-xs rounded ${
-                              post.status === 'PUBLISHED'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {post.status}
-                          </span>
-                          {post.topics.map(({ topic }) => (
+                {isLoading ? (
+                  <p className="text-gray-500 text-center py-8">
+                    Loading posts...
+                  </p>
+                ) : (
+                  posts.map((post) => (
+                    <div key={post.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-semibold">{post.title}</h3>
+                          <p className="text-sm text-gray-600">/{post.slug}</p>
+                          <div className="flex gap-2 mt-2">
                             <span
-                              key={topic.name}
-                              className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                              className={`px-2 py-1 text-xs rounded ${
+                                post.status === 'PUBLISHED'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}
                             >
-                              {topic.name}
+                              {post.status}
                             </span>
-                          ))}
+                            {post.topics.map(({ topic }) => (
+                              <span
+                                key={topic.id}
+                                className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                              >
+                                {topic.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(post.id)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDelete(post)}
+                            disabled={deletingPostId === post.id}
+                          >
+                            {deletingPostId === post.id
+                              ? 'Deleting...'
+                              : 'Delete'}
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                        <Button size="sm" variant="destructive">
-                          Delete
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
                 {posts.length === 0 && (
                   <p className="text-gray-500 text-center py-8">
                     No posts found

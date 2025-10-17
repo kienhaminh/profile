@@ -1,9 +1,43 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INFORMATION } from '@/constants/information';
 
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  status: string;
+  technologies: Array<{ name: string }>;
+  liveUrl?: string | null;
+}
+
 export default function Home() {
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedProjects = async () => {
+      try {
+        const response = await fetch('/api/projects?limit=2&status=COMPLETED');
+        if (response.ok) {
+          const data = await response.json();
+          setFeaturedProjects(data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching featured projects:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProjects();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Skip to main content link for keyboard navigation */}
@@ -23,25 +57,22 @@ export default function Home() {
                 Kien Ha
               </Link>
             </div>
-            <div className="flex items-center space-x-8" role="menubar">
+            <div className="flex items-center space-x-8">
               <Link
                 href="/projects"
                 className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                role="menuitem"
               >
                 Projects
               </Link>
               <Link
                 href="/blog"
                 className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                role="menuitem"
               >
                 Blog
               </Link>
               <Link
-                href="mailto:kien@example.com"
+                href={`mailto:${INFORMATION.email}`}
                 className="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                role="menuitem"
                 aria-label="Contact via email"
               >
                 Contact
@@ -97,61 +128,99 @@ export default function Home() {
                 A selection of my recent work
               </p>
             </div>
-            <div className="mt-12 grid gap-8 lg:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>AI-Powered Portfolio</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    A modern portfolio website built with Next.js, featuring
-                    AI-generated content and analytics.
-                  </p>
-                  <div className="mt-4 flex gap-2">
-                    <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                      Next.js
-                    </span>
-                    <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
-                      TypeScript
-                    </span>
-                    <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
-                      AI
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <Button variant="outline" size="sm">
-                      View Project
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Machine Learning API</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">
-                    RESTful API for machine learning model inference with
-                    real-time predictions and monitoring.
-                  </p>
-                  <div className="mt-4 flex gap-2">
-                    <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
-                      Python
-                    </span>
-                    <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">
-                      FastAPI
-                    </span>
-                    <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                      ML
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <Button variant="outline" size="sm">
-                      View Project
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="mt-12">
+              {loading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Loading projects...</p>
+                </div>
+              ) : featuredProjects.length > 0 ? (
+                <div className="grid gap-8 lg:grid-cols-2">
+                  {featuredProjects.map((project) => (
+                    <Card key={project.id}>
+                      <CardHeader>
+                        <CardTitle>{project.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600">{project.description}</p>
+                        <div className="mt-4 flex gap-2">
+                          {project.technologies.slice(0, 3).map((tech) => (
+                            <span
+                              key={tech.name}
+                              className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                            >
+                              {tech.name}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-4">
+                          <Link href={`/projects/${project.id}`}>
+                            <Button variant="outline" size="sm">
+                              View Project
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-8 lg:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>AI-Powered Portfolio</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600">
+                        A modern portfolio website built with Next.js, featuring
+                        AI-generated content and analytics.
+                      </p>
+                      <div className="mt-4 flex gap-2">
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                          Next.js
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                          TypeScript
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 rounded">
+                          AI
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/projects">View Projects</Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Machine Learning API</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600">
+                        RESTful API for machine learning model inference with
+                        real-time predictions and monitoring.
+                      </p>
+                      <div className="mt-4 flex gap-2">
+                        <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
+                          Python
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">
+                          FastAPI
+                        </span>
+                        <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                          ML
+                        </span>
+                      </div>
+                      <div className="mt-4">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/projects">View Projects</Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -174,7 +243,7 @@ export default function Home() {
                 </p>
                 <div className="mt-4">
                   <Link href="/blog">
-                    <Button variant="outline">View All Posts</Button>
+                    <Button variant="outline">Visit Blog</Button>
                   </Link>
                 </div>
               </div>

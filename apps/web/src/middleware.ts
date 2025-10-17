@@ -3,18 +3,21 @@ import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 
 export const runtime = 'nodejs';
 
+// Protected API routes that require authentication for mutations
+const PROTECTED_ROUTES = [
+  '/api/blog',
+  '/api/projects',
+  '/api/hashtags',
+  '/api/topics',
+  '/api/technologies',
+] as const;
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
-  // Define protected API routes that require authentication for mutations
-  const protectedRoutes = [
-    '/api/blog',
-    '/api/projects',
-    '/api/hashtags',
-    '/api/topics',
-    '/api/technologies',
-  ];
+  // Use the shared protected routes constant
+  const protectedRoutes = [...PROTECTED_ROUTES];
 
   // Check if the request is to a protected route
   const isProtectedRoute = protectedRoutes.some((route) =>
@@ -26,19 +29,21 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedRoute && isMutationMethod) {
     try {
+      // First authenticate using the original request
+      await ensureAdminOrThrow(request);
+
       // Create a new request with token from cookie if not in header
       const token = request.cookies.get('admin-token')?.value;
-      if (token && !request.headers.get('authorization') && !request.headers.get('x-admin-token')) {
+      if (
+        token &&
+        !request.headers.get('authorization') &&
+        !request.headers.get('x-admin-token')
+      ) {
         const newHeaders = new Headers(request.headers);
         newHeaders.set('x-admin-token', token);
-        const modifiedRequest = new NextRequest(request.url, {
-          headers: newHeaders,
-          method: request.method,
-        });
-        await ensureAdminOrThrow(modifiedRequest);
-      } else {
-        await ensureAdminOrThrow(request);
+        return NextResponse.next({ request: { headers: newHeaders } });
       }
+
       return NextResponse.next();
     } catch (error) {
       if (error instanceof UnauthorizedError) {
@@ -58,11 +63,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/api/blog/:path*',
-    '/api/projects/:path*',
-    '/api/hashtags/:path*',
-    '/api/topics/:path*',
-    '/api/technologies/:path*',
-  ],
+  matcher: PROTECTED_ROUTES.map((route) => `${route}/:path*`),
 };

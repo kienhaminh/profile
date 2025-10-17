@@ -10,6 +10,8 @@ import {
 } from '../../src/db/schema';
 import { eq } from 'drizzle-orm';
 
+const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
 /**
  * Contract tests for Blog API
  * These tests verify the API endpoints match the OpenAPI specification
@@ -31,7 +33,7 @@ describe('Blog API Contract Tests', () => {
       .from(authorProfiles)
       .where(eq(authorProfiles.email, 'test@example.com'));
     if (testAuthors.length > 0) {
-      const testAuthorId = testAuthors[0].id;
+      testAuthorId = testAuthors[0].id;
       await db.delete(posts).where(eq(posts.authorId, testAuthorId));
       await db
         .delete(authorProfiles)
@@ -85,9 +87,7 @@ describe('Blog API Contract Tests', () => {
 
   describe('GET /api/blog', () => {
     it('should return a paginated list of blog posts', async () => {
-      const response = await fetch(
-        'http://localhost:3000/api/blog?page=0&limit=20'
-      );
+      const response = await fetch('${BASE_URL}/api/blog?page=0&limit=20');
       expect(response.status).toBe(200);
 
       const data = await response.json();
@@ -101,20 +101,33 @@ describe('Blog API Contract Tests', () => {
     });
 
     it('should filter blogs by status', async () => {
-      const response = await fetch(
-        'http://localhost:3000/api/blog?status=PUBLISHED'
-      );
-      expect(response.status).toBe(200);
+      // Fetch unfiltered blog list to compare
+      const unfilteredResponse = await fetch(`${BASE_URL}/api/blog`);
+      expect(unfilteredResponse.status).toBe(200);
+      const unfilteredData = await unfilteredResponse.json();
 
+      // Fetch filtered blog list (only PUBLISHED posts)
+      const response = await fetch('${BASE_URL}/api/blog?status=PUBLISHED');
+      expect(response.status).toBe(200);
       const data = await response.json();
+
+      // Verify all returned posts are PUBLISHED
       expect(data.data.every((post: any) => post.status === 'PUBLISHED')).toBe(
         true
       );
+
+      // If unfiltered data contains non-PUBLISHED posts, verify filter reduced results
+      const hasNonPublishedPosts = unfilteredData.data.some(
+        (post: any) => post.status !== 'PUBLISHED'
+      );
+      if (hasNonPublishedPosts) {
+        expect(data.data.length).toBeLessThan(unfilteredData.data.length);
+      }
     });
 
     it('should filter blogs by topic ID', async () => {
       const response = await fetch(
-        `http://localhost:3000/api/blog?topicId=${testTopicId}`
+        `${BASE_URL}/api/blog?topicId=${testTopicId}`
       );
       expect(response.status).toBe(200);
 
@@ -124,7 +137,7 @@ describe('Blog API Contract Tests', () => {
 
     it('should filter blogs by hashtag ID', async () => {
       const response = await fetch(
-        `http://localhost:3000/api/blog?hashtagId=${testHashtagId}`
+        `${BASE_URL}/api/blog?hashtagId=${testHashtagId}`
       );
       expect(response.status).toBe(200);
 
@@ -133,9 +146,7 @@ describe('Blog API Contract Tests', () => {
     });
 
     it('should search blogs by title and content', async () => {
-      const response = await fetch(
-        'http://localhost:3000/api/blog?search=test'
-      );
+      const response = await fetch('${BASE_URL}/api/blog?search=test');
       expect(response.status).toBe(200);
 
       const data = await response.json();
@@ -156,7 +167,7 @@ describe('Blog API Contract Tests', () => {
         hashtagIds: [testHashtagId],
       };
 
-      const response = await fetch('http://localhost:3000/api/blog', {
+      const response = await fetch(`${BASE_URL}/api/blog`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -187,7 +198,7 @@ describe('Blog API Contract Tests', () => {
         content: '',
       };
 
-      const response = await fetch('http://localhost:3000/api/blog', {
+      const response = await fetch(`${BASE_URL}/api/blog`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +218,7 @@ describe('Blog API Contract Tests', () => {
         authorId: testAuthorId,
       };
 
-      await fetch('http://localhost:3000/api/blog', {
+      await fetch(`${BASE_URL}/api/blog`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(blog1),
@@ -221,7 +232,7 @@ describe('Blog API Contract Tests', () => {
         authorId: testAuthorId,
       };
 
-      const response = await fetch('http://localhost:3000/api/blog', {
+      const response = await fetch('${BASE_URL}/api/blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(blog2),
@@ -233,9 +244,7 @@ describe('Blog API Contract Tests', () => {
 
   describe('GET /api/blog/:id', () => {
     it('should return a single blog post with relations', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/blog/${testBlogId}`
-      );
+      const response = await fetch(`${BASE_URL}/api/blog/${testBlogId}`);
       expect(response.status).toBe(200);
 
       const data = await response.json();
@@ -252,7 +261,7 @@ describe('Blog API Contract Tests', () => {
 
     it('should return 404 for non-existent blog', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      const response = await fetch(`http://localhost:3000/api/blog/${fakeId}`);
+      const response = await fetch(`${BASE_URL}/api/blog/${fakeId}`);
       expect(response.status).toBe(404);
     });
   });
@@ -265,16 +274,13 @@ describe('Blog API Contract Tests', () => {
         status: 'PUBLISHED',
       };
 
-      const response = await fetch(
-        `http://localhost:3000/api/blog/${testBlogId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updates),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/api/blog/${testBlogId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
 
       expect(response.status).toBe(200);
 
@@ -290,16 +296,13 @@ describe('Blog API Contract Tests', () => {
         hashtagIds: [],
       };
 
-      const response = await fetch(
-        `http://localhost:3000/api/blog/${testBlogId}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updates),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/api/blog/${testBlogId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
 
       expect(response.status).toBe(200);
 
@@ -310,7 +313,7 @@ describe('Blog API Contract Tests', () => {
 
     it('should return 404 for non-existent blog', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      const response = await fetch(`http://localhost:3000/api/blog/${fakeId}`, {
+      const response = await fetch(`${BASE_URL}/api/blog/${fakeId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: 'Updated' }),
@@ -322,19 +325,14 @@ describe('Blog API Contract Tests', () => {
 
   describe('DELETE /api/blog/:id', () => {
     it('should delete a blog post and cascade associations', async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/blog/${testBlogId}`,
-        {
-          method: 'DELETE',
-        }
-      );
+      const response = await fetch(`${BASE_URL}/api/blog/${testBlogId}`, {
+        method: 'DELETE',
+      });
 
       expect(response.status).toBe(204);
 
       // Verify blog is deleted
-      const getResponse = await fetch(
-        `http://localhost:3000/api/blog/${testBlogId}`
-      );
+      const getResponse = await fetch(`${BASE_URL}/api/blog/${testBlogId}`);
       expect(getResponse.status).toBe(404);
 
       // Verify cascade: associations should be removed
@@ -366,7 +364,7 @@ describe('Blog API Contract Tests', () => {
 
     it('should return 404 for non-existent blog', async () => {
       const fakeId = '00000000-0000-0000-0000-000000000000';
-      const response = await fetch(`http://localhost:3000/api/blog/${fakeId}`, {
+      const response = await fetch(`${BASE_URL}/api/blog/${fakeId}`, {
         method: 'DELETE',
       });
 

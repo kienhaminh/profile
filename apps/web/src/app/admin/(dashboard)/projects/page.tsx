@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 
 interface Project {
@@ -24,11 +24,7 @@ export default function ProjectsListPage() {
     search: '',
   });
 
-  useEffect(() => {
-    fetchProjects();
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -38,7 +34,7 @@ export default function ProjectsListPage() {
 
       const response = await fetch(`/api/projects?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch projects');
-      
+
       const data = await response.json();
       setProjects(data.items || []);
     } catch (err) {
@@ -46,7 +42,11 @@ export default function ProjectsListPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter.status, filter.search]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) {
@@ -54,19 +54,18 @@ export default function ProjectsListPage() {
     }
 
     try {
-      const token = localStorage.getItem('admin_token');
       const response = await fetch(`/api/projects/${id}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to delete project');
-      
+
       setProjects((prev) => prev.filter((project) => project.id !== id));
     } catch (err) {
-      alert(`Error: ${err instanceof Error ? err.message : 'An error occurred'}`);
+      alert(
+        `Error: ${err instanceof Error ? err.message : 'An error occurred'}`
+      );
     }
   };
 
@@ -88,13 +87,17 @@ export default function ProjectsListPage() {
             type="text"
             placeholder="Search projects..."
             value={filter.search}
-            onChange={(e) => setFilter((prev) => ({ ...prev, search: e.target.value }))}
+            onChange={(e) =>
+              setFilter((prev) => ({ ...prev, search: e.target.value }))
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
         <select
           value={filter.status}
-          onChange={(e) => setFilter((prev) => ({ ...prev, status: e.target.value }))}
+          onChange={(e) =>
+            setFilter((prev) => ({ ...prev, status: e.target.value }))
+          }
           className="px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="">All Status</option>

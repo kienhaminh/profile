@@ -10,10 +10,10 @@ const parseConnectionString = (url: string) => {
   const parsed = new URL(url);
   return {
     host: parsed.hostname,
-    port: parseInt(parsed.port, 10),
+    port: parsed.port ? parseInt(parsed.port, 10) : 5432,
     database: parsed.pathname.slice(1),
     user: parsed.username,
-    password: decodeURIComponent(parsed.password),
+    password: parsed.password ? decodeURIComponent(parsed.password) : '',
   };
 };
 
@@ -27,6 +27,12 @@ const connectionConfig = process.env.DATABASE_URL
       password: 'postgres',
     };
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 async function runMigrations(): Promise<void> {
   const pool = new Pool(connectionConfig);
   const db = drizzle(pool);
@@ -34,7 +40,7 @@ async function runMigrations(): Promise<void> {
   console.log('Running migrations...');
 
   try {
-    await migrate(db, { migrationsFolder: './drizzle' });
+    await migrate(db, { migrationsFolder: path.join(__dirname, '../drizzle') });
     console.log('Migrations completed successfully');
   } catch (error) {
     console.error('Migration failed:', error);

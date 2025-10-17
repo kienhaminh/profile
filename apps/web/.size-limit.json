@@ -1,6 +1,6 @@
 [
   {
-    "name": "Client JS (First Load)",
+    "name": "All Static Client JS",
     "path": ".next/static/**/*.js",
     "limit": "200 KB"
   },

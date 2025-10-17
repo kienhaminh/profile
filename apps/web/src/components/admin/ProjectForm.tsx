@@ -57,18 +57,20 @@ export function ProjectForm({
   const [imageInput, setImageInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
-    if (!initialData?.slug && formData.title) {
+    if (!initialData?.slug && formData.title && !isSlugManuallyEdited) {
       const generatedSlug = formData.title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
         .trim();
       setFormData((prev) => ({ ...prev, slug: generatedSlug }));
     }
-  }, [formData.title, initialData?.slug]);
+  }, [formData.title, initialData?.slug, isSlugManuallyEdited]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -76,6 +78,10 @@ export function ProjectForm({
     >
   ) => {
     const { name, value, type } = e.target;
+
+    if (name === 'slug') {
+      setIsSlugManuallyEdited(true);
+    }
 
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -90,13 +96,36 @@ export function ProjectForm({
   };
 
   const handleAddImage = () => {
-    if (imageInput.trim() && /^https?:\/\/.+/.test(imageInput)) {
+    const trimmedInput = imageInput.trim();
+
+    if (!trimmedInput) {
+      setErrors((prev) => ({
+        ...prev,
+        images: 'Please enter a valid URL',
+      }));
+      return;
+    }
+
+    try {
+      const url = new URL(trimmedInput);
+
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        setErrors((prev) => ({
+          ...prev,
+          images: 'Please enter a valid URL',
+        }));
+        return;
+      }
+
       setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, imageInput.trim()],
+        images: [...prev.images, trimmedInput],
       }));
       setImageInput('');
-    } else {
+      if (errors.images) {
+        setErrors((prev) => ({ ...prev, images: '' }));
+      }
+    } catch (error) {
       setErrors((prev) => ({
         ...prev,
         images: 'Please enter a valid URL',

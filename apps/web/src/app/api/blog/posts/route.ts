@@ -5,8 +5,15 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const topic = searchParams.get('topic');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    // parse and sanitize query parameters
+    const limit = Math.max(
+      1,
+      Math.min(100, parseInt(searchParams.get('limit') || '10', 10) || 10)
+    );
+    const offset = Math.max(
+      0,
+      parseInt(searchParams.get('offset') || '0', 10) || 0
+    );
 
     const posts = await getPosts({
       status: 'PUBLISHED', // Only published posts for public API

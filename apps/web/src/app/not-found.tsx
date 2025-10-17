@@ -14,12 +14,12 @@ export default function NotFound() {
           moved.
         </p>
         <div className="flex gap-4 justify-center">
-          <Link href="/">
-            <Button>Go Home</Button>
-          </Link>
-          <Link href="/blog">
-            <Button variant="outline">View Blog</Button>
-          </Link>
+          <Button asChild>
+            <Link href="/">Go Home</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/blog">View Blog</Link>
+          </Button>
         </div>
       </div>
     </div>

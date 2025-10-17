@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { generateSlug, isValidSlug } from '@/lib/slug';
+import { authFetch, authPost } from '@/lib/auth-client';
 
 interface Technology {
   id: string;
@@ -30,7 +32,9 @@ export function TechnologySelect({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchTechnologies();
+    const controller = new AbortController();
+    fetchTechnologies(controller.signal);
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -47,15 +51,19 @@ export function TechnologySelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchTechnologies = async () => {
+  const fetchTechnologies = async (signal?: AbortSignal) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/technologies');
+      const response = await authFetch('/api/technologies', { signal });
       if (!response.ok) throw new Error('Failed to fetch technologies');
       const data = await response.json();
       setTechnologies(data);
     } catch (err) {
+      // Skip state updates if the request was aborted
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
@@ -63,19 +71,19 @@ export function TechnologySelect({
   };
 
   const createTechnology = async (name: string) => {
-    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
+    const slug = generateSlug(name);
+
+    // Validate slug before sending to backend
+    if (!isValidSlug(slug)) {
+      throw new Error(
+        `Unable to generate a valid slug for "${name}". Please use a different name.`
+      );
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/technologies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({ name, slug }),
-      });
+      const response = await authPost('/api/technologies', { name, slug });
 
       if (!response.ok) {
         const error = await response.json();
@@ -98,7 +106,7 @@ export function TechnologySelect({
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       e.preventDefault();
-      
+
       const existingTechnology = filteredTechnologies.find(
         (t) => t.name.toLowerCase() === searchQuery.toLowerCase()
       );
@@ -138,18 +146,30 @@ export function TechnologySelect({
     technology.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedTechnologies = technologies.filter((t) => value.includes(t.id));
-  const unselectedTechnologies = filteredTechnologies.filter(
-    (t) => !value.includes(t.id)
+  const selectedTechnologies = technologies.filter((technology) =>
+    value.includes(technology.id)
   );
 
+  const unselectedTechnologies = filteredTechnologies.filter(
+    (technology) => !value.includes(technology.id)
+  );
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div
+      className={`relative ${className}`}
+      ref={dropdownRef}
+      role="combobox"
+      aria-expanded={isOpen}
+      aria-controls="technology-dropdown"
+      aria-haspopup="listbox"
+      aria-label="Select technologies"
+    >
       <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md bg-white min-h-[42px]">
         {selectedTechnologies.map((technology) => (
           <span
             key={technology.id}
             className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-800 rounded"
+            role="option"
+            aria-selected="true"
           >
             {technology.name}
             <button
@@ -168,18 +188,21 @@ export function TechnologySelect({
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder={value.length === 0 ? 'Search or create technologies...' : ''}
+          placeholder={
+            value.length === 0 ? 'Search or create technologies...' : ''
+          }
           className="flex-1 min-w-[120px] outline-none text-sm"
           disabled={isLoading}
         />
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 mt-1">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <div
+          id="technology-dropdown"
+          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+        >
           {isLoading ? (
             <div className="p-3 text-sm text-gray-500">Loading...</div>
           ) : unselectedTechnologies.length > 0 ? (

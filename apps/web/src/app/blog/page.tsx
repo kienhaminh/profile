@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,11 +19,8 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
 
-  useEffect(() => {
-    fetchPosts();
-  }, [selectedTopic]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
     try {
       const url = selectedTopic
         ? `/api/blog/posts?topic=${encodeURIComponent(selectedTopic)}`
@@ -33,13 +30,21 @@ export default function Blog() {
       if (response.ok) {
         const data = await response.json();
         setPosts(data);
+      } else {
+        console.error('Failed to fetch posts:', response.status);
+        setPosts([]);
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedTopic]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '';

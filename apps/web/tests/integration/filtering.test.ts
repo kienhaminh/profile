@@ -29,8 +29,8 @@ describe('Filtering and Search Integration Tests', () => {
   let hashtagAdvancedId: string;
   let techReactId: string;
   let techNodeId: string;
-  let blogIds: string[] = [];
-  let projectIds: string[] = [];
+  const blogIds: string[] = [];
+  const projectIds: string[] = [];
 
   beforeAll(async () => {
     // Setup author

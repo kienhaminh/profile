@@ -22,7 +22,12 @@ function sendToAnalytics(metric: Metric): void {
   }
 }
 
+let initialized = false;
+
 export function reportWebVitals(): void {
+  if (initialized) return;
+  initialized = true;
+
   try {
     onCLS(sendToAnalytics);
     onFCP(sendToAnalytics);

@@ -47,7 +47,7 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
       setError(null);
       const response = await fetch(`/api/blog/${params.id}`);
       if (!response.ok) throw new Error('Failed to fetch blog');
-      
+
       const data = await response.json();
       setBlog(data);
     } catch (err) {
@@ -58,25 +58,45 @@ export default function EditBlogPage({ params }: { params: { id: string } }) {
   };
 
   const handleSubmit = async (data: BlogFormData) => {
-    const token = localStorage.getItem('admin_token');
-    
     const response = await fetch(`/api/blog/${params.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({
         ...data,
-        publishDate: data.publishDate ? new Date(data.publishDate).toISOString() : null,
+        publishDate: data.publishDate
+          ? new Date(data.publishDate).toISOString()
+          : null,
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update blog post');
+    // Check for network errors first
+    if (!response) {
+      throw new Error('Network error: Unable to connect to server');
     }
 
+    // Parse response as JSON (this can also throw)
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch {
+      if (!response.ok) {
+        throw new Error(
+          `Server error (${response.status}): ${response.statusText}`
+        );
+      }
+      throw new Error('Invalid response from server');
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        errorData.message || `Failed to update blog post (${response.status})`
+      );
+    }
+
+    // Success - navigate to blogs list
     router.push('/admin/blogs');
   };
 

@@ -60,7 +60,8 @@ export function BlogForm({
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
-        .trim();
+        .trim()
+        .replace(/^-+|-+$/g, '');
       setFormData((prev) => ({ ...prev, slug: generatedSlug }));
     }
   }, [formData.title, initialData?.slug]);
@@ -100,8 +101,10 @@ export function BlogForm({
     if (!formData.content.trim()) {
       newErrors.content = 'Content is required';
     }
-
-    if (formData.coverImage && !/^https?:\/\/.+/.test(formData.coverImage)) {
+    if (
+      formData.coverImage &&
+      !/^https?:\/\/[^\s]+\.[^\s]+/.test(formData.coverImage)
+    ) {
       newErrors.coverImage = 'Cover image must be a valid URL';
     }
 

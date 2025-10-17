@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { authFetch, authDelete } from '@/lib/auth-client';
 
 interface Blog {
   id: string;
@@ -23,11 +24,7 @@ export default function BlogsListPage() {
     search: '',
   });
 
-  useEffect(() => {
-    fetchBlogs();
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -35,17 +32,21 @@ export default function BlogsListPage() {
       if (filter.status) params.append('status', filter.status);
       if (filter.search) params.append('search', filter.search);
 
-      const response = await fetch(`/api/blog?${params.toString()}`);
+      const response = await authFetch(`/api/admin/posts?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch blogs');
-      
+
       const data = await response.json();
-      setBlogs(data.items || []);
+      setBlogs(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filter.status, filter.search]);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
 
   const handleDelete = async (id: string, title: string) => {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) {
@@ -53,19 +54,15 @@ export default function BlogsListPage() {
     }
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(`/api/blog/${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await authDelete(`/api/admin/posts/${id}`);
 
       if (!response.ok) throw new Error('Failed to delete blog');
-      
+
       setBlogs((prev) => prev.filter((blog) => blog.id !== id));
     } catch (err) {
-      alert(`Error: ${err instanceof Error ? err.message : 'An error occurred'}`);
+      alert(
+        `Error: ${err instanceof Error ? err.message : 'An error occurred'}`
+      );
     }
   };
 
@@ -87,13 +84,17 @@ export default function BlogsListPage() {
             type="text"
             placeholder="Search blogs..."
             value={filter.search}
-            onChange={(e) => setFilter((prev) => ({ ...prev, search: e.target.value }))}
+            onChange={(e) =>
+              setFilter((prev) => ({ ...prev, search: e.target.value }))
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
           />
         </div>
         <select
           value={filter.status}
-          onChange={(e) => setFilter((prev) => ({ ...prev, status: e.target.value }))}
+          onChange={(e) =>
+            setFilter((prev) => ({ ...prev, status: e.target.value }))
+          }
           className="px-3 py-2 border border-gray-300 rounded-md"
         >
           <option value="">All Status</option>

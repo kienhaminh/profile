@@ -1,42 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError, type ZodIssue } from 'zod';
 import {
   updatePost,
   deletePost,
   type PostStatus,
   type UpdatePostData,
 } from '@/services/posts';
-
-// Mock auth middleware - in real app, use JWT verification
-function getAuthToken(request: NextRequest): string | null {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  return authHeader.substring(7);
-}
+import { ensureAdminOrThrow } from '@/lib/admin-auth';
+import { updatePostSchema } from '@/lib/validation';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const token = getAuthToken(request);
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Ensure admin authentication and authorization
+    await ensureAdminOrThrow(request);
 
     const { slug } = await params;
     const body = await request.json();
-    const { title, content, excerpt, status, publishDate, coverImage, topics } =
-      body;
 
+    // Validate the request body using Zod schema
+    let validatedData;
+    try {
+      validatedData = updatePostSchema.parse(body);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return NextResponse.json(
+          {
+            error: 'Validation failed',
+            details: (error as ZodError).issues.map((err: ZodIssue) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
+          },
+          { status: 400 }
+        );
+      }
+      throw error;
+    }
+
+    // Build updateData from validated values with proper type conversion
     const updateData: UpdatePostData = {};
-    if (title !== undefined) updateData.title = title;
-    if (content !== undefined) updateData.content = content;
-    if (excerpt !== undefined) updateData.excerpt = excerpt;
-    if (status !== undefined) updateData.status = status as PostStatus;
-    if (publishDate !== undefined)
-      updateData.publishDate = new Date(publishDate);
-    if (coverImage !== undefined) updateData.coverImage = coverImage;
-    if (topics !== undefined) updateData.topics = topics;
+    if (validatedData.title !== undefined)
+      updateData.title = validatedData.title;
+    if (validatedData.content !== undefined)
+      updateData.content = validatedData.content;
+    if (validatedData.excerpt !== undefined)
+      updateData.excerpt = validatedData.excerpt;
+    if (validatedData.status !== undefined) {
+      // Runtime validation: ensure status is one of the allowed PostStatus values
+      const validStatuses = ['draft', 'published', 'archived'] as const;
+      if (!validStatuses.includes(validatedData.status)) {
+        return NextResponse.json(
+          {
+            error:
+              'Invalid status value. Must be one of: draft, published, archived',
+          },
+          { status: 400 }
+        );
+      }
+      updateData.status = validatedData.status as PostStatus;
+    }
+    if (validatedData.publishDate !== undefined) {
+      updateData.publishDate = new Date(validatedData.publishDate);
+    }
+    if (validatedData.coverImage !== undefined)
+      updateData.coverImage = validatedData.coverImage;
+    if (validatedData.topics !== undefined)
+      updateData.topics = validatedData.topics;
 
     const post = await updatePost(slug, updateData);
 
@@ -59,10 +91,8 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const token = getAuthToken(request);
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Ensure admin authentication and authorization
+    await ensureAdminOrThrow(request);
 
     const { slug } = await params;
     const success = await deletePost(slug);
@@ -71,7 +101,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ message: 'Post deleted successfully' });
   } catch (error) {
     console.error('Error deleting post:', error);
     return NextResponse.json(

@@ -1,15 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  FileText, 
-  Hash, 
-  FolderTree, 
-  LogOut 
+import {
+  LayoutDashboard,
+  FileText,
+  Hash,
+  FolderTree,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { authPost } from '@/lib/auth-client';
 
 const menuItems = [
   {
@@ -37,11 +39,27 @@ const menuItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   const handleSignOut = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' });
-    router.push('/admin/login');
-    router.refresh();
+    try {
+      setError(null);
+      const response = await authPost('/api/admin/logout');
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Logout failed');
+      }
+
+      // Only redirect on successful logout
+      router.push('/admin/login');
+      router.refresh();
+    } catch (err) {
+      console.error('Logout error:', err);
+      setError(
+        err instanceof Error ? err.message : 'An error occurred during logout'
+      );
+    }
   };
 
   return (
@@ -49,13 +67,13 @@ export function Sidebar() {
       <div className="p-6">
         <h2 className="text-2xl font-bold">Admin Panel</h2>
       </div>
-      
+
       <nav className="flex-1 px-4">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-            
+
             return (
               <li key={item.href}>
                 <Link
@@ -84,6 +102,7 @@ export function Sidebar() {
           <LogOut className="w-5 h-5" />
           <span>Sign Out</span>
         </Button>
+        {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
       </div>
     </div>
   );

@@ -22,27 +22,35 @@ export default function NewProjectPage() {
   const router = useRouter();
 
   const handleSubmit = async (data: ProjectFormData) => {
-    const token = localStorage.getItem('admin_token');
-    
-    const response = await fetch('/api/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...data,
-        startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
-        endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
-      }),
-    });
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...data,
+          startDate: data.startDate
+            ? new Date(data.startDate).toISOString()
+            : null,
+          endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create project');
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ message: 'Failed to create project' }));
+        throw new Error(error.message || 'Failed to create project');
+      }
+
+      router.push('/admin/projects');
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      // Consider adding user-facing error notification here
+      throw error;
     }
-
-    router.push('/admin/projects');
   };
 
   return (

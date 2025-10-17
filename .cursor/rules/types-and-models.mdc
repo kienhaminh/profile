@@ -29,7 +29,7 @@ apps/web/src/types/
 - **Isolated modules** (`"isolatedModules": true`):
   - Use type-only imports/exports to avoid runtime artifacts: `import type { X } from "@/types/..."`, `export type { X }`.
   - Avoid `const enum`; use literal unions (already preferred here).
-  - Keep `types` files side‑effect free; no top-level runtime code besides Zod schema declarations.
+  - Keep `types` files side-effect free; no imperative initialization code besides Zod schema declarations.
 - **Bundler resolution** (`"moduleResolution": "bundler"`):
   - Do not use `require` or Node-specific resolution in `types` modules.
   - Use named exports; avoid default exports for types/schemas to keep tree-shakeability clear.

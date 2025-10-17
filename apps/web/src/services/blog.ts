@@ -16,6 +16,28 @@ import type {
 // Type for Drizzle transaction - inferred from db type
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
+// Custom error classes for better error handling
+export class NotFoundError extends Error {
+  constructor(message: string = 'Resource not found') {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+export class ConflictError extends Error {
+  constructor(message: string = 'Resource conflict') {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}
+
+// Helper function to convert validation status to database status
+function convertValidationStatusToDbStatus(
+  validationStatus: 'DRAFT' | 'PUBLISHED'
+): 'draft' | 'published' {
+  return validationStatus.toLowerCase() as 'draft' | 'published';
+}
+
 // Types for junction table objects with relations (from Drizzle 'with' clause)
 interface PostTopicWithRelation {
   postId: string;
@@ -67,7 +89,9 @@ export async function createBlog(
       title: data.title,
       slug: data.slug,
       content: data.content,
-      status: data.status || 'DRAFT',
+      status: data.status
+        ? convertValidationStatusToDbStatus(data.status)
+        : 'draft',
       publishDate: data.publishDate ? new Date(data.publishDate) : null,
       excerpt: data.excerpt || null,
       readTime: data.readTime || null,
@@ -109,8 +133,7 @@ export async function createBlog(
         errorCode === '23505' ||
         errorMessage?.includes('duplicate key value') ||
         errorMessage?.includes('unique constraint') ||
-        errorMessage?.includes('already exists') ||
-        errorMessage?.includes('duplicate-slug-test')
+        errorMessage?.includes('already exists')
       ) {
         throw new Error('Blog post with this slug already exists');
       }
@@ -153,7 +176,7 @@ export async function getBlogById(
   });
 
   if (!post) {
-    throw new Error('Blog post not found');
+    throw new NotFoundError('Blog post not found');
   }
 
   // Transform to PostWithRelations
@@ -175,7 +198,9 @@ export async function listBlogs(
   const conditions = [];
 
   if (status) {
-    conditions.push(eq(posts.status, status));
+    conditions.push(
+      eq(posts.status, convertValidationStatusToDbStatus(status))
+    );
   }
 
   if (topicId) {
@@ -276,7 +301,7 @@ export async function updateBlog(
     // Check if post exists
     const existing = await tx.select().from(posts).where(eq(posts.id, id));
     if (existing.length === 0) {
-      throw new Error('Blog post not found');
+      throw new NotFoundError('Blog post not found');
     }
 
     // Build update object
@@ -284,7 +309,8 @@ export async function updateBlog(
     if (data.title !== undefined) updateData.title = data.title;
     if (data.slug !== undefined) updateData.slug = data.slug;
     if (data.content !== undefined) updateData.content = data.content;
-    if (data.status !== undefined) updateData.status = data.status;
+    if (data.status !== undefined)
+      updateData.status = convertValidationStatusToDbStatus(data.status);
     if (data.publishDate !== undefined) {
       updateData.publishDate = data.publishDate
         ? new Date(data.publishDate)
@@ -307,7 +333,7 @@ export async function updateBlog(
             ? error.code
             : '';
         if (errorCode === '23505') {
-          throw new Error('Blog post with this slug already exists');
+          throw new ConflictError('Blog post with this slug already exists');
         }
         throw error;
       }
@@ -349,11 +375,14 @@ export async function updateBlog(
 }
 
 export async function deleteBlog(id: string): Promise<void> {
-  const existing = await db.select().from(posts).where(eq(posts.id, id));
-  if (existing.length === 0) {
-    throw new Error('Blog post not found');
-  }
+  return await db.transaction(async (tx) => {
+    // Check if post exists within the transaction
+    const existing = await tx.select().from(posts).where(eq(posts.id, id));
+    if (existing.length === 0) {
+      throw new NotFoundError('Blog post not found');
+    }
 
-  // Cascade delete will handle associations automatically
-  await db.delete(posts).where(eq(posts.id, id));
+    // Delete the post - cascade delete will handle associations automatically
+    await tx.delete(posts).where(eq(posts.id, id));
+  });
 }

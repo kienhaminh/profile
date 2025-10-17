@@ -1,8 +1,73 @@
 import { db } from '@/db';
-import { posts, topics, postTopics } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { posts, topics, postTopics, Topic } from '@/db/schema';
+import { eq, desc, inArray, and } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
-export type PostStatus = 'DRAFT' | 'PUBLISHED';
+type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+export type PostStatus = 'draft' | 'published' | 'archived';
+
+/**
+ * Helper function to batch process topics - handles existing topic lookup and creation of missing topics
+ * @param tx Database transaction
+ * @param topicNames Array of topic names to process
+ * @returns Array of topic IDs in the same order as topicNames
+ */
+async function processTopicsBatch(
+  tx: DrizzleTransaction,
+  topicNames: string[]
+): Promise<string[]> {
+  if (topicNames.length === 0) {
+    return [];
+  }
+
+  // Batch query all topics at once
+  const existingTopics = await tx
+    .select()
+    .from(topics)
+    .where(inArray(topics.name, topicNames));
+
+  // Create a map for quick lookup of existing topics
+  const existingTopicsMap = new Map<string, string>();
+  existingTopics.forEach((topic: Topic) => {
+    existingTopicsMap.set(topic.name, topic.id);
+  });
+
+  // Find missing topics
+  const missingTopics = topicNames.filter(
+    (name) => !existingTopicsMap.has(name)
+  );
+
+  // Batch insert missing topics
+  if (missingTopics.length > 0) {
+    await tx.insert(topics).values(
+      missingTopics.map((name) => ({
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, '-'),
+      }))
+    );
+  }
+
+  // Get all topic IDs (both existing and newly created)
+  const allTopics = await tx
+    .select()
+    .from(topics)
+    .where(inArray(topics.name, topicNames));
+
+  // Return topic IDs in the same order as topicNames
+  const topicIdMap = new Map<string, string>();
+  allTopics.forEach((topic: Topic) => {
+    topicIdMap.set(topic.name, topic.id);
+  });
+
+  return topicNames.map((name) => {
+    const id = topicIdMap.get(name);
+    if (!id) {
+      throw new Error(`Failed to find or create topic: ${name}`);
+    }
+    return id;
+  });
+}
 
 export interface CreatePostData {
   title: string;
@@ -54,60 +119,43 @@ export async function createPost(
 ): Promise<PostWithTopics> {
   const { topics: topicNames, ...postData } = data;
 
-  // Create the post
-  const [newPost] = await db
-    .insert(posts)
-    .values({
-      ...postData,
-      status: postData.status,
-    })
-    .returning();
+  return await db.transaction(async (tx) => {
+    // Create the post
+    const [newPost] = await tx
+      .insert(posts)
+      .values({
+        ...postData,
+        status: postData.status,
+      })
+      .returning();
 
-  if (!newPost) {
-    throw new Error('Failed to create post');
-  }
-
-  // Handle topics
-  const topicIds: string[] = [];
-  for (const topicName of topicNames) {
-    const slug = topicName.toLowerCase().replace(/\s+/g, '-');
-
-    // Check if topic exists
-    const existingTopic = await db
-      .select()
-      .from(topics)
-      .where(eq(topics.name, topicName))
-      .limit(1);
-
-    let topicId: string;
-    if (existingTopic.length > 0) {
-      topicId = existingTopic[0].id;
-    } else {
-      // Create new topic
-      const [newTopic] = await db
-        .insert(topics)
-        .values({
-          name: topicName,
-          slug,
-        })
-        .returning();
-
-      if (!newTopic) {
-        throw new Error(`Failed to create topic: ${topicName}`);
-      }
-      topicId = newTopic.id;
+    if (!newPost) {
+      throw new Error('Failed to create post');
     }
 
-    topicIds.push(topicId);
+    // Process topics and get topic IDs
+    const topicIds = await processTopicsBatch(tx, topicNames);
 
-    // Create post-topic relationship
-    await db.insert(postTopics).values({
-      postId: newPost.id,
-      topicId,
-    });
-  }
+    // Batch insert all post-topic relationships
+    if (topicIds.length > 0) {
+      await tx.insert(postTopics).values(
+        topicIds.map((topicId) => ({
+          postId: newPost.id,
+          topicId,
+        }))
+      );
+    }
 
-  return getPostBySlug(newPost.slug) as Promise<PostWithTopics>;
+    const createdPost = await getPostBySlug(newPost.slug);
+
+    if (!createdPost) {
+      throw new Error(
+        `Failed to retrieve created post with slug: ${newPost.slug}`
+      );
+    }
+
+    return createdPost;
+  });
 }
 
 export async function getPostBySlug(
@@ -129,6 +177,7 @@ export async function getPostBySlug(
       topicId: postTopics.topicId,
       topicName: topics.name,
       topicSlug: topics.slug,
+      topicDescription: topics.description,
     })
     .from(postTopics)
     .innerJoin(topics, eq(postTopics.topicId, topics.id))
@@ -141,7 +190,7 @@ export async function getPostBySlug(
         id: pt.topicId,
         name: pt.topicName,
         slug: pt.topicSlug,
-        description: null, // Topics fetched via join don't include description
+        description: pt.topicDescription,
       },
     })),
   } as PostWithTopics;
@@ -153,6 +202,105 @@ export async function getPosts(filters?: {
   limit?: number;
   offset?: number;
 }): Promise<PostWithTopics[]> {
+  // If filtering by topic, fetch topic ID first and return early if not found
+  if (filters?.topic) {
+    const topicResult = await db
+      .select()
+      .from(topics)
+      .where(eq(topics.name, filters.topic))
+      .limit(1);
+
+    if (topicResult.length === 0) {
+      return [];
+    }
+
+    const topicId = topicResult[0].id;
+
+    // Get posts that have the specified topic
+    const whereConditions = [eq(postTopics.topicId, topicId)];
+
+    // Apply status filter if provided
+    if (filters.status) {
+      whereConditions.push(eq(posts.status, filters.status));
+    }
+
+    // First get the posts that match our filters
+    const filteredPosts = await db
+      .select()
+      .from(posts)
+      .innerJoin(postTopics, eq(posts.id, postTopics.postId))
+      .where(and(...whereConditions))
+      .orderBy(desc(posts.publishDate))
+      .limit(filters.limit || 10)
+      .offset(filters.offset || 0);
+
+    if (filteredPosts.length === 0) {
+      return [];
+    }
+
+    // Extract unique post IDs
+    const postIds = [...new Set(filteredPosts.map((fp) => fp.posts.id))];
+
+    // Get all topic relationships for these posts in a single query
+    const postTopicRelations = await db
+      .select({
+        postId: postTopics.postId,
+        topicId: postTopics.topicId,
+        topicName: topics.name,
+        topicSlug: topics.slug,
+        topicDescription: topics.description,
+      })
+      .from(postTopics)
+      .innerJoin(topics, eq(postTopics.topicId, topics.id))
+      .where(inArray(postTopics.postId, postIds));
+
+    // Group topics by post ID in a single pass
+    const topicsMap = new Map<
+      string,
+      Array<{
+        topic: {
+          id: string;
+          name: string;
+          slug: string;
+          description: string | null;
+        };
+      }>
+    >();
+
+    for (const relation of postTopicRelations) {
+      if (!topicsMap.has(relation.postId)) {
+        topicsMap.set(relation.postId, []);
+      }
+      topicsMap.get(relation.postId)!.push({
+        topic: {
+          id: relation.topicId,
+          name: relation.topicName,
+          slug: relation.topicSlug,
+          description: relation.topicDescription,
+        },
+      });
+    }
+
+    // Get full post data for each post ID (since the join only gave us partial data)
+    const fullPosts = await db
+      .select()
+      .from(posts)
+      .where(inArray(posts.id, postIds));
+
+    // Build result with topics attached
+    const result: PostWithTopics[] = [];
+    for (const post of fullPosts) {
+      const postTopics = topicsMap.get(post.id) || [];
+      result.push({
+        ...post,
+        topics: postTopics,
+      } as PostWithTopics);
+    }
+
+    return result;
+  }
+
+  // No topic filtering - get all posts and their topics efficiently
   let query = db.select().from(posts);
 
   // Apply status filter
@@ -166,39 +314,55 @@ export async function getPosts(filters?: {
     .limit(filters?.limit || 10)
     .offset(filters?.offset || 0);
 
-  // If filtering by topic, we need to filter the results
-  let filteredPosts = postsResult;
-  if (filters?.topic) {
-    // Get topic ID
-    const topicResult = await db
-      .select()
-      .from(topics)
-      .where(eq(topics.name, filters.topic))
-      .limit(1);
+  // Get all topics for the filtered posts to avoid N+1 queries
+  const postIds = postsResult.map((p) => p.id);
+  const postTopicRelations = await db
+    .select({
+      postId: postTopics.postId,
+      topicId: postTopics.topicId,
+      topicName: topics.name,
+      topicSlug: topics.slug,
+      topicDescription: topics.description,
+    })
+    .from(postTopics)
+    .innerJoin(topics, eq(postTopics.topicId, topics.id))
+    .where(inArray(postTopics.postId, postIds));
 
-    if (topicResult.length > 0) {
-      const topicId = topicResult[0].id;
+  // Build a map of post ID to topics for efficient lookup
+  const topicsMap = new Map<
+    string,
+    Array<{
+      topic: {
+        id: string;
+        name: string;
+        slug: string;
+        description: string | null;
+      };
+    }>
+  >();
 
-      // Get posts with this topic
-      const postIdsWithTopic = await db
-        .select({ postId: postTopics.postId })
-        .from(postTopics)
-        .where(eq(postTopics.topicId, topicId));
-
-      const postIds = postIdsWithTopic.map((pt) => pt.postId);
-      filteredPosts = postsResult.filter((p) => postIds.includes(p.id));
-    } else {
-      filteredPosts = [];
+  for (const relation of postTopicRelations) {
+    if (!topicsMap.has(relation.postId)) {
+      topicsMap.set(relation.postId, []);
     }
+    topicsMap.get(relation.postId)!.push({
+      topic: {
+        id: relation.topicId,
+        name: relation.topicName,
+        slug: relation.topicSlug,
+        description: relation.topicDescription,
+      },
+    });
   }
 
-  // Fetch topics for each post
+  // Build the result by attaching topics to each post
   const result: PostWithTopics[] = [];
-  for (const post of filteredPosts) {
-    const postWithTopics = await getPostBySlug(post.slug);
-    if (postWithTopics) {
-      result.push(postWithTopics);
-    }
+  for (const post of postsResult) {
+    const postTopics = topicsMap.get(post.id) || [];
+    result.push({
+      ...post,
+      topics: postTopics,
+    } as PostWithTopics);
   }
 
   return result;
@@ -210,85 +374,76 @@ export async function updatePost(
 ): Promise<PostWithTopics | null> {
   const { topics: topicNames, ...updateData } = data;
 
-  // Get the post
-  const existingPost = await db
-    .select()
-    .from(posts)
-    .where(eq(posts.slug, slug))
-    .limit(1);
+  return await db.transaction(async (tx) => {
+    // Get the post
+    const existingPost = await tx
+      .select()
+      .from(posts)
+      .where(eq(posts.slug, slug))
+      .limit(1);
 
-  if (existingPost.length === 0) {
-    return null;
-  }
-
-  const postId = existingPost[0].id;
-
-  // Update the post
-  const [updatedPost] = await db
-    .update(posts)
-    .set({
-      ...updateData,
-      updatedAt: new Date(),
-    })
-    .where(eq(posts.slug, slug))
-    .returning();
-
-  if (!updatedPost) {
-    throw new Error('Failed to update post');
-  }
-
-  // Handle topics if provided
-  if (topicNames) {
-    // Delete all existing post-topic relationships
-    await db.delete(postTopics).where(eq(postTopics.postId, postId));
-
-    // Create new relationships
-    for (const topicName of topicNames) {
-      const slugValue = topicName.toLowerCase().replace(/\s+/g, '-');
-
-      // Check if topic exists
-      const existingTopic = await db
-        .select()
-        .from(topics)
-        .where(eq(topics.name, topicName))
-        .limit(1);
-
-      let topicId: string;
-      if (existingTopic.length > 0) {
-        topicId = existingTopic[0].id;
-      } else {
-        // Create new topic
-        const [newTopic] = await db
-          .insert(topics)
-          .values({
-            name: topicName,
-            slug: slugValue,
-          })
-          .returning();
-
-        if (!newTopic) {
-          throw new Error(`Failed to create topic: ${topicName}`);
-        }
-        topicId = newTopic.id;
-      }
-
-      // Create post-topic relationship
-      await db.insert(postTopics).values({
-        postId,
-        topicId,
-      });
+    if (existingPost.length === 0) {
+      return null;
     }
-  }
 
-  return getPostBySlug(updatedPost.slug);
+    const postId = existingPost[0].id;
+
+    // Update the post
+    const [updatedPost] = await tx
+      .update(posts)
+      .set({
+        ...updateData,
+        updatedAt: new Date(),
+      })
+      .where(eq(posts.slug, slug))
+      .returning();
+
+    if (!updatedPost) {
+      throw new Error('Failed to update post');
+    }
+
+    // Handle topics if provided
+    if (topicNames) {
+      // Delete all existing post-topic relationships
+      await tx.delete(postTopics).where(eq(postTopics.postId, postId));
+
+      // Process topics and get topic IDs
+      const topicIds = await processTopicsBatch(tx, topicNames);
+
+      // Batch insert all post-topic relationships
+      if (topicIds.length > 0) {
+        await tx.insert(postTopics).values(
+          topicIds.map((topicId) => ({
+            postId,
+            topicId,
+          }))
+        );
+      }
+    }
+
+    return getPostBySlug(updatedPost.slug);
+  });
 }
 
 export async function deletePost(slug: string): Promise<boolean> {
   try {
-    await db.delete(posts).where(eq(posts.slug, slug));
+    const result = await db
+      .delete(posts)
+      .where(eq(posts.slug, slug))
+      .returning();
+
+    if (result.length === 0) {
+      logger.warn('No post found to delete', { slug });
+      return false;
+    }
+
+    logger.info('Post deleted successfully', {
+      slug,
+      deletedCount: result.length,
+    });
     return true;
   } catch (error) {
-    console.error('Error deleting post:', error);
+    logger.error('Error deleting post', error as Error, { slug });
     return false;
   }
 }

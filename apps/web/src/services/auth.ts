@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import { db } from '@/db';
 import { adminUsers } from '@/db/schema';
 import { eq, or } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
+import { generateAdminToken } from '@/lib/admin-auth';
 
 export interface LoginCredentials {
   username: string;
@@ -18,6 +20,10 @@ export interface AuthResult {
   };
 }
 
+// Dummy bcrypt hash for non-existent users to prevent timing attacks
+const DUMMY_HASH =
+  '$2a$12$dummy.hash.that.will.never.match.real.passwords.and.has.correct.bcrypt.format';
+
 export async function authenticateUser(
   credentials: LoginCredentials
 ): Promise<AuthResult> {
@@ -33,16 +39,18 @@ export async function authenticateUser(
       )
       .limit(1);
 
-    if (user.length === 0) {
-      return { success: false };
-    }
-
     const adminUser = user[0];
+
+    // Use real password hash if user exists, otherwise use dummy hash
+    // This ensures consistent timing regardless of user existence
+    const passwordHash = adminUser ? adminUser.password : DUMMY_HASH;
+
     const isValidPassword = await bcrypt.compare(
       credentials.password,
-      adminUser.password
+      passwordHash
     );
-    if (!isValidPassword) {
+
+    if (!adminUser || !isValidPassword) {
       return { success: false };
     }
 
@@ -52,8 +60,8 @@ export async function authenticateUser(
       .set({ lastLogin: new Date() })
       .where(eq(adminUsers.id, adminUser.id));
 
-    // In a real app, you'd generate a JWT token here
-    const token = `mock-token-${adminUser.id}`;
+    // Generate JWT token for authenticated admin
+    const token = generateAdminToken(adminUser.id);
 
     return {
       success: true,
@@ -64,8 +72,13 @@ export async function authenticateUser(
         email: adminUser.email,
       },
     };
-  } catch (error) {
-    console.error('Authentication error:', error);
+  } catch (error: unknown) {
+    // Use structured logging (e.g., winston, pino)
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Authentication failed', err, {
+      errorMessage: err.message,
+      // Avoid logging stack traces or sensitive details in production
+    });
     return { success: false };
   }
 }

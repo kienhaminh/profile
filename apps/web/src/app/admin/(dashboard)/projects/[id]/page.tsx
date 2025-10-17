@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
+import { authFetch } from '@/lib/auth-client';
 
 interface ProjectFormData {
   title: string;
@@ -12,8 +13,8 @@ interface ProjectFormData {
   images: string[];
   githubUrl?: string;
   liveUrl?: string;
-  startDate?: string;
-  endDate?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   isOngoing: boolean;
   technologyIds: string[];
   hashtagIds: string[];
@@ -35,23 +36,23 @@ interface ProjectData {
   hashtags: Array<{ id: string }>;
 }
 
-export default function EditProjectPage({ params }: { params: { id: string } }) {
+export default function EditProjectPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [project, setProject] = useState<ProjectData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProject();
-  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       const response = await fetch(`/api/projects/${params.id}`);
       if (!response.ok) throw new Error('Failed to fetch project');
-      
+
       const data = await response.json();
       setProject(data);
     } catch (err) {
@@ -59,30 +60,69 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id]);
+
+  useEffect(() => {
+    fetchProject();
+  }, [fetchProject]);
 
   const handleSubmit = async (data: ProjectFormData) => {
-    const token = localStorage.getItem('admin_token');
-    
-    const response = await fetch(`/api/projects/${params.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        ...data,
-        startDate: data.startDate ? new Date(data.startDate).toISOString() : null,
-        endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
-      }),
-    });
+    try {
+      // Validate and process dates before making the request
+      const processedData = { ...data };
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update project');
+      // Validate startDate
+      if (data.startDate) {
+        const startDateObj = new Date(data.startDate);
+        if (isNaN(startDateObj.getTime())) {
+          throw new Error('Invalid start date provided');
+        }
+        processedData.startDate = startDateObj.toISOString();
+      } else {
+        processedData.startDate = null;
+      }
+
+      // Validate endDate
+      if (data.endDate) {
+        const endDateObj = new Date(data.endDate);
+        if (isNaN(endDateObj.getTime())) {
+          throw new Error('Invalid end date provided');
+        }
+        processedData.endDate = endDateObj.toISOString();
+      } else {
+        processedData.endDate = null;
+      }
+
+      const response = await authFetch(`/api/projects/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(processedData),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to update project';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+        } catch {
+          // If response.json() fails, use the status text or default message
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Only navigate on successful response
+      router.push('/admin/projects');
+    } catch (error) {
+      // Re-throw with a clear error message for the form to handle
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred while updating the project'
+      );
     }
-
-    router.push('/admin/projects');
   };
 
   if (isLoading) {

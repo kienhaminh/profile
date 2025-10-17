@@ -20,17 +20,23 @@ export default function NewBlogPage() {
   const router = useRouter();
 
   const handleSubmit = async (data: BlogFormData) => {
-    const token = localStorage.getItem('admin_token');
-    
     const response = await fetch('/api/blog', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({
         ...data,
-        publishDate: data.publishDate ? new Date(data.publishDate).toISOString() : null,
+        publishDate: data.publishDate
+          ? (() => {
+              const date = new Date(data.publishDate);
+              if (isNaN(date.getTime())) {
+                throw new Error('Invalid publish date provided');
+              }
+              return date.toISOString();
+            })()
+          : null,
       }),
     });
 

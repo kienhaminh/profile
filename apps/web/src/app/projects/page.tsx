@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { INFORMATION } from '@/constants/information';
 
 export default function Projects() {
   const projects = [
@@ -61,7 +62,7 @@ export default function Projects() {
                 Blog
               </Link>
               <Link
-                href="mailto:kien@example.com"
+                href={`mailto:${INFORMATION.email}`}
                 className="text-gray-600 hover:text-gray-900"
               >
                 Contact
@@ -128,17 +129,6 @@ export default function Projects() {
             </Card>
           ))}
         </div>
-
-        {projects.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No projects to display yet.</p>
-            <div className="mt-4">
-              <Link href="/">
-                <Button variant="outline">Back to Home</Button>
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
@@ -150,7 +140,7 @@ export default function Projects() {
               Interested in working together? Get in touch.
             </p>
             <div className="mt-6">
-              <Link href="mailto:kien@example.com">
+              <Link href={`mailto:${INFORMATION.email}`}>
                 <Button
                   variant="outline"
                   className="text-white border-white hover:bg-white hover:text-gray-900"

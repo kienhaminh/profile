@@ -6,9 +6,7 @@ interface GoogleAnalyticsProps {
   measurementId: string;
 }
 
-export function GoogleAnalytics({
-  measurementId,
-}: GoogleAnalyticsProps) {
+export function GoogleAnalytics({ measurementId }: GoogleAnalyticsProps) {
   if (!measurementId) {
     return null;
   }
@@ -47,11 +45,11 @@ export function trackEvent(
   }
 }
 
-export function trackPageView(url: string): void {
+export function trackPageView(url: string, measurementId?: string): void {
   if (typeof window !== 'undefined' && 'gtag' in window) {
     (window as { gtag: (...args: unknown[]) => void }).gtag(
       'config',
-      process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '',
+      measurementId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '',
       {
         page_path: url,
       }

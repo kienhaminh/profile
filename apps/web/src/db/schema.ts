@@ -7,43 +7,51 @@ import {
   json,
   primaryKey,
   boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// UUID generation function that works in Edge Runtime
 function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c == 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  return crypto.randomUUID();
 }
 
-export const postStatusEnum = pgEnum('post_status', ['DRAFT', 'PUBLISHED']);
+export const postStatusEnum = pgEnum('post_status', [
+  'draft',
+  'published',
+  'archived',
+]);
 export const projectStatusEnum = pgEnum('project_status', [
   'DRAFT',
   'PUBLISHED',
 ]);
 
-export const posts = pgTable('posts', {
-  id: text('id').primaryKey().$defaultFn(generateUUID),
-  title: text('title').notNull(),
-  slug: text('slug').notNull().unique(),
-  status: postStatusEnum('status').notNull().default('DRAFT'),
-  publishDate: timestamp('publish_date', { mode: 'date' }),
-  content: text('content').notNull(),
-  excerpt: text('excerpt'),
-  readTime: integer('read_time'),
-  coverImage: text('cover_image'),
-  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { mode: 'date' })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-  authorId: text('author_id')
-    .notNull()
-    .references(() => authorProfiles.id),
-});
+export const posts = pgTable(
+  'posts',
+  {
+    id: text('id').primaryKey().$defaultFn(generateUUID),
+    title: text('title').notNull(),
+    slug: text('slug').notNull().unique(),
+    status: postStatusEnum('status').notNull().default('draft'),
+    publishDate: timestamp('publish_date', { mode: 'date' }),
+    content: text('content').notNull(),
+    excerpt: text('excerpt'),
+    readTime: integer('read_time'),
+    coverImage: text('cover_image'),
+    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date' })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    authorId: text('author_id')
+      .notNull()
+      .references(() => authorProfiles.id, { onDelete: 'cascade' }),
+  },
+  (table) => ({
+    postsSlugIdx: index('posts_slug_idx').on(table.slug),
+    postsStatusIdx: index('posts_status_idx').on(table.status),
+    postsAuthorIdx: index('posts_author_idx').on(table.authorId),
+  })
+);
 
 export const topics = pgTable('topics', {
   id: text('id').primaryKey().$defaultFn(generateUUID),

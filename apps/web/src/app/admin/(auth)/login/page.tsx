@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { authPost } from '@/lib/auth-client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,18 +21,21 @@ export default function LoginPage() {
     const password = formData.get('password') as string;
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+      const response = await authPost('/api/admin/login', {
+        username,
+        password,
       });
 
       if (response.ok) {
         router.push('/admin');
         router.refresh();
       } else {
-        const data = await response.json();
-        setError(data.error || 'Invalid credentials');
+        try {
+          const data = await response.json();
+          setError(data.error || 'Invalid credentials');
+        } catch {
+          setError('Invalid credentials');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

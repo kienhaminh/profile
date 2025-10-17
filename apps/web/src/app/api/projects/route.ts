@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
       { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
@@ -53,10 +54,23 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     const msg = String(errorMessage || '');
-    const causeMsg = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause ? String(error.cause.message) : '';
-    const causeCode = error instanceof Error && error.cause && typeof error.cause === 'object' && 'code' in error.cause ? String(error.cause.code) : '';
+    const causeMsg =
+      error instanceof Error &&
+      error.cause &&
+      typeof error.cause === 'object' &&
+      'message' in error.cause
+        ? String(error.cause.message)
+        : '';
+    const causeCode =
+      error instanceof Error &&
+      error.cause &&
+      typeof error.cause === 'object' &&
+      'code' in error.cause
+        ? String(error.cause.code)
+        : '';
     if (
       msg.includes('already exists') ||
       /duplicate key value|unique constraint/i.test(msg) ||

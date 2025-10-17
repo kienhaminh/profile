@@ -9,6 +9,12 @@ import type {
   CreateTechnologyRequest,
   UpdateTechnologyRequest,
 } from '../lib/validation';
+import {
+  NotFoundError,
+  ConflictError,
+  TechnologyNotFoundError,
+  TechnologyConflictError,
+} from '../lib/error-utils';
 
 /**
  * Technology service - Pure functions for technology management
@@ -17,6 +23,28 @@ import type {
  * - No hidden state changes
  * - Explicit error handling
  */
+
+/**
+ * Helper function to handle unique constraint errors
+ * Throws a normalized error for duplicate key violations or rethrows the original error
+ */
+function handleUniqueConstraintError(error: unknown): never {
+  const errorMessage = error instanceof Error ? error.message : '';
+  const errorCode =
+    error && typeof error === 'object' && 'code' in error ? error.code : '';
+
+  if (
+    errorCode === '23505' ||
+    String(errorMessage || '').includes('duplicate key value') ||
+    String(errorMessage || '').includes('unique constraint')
+  ) {
+    throw new TechnologyConflictError(
+      'Technology with this name or slug already exists'
+    );
+  }
+
+  throw error;
+}
 
 export async function createTechnology(
   data: CreateTechnologyRequest
@@ -34,17 +62,7 @@ export async function createTechnology(
       .returning();
     return technology;
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '';
-    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
-    if (
-      errorCode === '23505' ||
-      String(errorMessage || '').includes('duplicate key value') ||
-      String(errorMessage || '').includes('unique constraint')
-    ) {
-      // Unique constraint violation
-      throw new Error('Technology with this name or slug already exists');
-    }
-    throw error;
+    handleUniqueConstraintError(error);
   }
 }
 
@@ -68,41 +86,32 @@ export async function updateTechnology(
   id: string,
   data: UpdateTechnologyRequest
 ): Promise<Technology> {
-  const existingTechnology = await getTechnology(id);
-  if (!existingTechnology) {
-    throw new Error('Technology not found');
-  }
-
   const updateData: Partial<NewTechnology> = {};
   if (data.name !== undefined) updateData.name = data.name;
   if (data.slug !== undefined) updateData.slug = data.slug;
   if (data.description !== undefined) updateData.description = data.description;
 
   try {
-    const [updatedTechnology] = await db
+    const result = await db
       .update(technologies)
       .set(updateData)
       .where(eq(technologies.id, id))
       .returning();
-    return updatedTechnology;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '';
-    const errorCode = error && typeof error === 'object' && 'code' in error ? error.code : '';
-    if (
-      errorCode === '23505' ||
-      String(errorMessage || '').includes('duplicate key value') ||
-      String(errorMessage || '').includes('unique constraint')
-    ) {
-      throw new Error('Technology with this name or slug already exists');
+
+    if (result.length === 0) {
+      throw new TechnologyNotFoundError('Technology not found');
     }
-    throw error;
+
+    return result[0];
+  } catch (error) {
+    handleUniqueConstraintError(error);
   }
 }
 
 export async function deleteTechnology(id: string): Promise<void> {
   const existingTechnology = await getTechnology(id);
   if (!existingTechnology) {
-    throw new Error('Technology not found');
+    throw new TechnologyNotFoundError('Technology not found');
   }
 
   await db.delete(technologies).where(eq(technologies.id, id));

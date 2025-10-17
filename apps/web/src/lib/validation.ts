@@ -40,6 +40,17 @@ export const updateBlogSchema = z.object({
   hashtagIds: z.array(uuidSchema).optional(),
 });
 
+// Post validation schemas
+export const updatePostSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  content: z.string().min(1).optional(),
+  excerpt: z.string().max(500).optional(),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+  publishDate: z.string().datetime().optional(),
+  coverImage: urlSchema.optional(),
+  topics: z.array(z.string()).optional(),
+});
+
 // Project validation schemas
 export const createProjectSchema = z.object({
   title: z.string().min(1).max(200),
@@ -141,6 +152,7 @@ export const projectFilterSchema = paginationSchema.extend({
 // TypeScript types inferred from schemas
 export type CreateBlogRequest = z.infer<typeof createBlogSchema>;
 export type UpdateBlogRequest = z.infer<typeof updateBlogSchema>;
+export type UpdatePostRequest = z.infer<typeof updatePostSchema>;
 export type CreateProjectRequest = z.infer<typeof createProjectSchema>;
 export type UpdateProjectRequest = z.infer<typeof updateProjectSchema>;
 export type CreateHashtagRequest = z.infer<typeof createHashtagSchema>;

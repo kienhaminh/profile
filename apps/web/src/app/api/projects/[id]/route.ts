@@ -3,6 +3,8 @@ import {
   getProjectById,
   updateProject,
   deleteProject,
+  ProjectNotFoundError,
+  ProjectConflictError,
 } from '@/services/project';
 import { updateProjectSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
@@ -19,13 +21,14 @@ export async function GET(
     const project = await getProjectById(id);
     return NextResponse.json(project, { status: 200 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    if (errorMessage === 'Project not found') {
+    if (error instanceof ProjectNotFoundError) {
       return NextResponse.json(
-        { error: 'Not Found', message: errorMessage },
+        { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
       { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
@@ -55,19 +58,20 @@ export async function PUT(
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    if (errorMessage === 'Project not found') {
+    if (error instanceof ProjectNotFoundError) {
       return NextResponse.json(
-        { error: 'Not Found', message: errorMessage },
+        { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
-    if (errorMessage.includes('already exists')) {
+    if (error instanceof ProjectConflictError) {
       return NextResponse.json(
-        { error: 'Conflict', message: errorMessage },
+        { error: 'Conflict', message: error.message },
         { status: 409 }
       );
     }
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
       { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }
@@ -88,13 +92,14 @@ export async function DELETE(
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    if (errorMessage === 'Project not found') {
+    if (error instanceof ProjectNotFoundError) {
       return NextResponse.json(
-        { error: 'Not Found', message: errorMessage },
+        { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
+    const errorMessage =
+      error instanceof Error ? error.message : 'An error occurred';
     return NextResponse.json(
       { error: 'Internal Server Error', message: errorMessage },
       { status: 500 }

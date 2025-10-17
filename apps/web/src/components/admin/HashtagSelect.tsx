@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { generateSlug, isValidSlug } from '@/lib/slug';
+import { authFetch, authPost } from '@/lib/auth-client';
 
 interface Hashtag {
   id: string;
   name: string;
   slug: string;
   description: string | null;
-  createdAt: Date;
+  createdAt: string;
 }
 
 interface HashtagSelectProps {
@@ -52,7 +54,7 @@ export function HashtagSelect({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/hashtags');
+      const response = await authFetch('/api/hashtags');
       if (!response.ok) throw new Error('Failed to fetch hashtags');
       const data = await response.json();
       setHashtags(data);
@@ -64,22 +66,19 @@ export function HashtagSelect({
   };
 
   const createHashtag = async (name: string) => {
-    const slug = name
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+    const slug = generateSlug(name);
+
+    // Validate slug before sending to backend
+    if (!isValidSlug(slug)) {
+      throw new Error(
+        `Unable to generate a valid slug for "${name}". Please use a different name.`
+      );
+    }
 
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/hashtags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({ name, slug }),
-      });
+      const response = await authPost('/api/hashtags', { name, slug });
 
       if (!response.ok) {
         const error = await response.json();

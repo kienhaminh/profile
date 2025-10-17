@@ -3,6 +3,7 @@ import { createTopic, listTopics } from '@/services/topics';
 import { createTopicSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
 import { ZodError } from 'zod';
+import { logErrorAndReturnSanitized } from '@/lib/error-utils';
 
 export const runtime = 'nodejs';
 
@@ -11,9 +12,9 @@ export async function GET() {
     const topics = await listTopics();
     return NextResponse.json(topics, { status: 200 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    console.error('Failed to list topics:', error);
     return NextResponse.json(
-      { error: 'Internal Server Error', message: errorMessage },
+      { error: 'Failed to fetch topics' },
       { status: 500 }
     );
   }
@@ -22,9 +23,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     await ensureAdminOrThrow(request);
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
     const data = createTopicSchema.parse(body);
-
     const topic = await createTopic(data);
     return NextResponse.json(topic, { status: 201 });
   } catch (error) {
@@ -37,24 +42,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    const msg = String(errorMessage || '');
-    const causeMsg = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause ? String(error.cause.message) : '';
-    const causeCode = error instanceof Error && error.cause && typeof error.cause === 'object' && 'code' in error.cause ? String(error.cause.code) : '';
-    if (
-      msg.includes('already exists') ||
-      /duplicate key value|unique constraint/i.test(msg) ||
-      /duplicate key value|unique constraint/i.test(causeMsg) ||
-      causeCode === '23505'
-    ) {
-      return NextResponse.json(
-        { error: 'Conflict', message: errorMessage },
-        { status: 409 }
-      );
-    }
-    return NextResponse.json(
-      { error: 'Internal Server Error', message: errorMessage },
-      { status: 500 }
+
+    const { status, body } = logErrorAndReturnSanitized(
+      error,
+      'topics POST',
+      'Conflict creating topic',
+      'An unexpected error occurred'
     );
+
+    return NextResponse.json(body, { status });
   }
 }

@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { generateSlug, isValidSlug } from '@/lib/slug';
+import { authFetch, authPost } from '@/lib/auth-client';
 
 interface Topic {
   id: string;
@@ -51,7 +53,7 @@ export function TopicSelect({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/topics');
+      const response = await authFetch('/api/topics');
       if (!response.ok) throw new Error('Failed to fetch topics');
       const data = await response.json();
       setTopics(data);
@@ -63,19 +65,19 @@ export function TopicSelect({
   };
 
   const createTopic = async (name: string) => {
-    const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    
+    const slug = generateSlug(name);
+
+    // Validate slug before sending to backend
+    if (!isValidSlug(slug)) {
+      throw new Error(
+        `Unable to generate a valid slug for "${name}". Please use a different name.`
+      );
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch('/api/topics', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('admin_token')}`,
-        },
-        body: JSON.stringify({ name, slug }),
-      });
+      const response = await authPost('/api/topics', { name, slug });
 
       if (!response.ok) {
         const error = await response.json();
@@ -98,7 +100,7 @@ export function TopicSelect({
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       e.preventDefault();
-      
+
       const existingTopic = filteredTopics.find(
         (t) => t.name.toLowerCase() === searchQuery.toLowerCase()
       );
@@ -139,9 +141,7 @@ export function TopicSelect({
   );
 
   const selectedTopics = topics.filter((t) => value.includes(t.id));
-  const unselectedTopics = filteredTopics.filter(
-    (t) => !value.includes(t.id)
-  );
+  const unselectedTopics = filteredTopics.filter((t) => !value.includes(t.id));
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -174,9 +174,7 @@ export function TopicSelect({
         />
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 mt-1">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">

@@ -18,29 +18,19 @@ import type {
 // Type for Drizzle transaction - inferred from db type
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-// Types for junction table objects with relations (from Drizzle 'with' clause)
-interface ProjectTechnologyWithRelation {
-  projectId: string;
-  technologyId: string;
-  technology: {
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    createdAt: Date;
-  };
+// Custom error classes for better error handling
+export class ProjectNotFoundError extends Error {
+  constructor(message: string = 'Project not found') {
+    super(message);
+    this.name = 'ProjectNotFoundError';
+  }
 }
 
-interface ProjectHashtagWithRelation {
-  projectId: string;
-  hashtagId: string;
-  hashtag: {
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    createdAt: Date;
-  };
+export class ProjectConflictError extends Error {
+  constructor(message: string = 'Project conflict') {
+    super(message);
+    this.name = 'ProjectConflictError';
+  }
 }
 
 /**
@@ -123,7 +113,7 @@ export async function createProject(
       const errorCode =
         error && typeof error === 'object' && 'code' in error ? error.code : '';
       if (errorCode === '23505') {
-        throw new Error('Project with this slug already exists');
+        throw new ProjectConflictError('Project with this slug already exists');
       }
       throw error;
     }
@@ -168,7 +158,7 @@ export async function getProjectById(
   });
 
   if (!project) {
-    throw new Error('Project not found');
+    throw new ProjectNotFoundError();
   }
 
   // Transform to ProjectWithRelations
@@ -229,12 +219,13 @@ export async function listProjects(
   }
 
   if (search) {
-    conditions.push(
-      or(
-        ilike(projects.title, `%${search}%`),
-        ilike(projects.description, `%${search}%`)
-      )!
+    const clause = or(
+      ilike(projects.title, `%${search}%`),
+      ilike(projects.description, `%${search}%`)
     );
+    if (clause) {
+      conditions.push(clause);
+    }
   }
 
   const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -297,7 +288,7 @@ export async function updateProject(
       .from(projects)
       .where(eq(projects.id, id));
     if (existing.length === 0) {
-      throw new Error('Project not found');
+      throw new ProjectNotFoundError();
     }
 
     // Build update object
@@ -331,7 +322,9 @@ export async function updateProject(
             ? error.code
             : '';
         if (errorCode === '23505') {
-          throw new Error('Project with this slug already exists');
+          throw new ProjectConflictError(
+            'Project with this slug already exists'
+          );
         }
         throw error;
       }
@@ -377,7 +370,7 @@ export async function updateProject(
 export async function deleteProject(id: string): Promise<void> {
   const existing = await db.select().from(projects).where(eq(projects.id, id));
   if (existing.length === 0) {
-    throw new Error('Project not found');
+    throw new ProjectNotFoundError();
   }
 
   // Cascade delete will handle associations automatically

@@ -1,18 +1,30 @@
 import { db } from '../src/db';
 import { adminUsers } from '../src/db/schema';
 import { hashPassword } from '../src/services/auth';
+import {
+  enforceSingleAdminPolicy,
+  SingleAdminViolationError,
+} from '../src/lib/admin-auth';
 import { eq } from 'drizzle-orm';
 import * as dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.local' });
 
+const password = process.env.ADMIN_PASSWORD;
+if (!password) {
+  throw new Error('ADMIN_PASSWORD environment variable is required');
+}
+
 async function seedAdmin(): Promise<void> {
   try {
     const username = process.env.ADMIN_USERNAME || 'admin';
     const email = process.env.ADMIN_EMAIL || 'admin@portfolio.local';
-    const password = process.env.ADMIN_PASSWORD || 'admin123';
+    const password = process.env.ADMIN_PASSWORD || 'password123';
 
     const hashedPassword = await hashPassword(password);
+
+    // Enforce single-admin policy before creating/updating admin
+    await enforceSingleAdminPolicy();
 
     // Check if admin already exists
     const existingAdmin = await db
@@ -44,12 +56,17 @@ async function seedAdmin(): Promise<void> {
       console.log(`✓ Admin user '${username}' created successfully`);
     }
 
-    console.log(`  Username: ${username}`);
-    console.log(`  Email: ${email}`);
-    console.log(`  Password: ${password}`);
-
     process.exit(0);
   } catch (error) {
+    if (error instanceof SingleAdminViolationError) {
+      console.error('❌ Single admin policy violation:', error.message);
+      console.error('This system is configured to allow only one admin user.');
+      console.error(
+        'Please remove existing admin users before creating a new one.'
+      );
+      process.exit(1);
+    }
+
     console.error('Error seeding admin user:', error);
     process.exit(1);
   }

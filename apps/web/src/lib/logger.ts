@@ -16,8 +16,21 @@ interface LogEntry {
   };
 }
 
+// Safe environment check that works in both Node.js and browser contexts
+const isDevelopment: boolean =
+  typeof process !== 'undefined' && process.env?.NODE_ENV === 'development';
+
 function formatLogEntry(entry: LogEntry): string {
-  return JSON.stringify(entry);
+  try {
+    return JSON.stringify(entry);
+  } catch {
+    return JSON.stringify({
+      level: entry.level,
+      message: entry.message,
+      timestamp: entry.timestamp,
+      error: '[Serialization Error]: Unable to stringify log entry',
+    });
+  }
 }
 
 function createLogEntry(
@@ -49,7 +62,7 @@ function createLogEntry(
 
 export const logger = {
   debug(message: string, context?: LogContext): void {
-    if (process.env.NODE_ENV === 'development') {
+    if (isDevelopment) {
       const entry = createLogEntry('debug', message, context);
       console.debug(formatLogEntry(entry));
     }
