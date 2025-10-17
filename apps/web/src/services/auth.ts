@@ -16,7 +16,6 @@ export interface AuthResult {
   user?: {
     id: string;
     username: string;
-    email: string;
   };
 }
 
@@ -69,7 +68,6 @@ export async function authenticateUser(
       user: {
         id: adminUser.id,
         username: adminUser.username,
-        email: adminUser.email,
       },
     };
   } catch (error: unknown) {
