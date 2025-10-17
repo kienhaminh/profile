@@ -7,10 +7,10 @@ describe('Admin Login Contract', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'admin',
-        password: 'password123'
-      })
+        password: 'admin',
+      }),
     });
-    
+
     expect(response.status).toBe(200);
     const data = await response.json();
     expect(data).toHaveProperty('token');
@@ -22,10 +22,10 @@ describe('Admin Login Contract', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'admin',
-        password: 'wrong'
-      })
+        password: 'wrong',
+      }),
     });
-    
+
     expect(response.status).toBe(401);
   });
 
@@ -34,11 +34,11 @@ describe('Admin Login Contract', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        username: 'admin'
+        username: 'admin',
         // missing password
-      })
+      }),
     });
-    
+
     expect(response.status).toBe(400);
   });
 });

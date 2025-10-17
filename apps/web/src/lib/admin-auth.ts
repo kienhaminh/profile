@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 
 // JWT configuration
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 
 export class UnauthorizedError extends Error {}
 
@@ -144,7 +144,7 @@ export async function ensureAdminOrThrow(request: NextRequest): Promise<void> {
     : '';
 
   const token = cookieToken || bearerToken || headerToken;
-  const configuredToken = process.env.ADMIN_API_TOKEN || '';
+  const configuredToken = process.env.ADMIN_JWT_SECRET || '';
 
   // Allow either a configured static token, or a mock token returned by /api/admin/login
   if (!token) {

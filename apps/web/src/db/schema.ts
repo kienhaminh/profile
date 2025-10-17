@@ -87,7 +87,7 @@ export const authorProfiles = pgTable('author_profiles', {
 export const adminUsers = pgTable('admin_users', {
   id: text('id').primaryKey().$defaultFn(generateUUID),
   username: text('username').notNull().unique(),
-  email: text('email').notNull().unique(),
+  email: text('email').unique(),
   password: text('password').notNull(),
   role: text('role').notNull().default('admin'),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),

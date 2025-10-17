@@ -1,6 +1,12 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool, PoolConfig } from 'pg';
 import * as schema from './schema';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env.local if not in production
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 // Define types for database connection configuration
 interface DatabaseConnectionConfig {
@@ -111,14 +117,18 @@ const connectionConfig = process.env.DATABASE_URL
       password: 'postgres',
     } as DatabaseConnectionConfig);
 
-// Detect if we're connecting to Supabase (production/staging)
+// Detect if we're connecting to Supabase (production/staging) or Neon
 const isSupabase = process.env.DATABASE_URL?.includes('supabase.co');
+const isNeon = process.env.DATABASE_URL?.includes('neon.tech');
 const isProduction = process.env.NODE_ENV === 'production';
 
 const poolConfig: PoolConfig = {
   ...connectionConfig,
-  // SSL configuration (required for Supabase in production, optional for dev)
-  ssl: isSupabase || isProduction ? { rejectUnauthorized: true } : undefined,
+  // SSL configuration (required for Supabase and Neon in production, optional for dev)
+  ssl:
+    isSupabase || isNeon || isProduction
+      ? { rejectUnauthorized: true }
+      : undefined,
   // Connection pool configuration
   max: 10, // Maximum number of clients in the pool
   min: 2, // Minimum number of clients in the pool

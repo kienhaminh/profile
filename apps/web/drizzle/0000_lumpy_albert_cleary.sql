@@ -1,5 +1,45 @@
-CREATE TYPE "public"."post_status" AS ENUM('DRAFT', 'PUBLISHED');--> statement-breakpoint
-CREATE TYPE "public"."project_status" AS ENUM('DRAFT', 'PUBLISHED');--> statement-breakpoint
+-- Create post_status enum type, handling existing types gracefully
+DO $$
+BEGIN
+    -- Check if the type already exists
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'post_status') THEN
+        CREATE TYPE "public"."post_status" AS ENUM('DRAFT', 'PUBLISHED');
+    ELSE
+        -- If it exists, check if it has the expected values
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_enum e
+            JOIN pg_type t ON e.enumtypid = t.oid
+            WHERE t.typname = 'post_status'
+            AND e.enumlabel IN ('DRAFT', 'PUBLISHED')
+        ) THEN
+            RAISE NOTICE 'post_status type exists but with different values, this may need manual intervention';
+        END IF;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'post_status type creation handled or already exists';
+END $$;--> statement-breakpoint
+-- Create project_status enum type, handling existing types gracefully
+DO $$
+BEGIN
+    -- Check if the type already exists
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'project_status') THEN
+        CREATE TYPE "public"."project_status" AS ENUM('DRAFT', 'PUBLISHED');
+    ELSE
+        -- If it exists, check if it has the expected values
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_enum e
+            JOIN pg_type t ON e.enumtypid = t.oid
+            WHERE t.typname = 'project_status'
+            AND e.enumlabel IN ('DRAFT', 'PUBLISHED')
+        ) THEN
+            RAISE NOTICE 'project_status type exists but with different values, this may need manual intervention';
+        END IF;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'project_status type creation handled or already exists';
+END $$;--> statement-breakpoint
 CREATE TABLE "admin_users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"username" text NOT NULL,

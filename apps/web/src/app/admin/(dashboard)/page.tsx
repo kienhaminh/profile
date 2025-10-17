@@ -4,6 +4,18 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { logger } from '@/lib/logger';
 import { authFetch, authDelete } from '@/lib/auth-client';
 import type { PostWithTopics } from '@/services/posts';
@@ -13,6 +25,8 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<PostWithTopics | null>(null);
   const router = useRouter();
 
   const fetchPosts = async () => {
@@ -41,30 +55,33 @@ export default function AdminDashboard() {
     router.push(`/admin/blogs/${postId}`);
   };
 
-  const handleDelete = async (post: PostWithTopics) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${post.title}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  const handleDelete = (post: PostWithTopics) => {
+    setPostToDelete(post);
+    setDeleteDialogOpen(true);
+  };
 
-    setDeletingPostId(post.id);
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
+
+    setDeletingPostId(postToDelete.id);
     try {
-      const response = await authDelete(`/api/admin/posts/${post.slug}`);
+      const response = await authDelete(
+        `/api/admin/posts/${postToDelete.slug}`
+      );
 
       if (!response.ok) throw new Error('Failed to delete post');
 
       // Remove the post from state
-      setPosts((prev) => prev.filter((p) => p.id !== post.id));
+      setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'An error occurred';
-      alert(`Error: ${errorMessage}`);
+      setError(errorMessage);
       logger.error('Failed to delete post:', err as Error);
     } finally {
       setDeletingPostId(null);
+      setDeleteDialogOpen(false);
+      setPostToDelete(null);
     }
   };
 
@@ -143,75 +160,122 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                  {error}
-                </div>
+                <Alert className="mb-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
               <div className="space-y-4">
                 {isLoading ? (
-                  <p className="text-gray-500 text-center py-8">
-                    Loading posts...
-                  </p>
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Card key={i}>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <Skeleton className="h-6 w-3/4 mb-2" />
+                              <Skeleton className="h-4 w-1/2 mb-2" />
+                              <div className="flex gap-2">
+                                <Skeleton className="h-6 w-16" />
+                                <Skeleton className="h-6 w-20" />
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Skeleton className="h-8 w-16" />
+                              <Skeleton className="h-8 w-16" />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 ) : (
                   posts.map((post) => (
-                    <div key={post.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold">{post.title}</h3>
-                          <p className="text-sm text-gray-600">/{post.slug}</p>
-                          <div className="flex gap-2 mt-2">
-                            <span
-                              className={`px-2 py-1 text-xs rounded ${
-                                post.status === 'published'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}
-                            >
-                              {post.status}
-                            </span>
-                            {post.topics.map(({ topic }) => (
+                    <Card key={post.id}>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">{post.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              /{post.slug}
+                            </p>
+                            <div className="flex gap-2 mt-2">
                               <span
-                                key={topic.id}
-                                className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  post.status === 'published'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
+                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
+                                }`}
                               >
-                                {topic.name}
+                                {post.status}
                               </span>
-                            ))}
+                              {post.topics.map(({ topic }) => (
+                                <span
+                                  key={topic.id}
+                                  className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full"
+                                >
+                                  {topic.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit(post.id)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDelete(post)}
+                              disabled={deletingPostId === post.id}
+                            >
+                              {deletingPostId === post.id
+                                ? 'Deleting...'
+                                : 'Delete'}
+                            </Button>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(post.id)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDelete(post)}
-                            disabled={deletingPostId === post.id}
-                          >
-                            {deletingPostId === post.id
-                              ? 'Deleting...'
-                              : 'Delete'}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))
                 )}
                 {posts.length === 0 && (
-                  <p className="text-gray-500 text-center py-8">
-                    No posts found
-                  </p>
+                  <Card>
+                    <CardContent className="text-center py-8">
+                      <p className="text-muted-foreground">No posts found</p>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete &ldquo;
+              {postToDelete?.title}&rdquo; and remove it from the server.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deletingPostId === postToDelete?.id}
+            >
+              {deletingPostId === postToDelete?.id ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -47,12 +47,19 @@ If you have existing admin users with plaintext passwords, use the migration scr
 npm run db:migrate-passwords
 ```
 
+Or use the comprehensive admin setup script (recommended):
+
+```bash
+npm run db:admin-setup
+```
+
 This script will:
 
 - Detect existing plaintext passwords
 - Hash them using bcrypt with cost factor 12
 - Update the database with secure hashes
 - Skip already-hashed passwords
+- Also set up/seed the admin user from environment variables
 
 **⚠️ Important**: Always backup your database before running migrations.
 
@@ -180,7 +187,9 @@ apps/web/
 │   │   └── topics.ts     # Topic management
 │   └── lib/              # Utilities
 ├── scripts/              # Utility scripts
-│   └── seed-admin.ts     # Admin user seeding
+│   ├── seed-admin.ts     # Admin user seeding (legacy)
+│   ├── migrate-passwords.ts # Password migration (legacy)
+│   └── admin-setup.ts    # Comprehensive admin setup (migration + seeding)
 ├── tests/                # Test files
 │   ├── contract/         # API contract tests
 │   └── integration/      # Integration tests

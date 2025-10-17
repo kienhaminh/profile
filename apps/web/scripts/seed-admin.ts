@@ -19,7 +19,7 @@ if (!password) {
 async function seedAdmin(): Promise<void> {
   try {
     const username = process.env.ADMIN_USERNAME || 'admin';
-    const email = process.env.ADMIN_EMAIL || 'admin@portfolio.local';
+    const email = process.env.ADMIN_EMAIL;
     // Use the validated password variable (ADMIN_PASSWORD is required)
 
     const hashedPassword = await hashPassword(password!);
@@ -39,8 +39,8 @@ async function seedAdmin(): Promise<void> {
       await db
         .update(adminUsers)
         .set({
-          email,
           password: hashedPassword,
+          ...(email && { email }),
         })
         .where(eq(adminUsers.username, username));
 
@@ -49,9 +49,9 @@ async function seedAdmin(): Promise<void> {
       // Create new admin
       await db.insert(adminUsers).values({
         username,
-        email,
         password: hashedPassword,
         role: 'admin',
+        ...(email && { email }),
       });
 
       console.log(`✓ Admin user '${username}' created successfully`);
