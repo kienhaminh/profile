@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
+import { TRPCReactProvider } from '@/trpc/Provider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -89,7 +90,7 @@ export default function RootLayout({
       >
         {measurementId && <GoogleAnalytics measurementId={measurementId} />}
         <WebVitalsReporter />
-        {children}
+        <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>
     </html>
   );

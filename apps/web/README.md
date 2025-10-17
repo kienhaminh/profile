@@ -5,6 +5,7 @@ A modern, full-stack developer portfolio website with blog functionality built w
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
+- **API Layer**: tRPC 10 (type-safe procedures with React Query client)
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Drizzle ORM
 - **Styling**: Tailwind CSS

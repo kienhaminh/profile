@@ -61,7 +61,7 @@ export default function EditProjectPage({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     fetchProject();

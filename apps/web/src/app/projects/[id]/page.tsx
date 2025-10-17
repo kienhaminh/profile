@@ -1,74 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INFORMATION } from '@/constants/information';
-
-interface Project {
-  id: string;
-  title: string;
-  slug: string;
-  description: string;
-  status: string;
-  githubUrl?: string | null;
-  liveUrl?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  isOngoing: boolean;
-  images: string[];
-  technologies: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    createdAt: string;
-  }>;
-  hashtags: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    description: string | null;
-    createdAt: string;
-  }>;
-}
+import { trpc } from '@/trpc/react';
 
 export default function ProjectDetail() {
   const params = useParams();
-  const projectId = params.id as string;
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const projectId = params.id as string | undefined;
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setProject(data);
-        } else if (response.status === 404) {
-          setError('Project not found');
-        } else {
-          setError('Failed to load project');
-        }
-      } catch (error) {
-        console.error('Error fetching project:', error);
-        setError('Failed to load project');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (projectId) {
-      fetchProject();
+  const {
+    data: project,
+    isLoading,
+    isError,
+    error,
+  } = trpc.projects.byId.useQuery(
+    { id: projectId ?? '' },
+    {
+      enabled: Boolean(projectId),
     }
-  }, [projectId]);
+  );
 
-  if (loading) {
+  const errorMessage = isError
+    ? error?.message ?? 'Failed to load project'
+    : null;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
         <div className="flex justify-center items-center h-64">
@@ -78,13 +38,13 @@ export default function ProjectDetail() {
     );
   }
 
-  if (error || !project) {
+  if (errorMessage || !project) {
     return (
       <div className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              {error || 'Project not found'}
+              {errorMessage || 'Project not found'}
             </h1>
             <Link href="/projects">
               <Button variant="outline">← Back to Projects</Button>
