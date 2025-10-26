@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { DialogTitle, VisuallyHidden } from '@/components/ui/dialog';
 import { authPost } from '@/lib/auth-client';
 
 const menuItems = [
@@ -68,9 +67,6 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <>
-      <VisuallyHidden>
-        <DialogTitle>Admin Panel Navigation</DialogTitle>
-      </VisuallyHidden>
       <div className="p-6">
         <h2 className="text-2xl font-bold">Admin Panel</h2>
       </div>

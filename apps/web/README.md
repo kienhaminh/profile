@@ -103,6 +103,10 @@ NEXT_PUBLIC_GOOGLE_ADS_SLOT_ID=XXXXXXXXXX
 # Generate with: openssl rand -base64 32
 ADMIN_JWT_SECRET=your-secure-random-secret-here-replace-with-generated-value
 ADMIN_JWT_SECRET=your-secure-random-secret-here
+
+# LangChain Agent (OpenAI)
+# Required for the personal agent feature
+OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
 
 **For production**, create `.env.production` with your production Supabase credentials.

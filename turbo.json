@@ -1,6 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "DATABASE_URL",
+    "ADMIN_USERNAME",
+    "ADMIN_PASSWORD",
+    "ADMIN_JWT_SECRET",
+    "JWT_EXPIRES_IN",
+    "CSRF_SECRET"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

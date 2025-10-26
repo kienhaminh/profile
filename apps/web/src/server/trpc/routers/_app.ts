@@ -5,6 +5,7 @@ import { technologyRouter } from './technologies';
 import { hashtagRouter } from './hashtags';
 import { topicRouter } from './topics';
 import { adminPostsRouter } from './adminPosts';
+import { agentRouter } from './agent';
 
 const adminRouter = router({
   posts: adminPostsRouter,
@@ -17,6 +18,7 @@ export const appRouter = router({
   hashtags: hashtagRouter,
   topics: topicRouter,
   admin: adminRouter,
+  agent: agentRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HashtagSelect } from './HashtagSelect';
 import { TopicSelect } from './TopicSelect';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { CreateBlogRequest } from '@/lib/validation';
 
 interface BlogFormData {
@@ -79,6 +80,13 @@ export function BlogForm({
     }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleContentChange = (content: string) => {
+    setFormData((prev) => ({ ...prev, content }));
+    if (errors.content) {
+      setErrors((prev) => ({ ...prev, content: '' }));
     }
   };
 
@@ -202,14 +210,11 @@ export function BlogForm({
         <label htmlFor="content" className="block text-sm font-medium mb-2">
           Content <span className="text-red-500">*</span>
         </label>
-        <textarea
-          id="content"
-          name="content"
+        <RichTextEditor
           value={formData.content}
-          onChange={handleChange}
-          rows={15}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-          placeholder="Write your blog content here (Markdown supported)"
+          onChange={handleContentChange}
+          placeholder="Write your blog content here..."
+          className="min-h-[400px]"
         />
         {errors.content && (
           <p className="mt-1 text-sm text-red-600">{errors.content}</p>
