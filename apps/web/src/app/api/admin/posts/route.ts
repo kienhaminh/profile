@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPosts, type PostStatus } from '@/services/posts';
+import { getPosts } from '@/services/posts';
 import { ensureAdminOrThrow } from '@/lib/admin-auth';
+import { POST_STATUS_VALUES, type PostStatus } from '@/types/enums';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,11 +23,10 @@ export async function GET(request: NextRequest) {
     // Validate status parameter
     let validatedStatus: PostStatus | undefined;
     if (statusParam) {
-      const validStatuses: PostStatus[] = ['draft', 'published', 'archived'];
-      if (!validStatuses.includes(statusParam as PostStatus)) {
+      if (!POST_STATUS_VALUES.includes(statusParam as PostStatus)) {
         return NextResponse.json(
           {
-            error: `Invalid status parameter. Must be one of: ${validStatuses.join(', ')}`,
+            error: `Invalid status parameter. Must be one of: ${POST_STATUS_VALUES.join(', ')}`,
           },
           { status: 400 }
         );

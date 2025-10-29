@@ -5,12 +5,13 @@ import { HashtagSelect } from './HashtagSelect';
 import { TopicSelect } from './TopicSelect';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { CreateBlogRequest } from '@/lib/validation';
+import { POST_STATUS, type PostStatus } from '@/types/enums';
 
 interface BlogFormData {
   title: string;
   slug: string;
   content: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   publishDate?: string;
   excerpt?: string;
   readTime?: number;
@@ -42,7 +43,7 @@ export function BlogForm({
     title: initialData?.title || '',
     slug: initialData?.slug || '',
     content: initialData?.content || '',
-    status: initialData?.status || 'DRAFT',
+    status: (initialData?.status as PostStatus) || POST_STATUS.DRAFT,
     publishDate: initialData?.publishDate || '',
     excerpt: initialData?.excerpt || '',
     readTime: initialData?.readTime || undefined,
@@ -233,8 +234,9 @@ export function BlogForm({
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
+            <option value={POST_STATUS.DRAFT}>Draft</option>
+            <option value={POST_STATUS.PUBLISHED}>Published</option>
+            <option value={POST_STATUS.ARCHIVED}>Archived</option>
           </select>
         </div>
 

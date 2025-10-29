@@ -15,14 +15,14 @@ import {
   createBlogSchema,
   updateBlogSchema,
 } from '@/lib/validation';
-import { getPosts } from '@/services/posts';
+import { getPosts, POST_STATUS, POST_STATUS_VALUES } from '@/services/posts';
 import { adminProcedure, publicProcedure, router } from '../init';
 
 const blogListInput = z
   .object({
     page: z.number().int().min(0).optional(),
     limit: z.number().int().min(1).max(100).optional(),
-    status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+    status: z.enum(POST_STATUS_VALUES as [string, ...string[]]).optional(),
     topicId: z.string().uuid().optional(),
     hashtagId: z.string().uuid().optional(),
     search: z.string().optional(),
@@ -34,7 +34,7 @@ export const blogRouter = router({
     const filters = blogFilterSchema.parse({
       page: input?.page ?? 0,
       limit: input?.limit ?? 20,
-      status: input?.status ?? 'PUBLISHED',
+      status: input?.status ?? POST_STATUS.PUBLISHED,
       topicId: input?.topicId,
       hashtagId: input?.hashtagId,
       search: input?.search,
@@ -137,7 +137,7 @@ export const blogRouter = router({
     )
     .query(async ({ input }) => {
       return getPosts({
-        status: 'published',
+        status: POST_STATUS.PUBLISHED,
         topic: input?.topic,
         limit: input?.limit,
         offset: input?.offset,

@@ -1,3 +1,10 @@
+import type {
+  ContactInfo,
+  Education,
+  Experience,
+  Skills,
+} from '@/types/profile';
+
 // Contact information with environment variable support and fallbacks
 // Uses NEXT_PUBLIC_ prefixed variables for client-safe values
 
@@ -45,3 +52,85 @@ export const INFORMATION_VALIDATION = {
   nameValid: rawName.trim() !== '',
   shortNameValid: rawShortName.trim() !== '',
 } as const;
+
+// Profile contact information
+export const CONTACT: ContactInfo = {
+  address: 'K12/08 Hoang Van Thai Street, Danang',
+  mobile: '0776978875',
+  email: 'minhkien2208@gmail.com',
+  facebook: 'https://www.facebook.com/haminh.kien',
+  linkedin: 'http://linkedin.com/in/haminhkien',
+  github: 'https://github.com/kienhaminh',
+};
+
+// Education history
+export const EDUCATION: Education[] = [
+  {
+    period: 'Sep 2016 - May 2020',
+    institution: 'DANANG UNIVERSITY OF EDUCATION',
+    major: 'Information Technology',
+    gpa: '3.49/4',
+  },
+  {
+    period: 'Aug 2025 - now',
+    institution: 'CHONNAM NATIONAL UNIVERSITY - KOREA',
+    major: "Master's Student in Department of AI Convergence",
+    responsibilities: [
+      'Research on applying AI to medical field.',
+      'Drug, Alzheimer, Brain age prediction topic.',
+    ],
+  },
+];
+
+// Work experience
+export const EXPERIENCE: Experience[] = [
+  {
+    period: 'Sep 2019 - Jul 2025',
+    company: 'NAPA GLOBAL',
+    position: 'Full-stack Developer',
+    responsibilities: [
+      'Take part in product development by teams, using some popular technologies such as ReactJS, NextJS, NodeJS, NestJS, AWS, React Native, Python',
+      'Key of some projects, focusing on system management built on AWS.',
+      'Research to improve source code quality, and system maintenance.',
+      'Technical leader; research to apply new technologies, new trends; solving technical problems; improving products performance.',
+      'Research to integrate third-party tools or services like Slack, LinkedIn, Telegram, …',
+      'Research to apply and improve CI/CD flows using Gitlab, Github, AWS',
+      'Make some ideas and join in organizing all events in the company like happy birthday, football tournaments, year-end parties,...',
+      'Research and build the AI integrated software. Implement AI into development processes.',
+    ],
+    recognition: [
+      'Outstanding Staff 2019',
+      'The staff has various contributions to cultural activities in the company in 2021',
+    ],
+  },
+];
+
+// Skills
+export const SKILLS: Skills = {
+  language: ['English'],
+  programmingLanguage: ['JavaScript', 'Python'],
+  framework: [
+    'ReactJS',
+    'NextJS',
+    'React Native',
+    'NestJS',
+    'LangChain',
+    'LangGraph',
+  ],
+  service: [
+    'AWS',
+    'Docker',
+    'Firebase',
+    'Git',
+    'Supabase',
+    'Clerk',
+    'NextAuth',
+  ],
+  database: ['MongoDB', 'MySQL', 'PostgreSQL', 'Redis'],
+  other: [
+    'Automation Test',
+    'CD/CD with Github/Gitlab',
+    'GraphQL',
+    'Third-party integration such as Slack, LinkedIn, Telegram',
+  ],
+};

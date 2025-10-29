@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { createPost, type PostStatus } from '@/services/posts';
+import { createPost } from '@/services/posts';
 import { ensureAdminOrThrow, verifyAdminToken } from '@/lib/admin-auth';
+import { type PostStatus } from '@/types/enums';
 
 /**
  * Extracts the admin ID from the request token
@@ -63,7 +64,7 @@ const postSchema = z.object({
     .datetime('Publish date must be a valid datetime')
     .optional()
     .or(z.literal('')),
-  status: z.enum(['draft', 'published', 'archived']),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
 });
 
 export async function POST(request: NextRequest) {

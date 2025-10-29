@@ -6,6 +6,8 @@ import { authFetch, authDelete } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import type { Topic, Hashtag } from '@/db/schema';
+import { POST_STATUS, type PostStatus } from '@/types/enums';
 import {
   Select,
   SelectContent,
@@ -38,11 +40,11 @@ interface Blog {
   id: string;
   title: string;
   slug: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   publishDate?: string;
   createdAt: string;
-  topics: Array<{ id: string; name: string }>;
-  hashtags: Array<{ id: string; name: string }>;
+  topics: Topic[];
+  hashtags?: Hashtag[];
 }
 
 export default function BlogsListPage() {
@@ -106,6 +108,8 @@ export default function BlogsListPage() {
     }
   };
 
+  console.log(blogs);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex justify-between items-center mb-8">
@@ -142,8 +146,8 @@ export default function BlogsListPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="PUBLISHED">Published</SelectItem>
+                <SelectItem value={POST_STATUS.DRAFT}>Draft</SelectItem>
+                <SelectItem value={POST_STATUS.PUBLISHED}>Published</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -200,10 +204,12 @@ export default function BlogsListPage() {
                     <TableCell>
                       <Badge
                         variant={
-                          blog.status === 'PUBLISHED' ? 'default' : 'secondary'
+                          blog.status === POST_STATUS.PUBLISHED
+                            ? 'default'
+                            : 'secondary'
                         }
                       >
-                        {blog.status}
+                        {blog.status.charAt(0).toUpperCase() + blog.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>

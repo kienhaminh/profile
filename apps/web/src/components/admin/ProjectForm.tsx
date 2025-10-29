@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { HashtagSelect } from './HashtagSelect';
 import { TechnologySelect } from './TechnologySelect';
 import type { CreateProjectRequest } from '@/lib/validation';
+import { PROJECT_STATUS, type ProjectStatus } from '@/types/enums';
 
 interface ProjectFormData {
   title: string;
   slug: string;
   description: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: ProjectStatus;
   images: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -43,7 +44,7 @@ export function ProjectForm({
     title: initialData?.title || '',
     slug: initialData?.slug || '',
     description: initialData?.description || '',
-    status: initialData?.status || 'DRAFT',
+    status: (initialData?.status as ProjectStatus) || PROJECT_STATUS.DRAFT,
     images: initialData?.images || [],
     githubUrl: initialData?.githubUrl || '',
     liveUrl: initialData?.liveUrl || '',
@@ -266,8 +267,8 @@ export function ProjectForm({
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="DRAFT">Draft</option>
-            <option value="PUBLISHED">Published</option>
+            <option value={PROJECT_STATUS.DRAFT}>Draft</option>
+            <option value={PROJECT_STATUS.PUBLISHED}>Published</option>
           </select>
         </div>
 

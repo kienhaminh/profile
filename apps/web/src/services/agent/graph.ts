@@ -9,6 +9,7 @@ import { z } from 'zod';
 import type { AgentInput } from '@/types/agent';
 import { listBlogs } from '@/services/blog';
 import { listProjects } from '@/services/project';
+import { getRelatedBlogsBySlug } from '@/services/knowledge-graph';
 import { logger } from '@/lib/logger';
 
 interface AgentState {
@@ -98,6 +99,55 @@ const searchProjectsTool = tool(
   }
 );
 
+const relatedBlogsTool = tool(
+  async ({ query }: { query: string }) => {
+    try {
+      logger.info('Agent finding related blogs', { query });
+      const result = await listBlogs({
+        page: 1,
+        limit: 1,
+        status: 'PUBLISHED',
+        search: query,
+      });
+
+      if (result.data.length === 0) {
+        return 'No matching blog found to compute related posts.';
+      }
+
+      const targetBlog = result.data[0];
+      const relatedBlogs = await getRelatedBlogsBySlug(targetBlog.slug, 5);
+
+      if (relatedBlogs.length === 0) {
+        return `Found the blog "${targetBlog.title}" but no related posts were found.`;
+      }
+
+      const relatedText = relatedBlogs
+        .map(
+          (blog) =>
+            `- ${blog.title} (/blog/${blog.slug}) [relevance score: ${blog.score}]`
+        )
+        .join('\n');
+
+      return `Related to "${targetBlog.title}":\n\n${relatedText}`;
+    } catch (error) {
+      const errorInstance =
+        error instanceof Error ? error : new Error('Unknown error');
+      logger.error('Error finding related blogs in agent tool', errorInstance);
+      throw errorInstance;
+    }
+  },
+  {
+    name: 'related_blogs',
+    description:
+      'Find blog posts related to a specific post. Use this when the user asks about similar posts, related content, or what else to read.',
+    schema: z.object({
+      query: z
+        .string()
+        .describe('Blog post title or keywords to find related content for'),
+    }),
+  }
+);
+
 function routerNode(state: AgentState): Partial<AgentState> {
   const query = state.userQuery.toLowerCase();
 
@@ -110,12 +160,20 @@ function routerNode(state: AgentState): Partial<AgentState> {
     'developed',
     'created',
   ];
+  const relatedKeywords = [
+    'related',
+    'similar',
+    'like',
+    'also read',
+    'more about',
+  ];
 
   const needsBlogTool = blogKeywords.some((kw) => query.includes(kw));
   const needsProjectTool = projectKeywords.some((kw) => query.includes(kw));
+  const needsRelatedTool = relatedKeywords.some((kw) => query.includes(kw));
 
   return {
-    needsTool: needsBlogTool || needsProjectTool,
+    needsTool: needsBlogTool || needsProjectTool || needsRelatedTool,
   };
 }
 
@@ -142,13 +200,27 @@ async function toolNode(state: AgentState): Promise<Partial<AgentState>> {
       'developed',
       'created',
     ];
+    const relatedKeywords = [
+      'related',
+      'similar',
+      'like',
+      'also read',
+      'more about',
+    ];
 
     const needsBlogTool = blogKeywords.some((kw) => queryLower.includes(kw));
     const needsProjectTool = projectKeywords.some((kw) =>
       queryLower.includes(kw)
     );
+    const needsRelatedTool = relatedKeywords.some((kw) =>
+      queryLower.includes(kw)
+    );
 
-    if (needsBlogTool) {
+    if (needsRelatedTool && needsBlogTool) {
+      // User is asking for related blogs
+      const relatedResult = await relatedBlogsTool.invoke({ query });
+      context += `Related Blog Posts:\n${relatedResult}\n\n`;
+    } else if (needsBlogTool) {
       const blogResult = await searchBlogsTool.invoke({ query });
       context += `Blog Search Results:\n${blogResult}\n\n`;
     }

@@ -1,0 +1,72 @@
+---
+title: 'Introduction'
+description: 'API reference for the Portfolio/Blog platform'
+---
+
+## Welcome
+
+This API provides endpoints for managing a personal portfolio and blog platform. The API supports content management for blog posts, projects, technologies, hashtags, and topics, with both public and admin-only endpoints.
+
+<Card
+  title="Portfolio API Endpoints"
+  icon="code"
+  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
+>
+  View the OpenAPI specification file
+</Card>
+
+## API Categories
+
+### Public Endpoints
+- **Blog Posts**: Retrieve published blog posts and related content
+- **Projects**: Browse portfolio projects with filtering options
+- **Hashtags**: Explore content by hashtags
+- **Topics**: Navigate content by topics
+- **Technologies**: View technology stack information
+
+### Admin Endpoints
+- **Authentication**: Admin login/logout with secure token management
+- **Content Management**: Full CRUD operations for all content types
+- **Analytics**: Dashboard statistics and insights
+
+## Authentication
+
+### Public Endpoints
+Most endpoints are publicly accessible for reading published content. No authentication required.
+
+### Admin Endpoints
+Admin endpoints require authentication via HTTP-only cookies set during login. The API uses secure token-based authentication with CSRF protection.
+
+```typescript
+// Admin login sets HTTP-only cookie
+POST /api/admin/login
+{
+  "username": "admin",
+  "password": "password"
+}
+
+// Subsequent admin requests include the cookie automatically
+GET /api/admin/posts
+```
+
+## Response Format
+
+All API responses follow a consistent JSON format:
+
+```typescript
+// Success response
+{
+  "data": { /* response data */ },
+  "status": 200
+}
+
+// Error response
+{
+  "error": "Error message",
+  "status": 400
+}
+```
+
+## Rate Limiting
+
+Public endpoints have rate limiting to prevent abuse. Admin endpoints require authentication and are additionally protected.

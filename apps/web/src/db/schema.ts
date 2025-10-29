@@ -16,9 +16,9 @@ function generateUUID(): string {
 }
 
 export const postStatusEnum = pgEnum('post_status', [
-  'draft',
-  'published',
-  'archived',
+  'DRAFT',
+  'PUBLISHED',
+  'ARCHIVED',
 ]);
 export const projectStatusEnum = pgEnum('project_status', [
   'DRAFT',
@@ -31,7 +31,7 @@ export const posts = pgTable(
     id: text('id').primaryKey().$defaultFn(generateUUID),
     title: text('title').notNull(),
     slug: text('slug').notNull().unique(),
-    status: postStatusEnum('status').notNull().default('draft'),
+    status: postStatusEnum('status').notNull().default('DRAFT'),
     publishDate: timestamp('publish_date', { mode: 'date' }),
     content: text('content').notNull(),
     excerpt: text('excerpt'),

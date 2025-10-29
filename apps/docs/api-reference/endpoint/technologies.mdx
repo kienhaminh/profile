@@ -1,0 +1,79 @@
+---
+title: 'Technologies API'
+description: 'Endpoints for managing technology stack information'
+---
+
+## Overview
+
+The Technologies API provides endpoints for retrieving technology information used in projects.
+
+## Endpoints
+
+### List Technologies
+
+Get all available technologies.
+
+```http
+GET /api/technologies
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "name": "React",
+    "slug": "react",
+    "description": "A JavaScript library for building user interfaces",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "uuid",
+    "name": "Node.js",
+    "slug": "nodejs",
+    "description": "JavaScript runtime built on Chrome's V8 JavaScript engine",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+### Get Technology by ID
+
+Retrieve a single technology by its UUID.
+
+```http
+GET /api/technologies/{id}
+```
+
+**Path Parameters:**
+- `id`: The UUID of the technology
+
+**Response:** Individual technology object.
+
+## Usage
+
+Technologies are used to:
+
+- Describe the tech stack used in projects
+- Filter projects by specific technologies
+- Showcase technical expertise and skills
+
+Projects can be associated with multiple technologies via the `technologyIds` array during creation or update.
+
+## Error Responses
+
+**404 Not Found:**
+```json
+{
+  "error": "Technology not found"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error"
+}
+```

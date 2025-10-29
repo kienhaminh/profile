@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BlogForm } from '@/components/admin/BlogForm';
+import type { PostStatus } from '@/types/enums';
 
 interface BlogFormData {
   title: string;
   slug: string;
   content: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   publishDate?: string;
   excerpt?: string;
   readTime?: number;
@@ -22,7 +23,7 @@ interface BlogData {
   title: string;
   slug: string;
   content: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: PostStatus;
   publishDate?: string;
   excerpt?: string;
   readTime?: number;

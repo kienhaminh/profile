@@ -31,6 +31,7 @@ A modern, full-stack developer portfolio website with blog functionality, built 
 ```
 portfolio-monorepo/
 ├── apps/
+│   ├── docs/
 │   └── web/                 # Next.js application
 │       ├── src/
 │       │   ├── app/         # Next.js App Router (pages & API routes)
@@ -129,9 +130,12 @@ pnpm dev
 
 # Or start only the web app
 pnpm -F @portfolio/web dev
+
+# Or start only the documentation site
+pnpm -F @portfolio/docs dev
 ```
 
-The development server will be available at [http://localhost:3000](http://localhost:3000).
+The web app will be available at [http://localhost:3000](http://localhost:3000) and the Mintlify docs at [http://localhost:3001](http://localhost:3001).
 
 ### 5. Admin Access
 

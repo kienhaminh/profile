@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import type { ProjectStatus } from '@/types/enums';
 
 interface Project {
   id: string;
   title: string;
   slug: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: ProjectStatus;
   description: string;
   isOngoing: boolean;
   createdAt: string;

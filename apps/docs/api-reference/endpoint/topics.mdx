@@ -1,0 +1,79 @@
+---
+title: 'Topics API'
+description: 'Endpoints for managing blog post topics'
+---
+
+## Overview
+
+The Topics API provides endpoints for retrieving and exploring topics used to categorize blog posts.
+
+## Endpoints
+
+### List Topics
+
+Get all available topics.
+
+```http
+GET /api/topics
+```
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Technology",
+    "slug": "technology",
+    "description": "Articles about technology trends and tools",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "uuid",
+    "name": "Tutorial",
+    "slug": "tutorial",
+    "description": "Step-by-step guides and tutorials",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+### Get Topic by ID
+
+Retrieve a single topic by its UUID.
+
+```http
+GET /api/topics/{id}
+```
+
+**Path Parameters:**
+- `id`: The UUID of the topic
+
+**Response:** Individual topic object.
+
+## Usage
+
+Topics are used to categorize blog posts and allow for:
+
+- Content organization and navigation
+- Filtering blog posts by topic
+- Discovering related content
+
+Blog posts can be associated with multiple topics via the `topicIds` array during creation or update.
+
+## Error Responses
+
+**404 Not Found:**
+```json
+{
+  "error": "Topic not found"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error"
+}
+```

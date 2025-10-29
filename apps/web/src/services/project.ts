@@ -14,6 +14,7 @@ import type {
   UpdateProjectRequest,
   ProjectFilterParams,
 } from '../lib/validation';
+import type { ProjectStatus } from '@/types/enums';
 
 // Type for Drizzle transaction - inferred from db type
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -72,7 +73,7 @@ export async function createProject(
       title: data.title,
       slug: data.slug,
       description: data.description,
-      status: data.status || 'DRAFT',
+      status: (data.status as ProjectStatus) || 'DRAFT',
       images: data.images || [],
       githubUrl: data.githubUrl || null,
       liveUrl: data.liveUrl || null,
@@ -182,7 +183,7 @@ export async function listProjects(
   const conditions = [];
 
   if (status) {
-    conditions.push(eq(projects.status, status));
+    conditions.push(eq(projects.status, status as ProjectStatus));
   }
 
   if (technologyId) {
@@ -298,7 +299,7 @@ export async function updateProject(
     if (data.description !== undefined) {
       updateData.description = data.description;
     }
-    if (data.status !== undefined) updateData.status = data.status;
+    if (data.status !== undefined) updateData.status = data.status as ProjectStatus;
     if (data.images !== undefined) updateData.images = data.images;
     if (data.githubUrl !== undefined) {
       updateData.githubUrl = data.githubUrl || null;

@@ -12,6 +12,7 @@ import type {
   UpdateBlogRequest,
   BlogFilterParams,
 } from '../lib/validation';
+import type { PostStatus } from '@/types/enums';
 
 // Type for Drizzle transaction - inferred from db type
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -29,13 +30,6 @@ export class ConflictError extends Error {
     super(message);
     this.name = 'ConflictError';
   }
-}
-
-// Helper function to convert validation status to database status
-function convertValidationStatusToDbStatus(
-  validationStatus: 'DRAFT' | 'PUBLISHED'
-): 'draft' | 'published' {
-  return validationStatus.toLowerCase() as 'draft' | 'published';
 }
 
 // Types for junction table objects with relations (from Drizzle 'with' clause)
@@ -89,9 +83,7 @@ export async function createBlog(
       title: data.title,
       slug: data.slug,
       content: data.content,
-      status: data.status
-        ? convertValidationStatusToDbStatus(data.status)
-        : 'draft',
+      status: (data.status as PostStatus) || 'DRAFT',
       publishDate: data.publishDate ? new Date(data.publishDate) : null,
       excerpt: data.excerpt || null,
       readTime: data.readTime || null,
@@ -198,9 +190,7 @@ export async function listBlogs(
   const conditions = [];
 
   if (status) {
-    conditions.push(
-      eq(posts.status, convertValidationStatusToDbStatus(status))
-    );
+    conditions.push(eq(posts.status, status as PostStatus));
   }
 
   if (topicId) {
@@ -309,8 +299,7 @@ export async function updateBlog(
     if (data.title !== undefined) updateData.title = data.title;
     if (data.slug !== undefined) updateData.slug = data.slug;
     if (data.content !== undefined) updateData.content = data.content;
-    if (data.status !== undefined)
-      updateData.status = convertValidationStatusToDbStatus(data.status);
+    if (data.status !== undefined) updateData.status = data.status as PostStatus;
     if (data.publishDate !== undefined) {
       updateData.publishDate = data.publishDate
         ? new Date(data.publishDate)

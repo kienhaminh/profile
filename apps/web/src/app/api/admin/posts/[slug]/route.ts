@@ -3,11 +3,11 @@ import { ZodError, type ZodIssue } from 'zod';
 import {
   updatePost,
   deletePost,
-  type PostStatus,
   type UpdatePostData,
 } from '@/services/posts';
 import { ensureAdminOrThrow } from '@/lib/admin-auth';
 import { updatePostSchema } from '@/lib/validation';
+import { POST_STATUS_VALUES, type PostStatus } from '@/types/enums';
 
 export async function PATCH(
   request: NextRequest,
@@ -49,13 +49,10 @@ export async function PATCH(
     if (validatedData.excerpt !== undefined)
       updateData.excerpt = validatedData.excerpt;
     if (validatedData.status !== undefined) {
-      // Runtime validation: ensure status is one of the allowed PostStatus values
-      const validStatuses = ['draft', 'published', 'archived'] as const;
-      if (!validStatuses.includes(validatedData.status)) {
+      if (!POST_STATUS_VALUES.includes(validatedData.status as PostStatus)) {
         return NextResponse.json(
           {
-            error:
-              'Invalid status value. Must be one of: draft, published, archived',
+            error: `Invalid status value. Must be one of: ${POST_STATUS_VALUES.join(', ')}`,
           },
           { status: 400 }
         );

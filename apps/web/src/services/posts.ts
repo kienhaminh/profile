@@ -3,10 +3,12 @@ import { posts, topics, postTopics, Topic } from '@/db/schema';
 import { eq, desc, inArray, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { generateUniqueSlug } from '@/lib/slug';
+import { type PostStatus, POST_STATUS, POST_STATUS_VALUES } from '@/types/enums';
 
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-export type PostStatus = 'draft' | 'published' | 'archived';
+export type { PostStatus };
+export { POST_STATUS, POST_STATUS_VALUES };
 
 /**
  * Helper function to build topics map from post-topic relations
@@ -21,40 +23,18 @@ function buildTopicsMap(
     topicSlug: string;
     topicDescription: string | null;
   }>
-): Map<
-  string,
-  Array<{
-    topic: {
-      id: string;
-      name: string;
-      slug: string;
-      description: string | null;
-    };
-  }>
-> {
-  const topicsMap = new Map<
-    string,
-    Array<{
-      topic: {
-        id: string;
-        name: string;
-        slug: string;
-        description: string | null;
-      };
-    }>
-  >();
+): Map<string, Topic[]> {
+  const topicsMap = new Map<string, Topic[]>();
 
   for (const relation of postTopicRelations) {
     if (!topicsMap.has(relation.postId)) {
       topicsMap.set(relation.postId, []);
     }
     topicsMap.get(relation.postId)!.push({
-      topic: {
-        id: relation.topicId,
-        name: relation.topicName,
-        slug: relation.topicSlug,
-        description: relation.topicDescription,
-      },
+      id: relation.topicId,
+      name: relation.topicName,
+      slug: relation.topicSlug,
+      description: relation.topicDescription,
     });
   }
 
@@ -166,14 +146,7 @@ export interface PostWithTopics {
   createdAt: Date;
   updatedAt: Date;
   authorId: string;
-  topics: Array<{
-    topic: {
-      id: string;
-      name: string;
-      slug: string;
-      description: string | null;
-    };
-  }>;
+  topics: Topic[];
 }
 
 export async function createPost(
@@ -224,12 +197,10 @@ export async function createPost(
     const createdPost: PostWithTopics = {
       ...newPost,
       topics: postTopicRelations.map((pt) => ({
-        topic: {
-          id: pt.topicId,
-          name: pt.topicName,
-          slug: pt.topicSlug,
-          description: pt.topicDescription,
-        },
+        id: pt.topicId,
+        name: pt.topicName,
+        slug: pt.topicSlug,
+        description: pt.topicDescription,
       })),
     };
 
@@ -265,12 +236,10 @@ export async function getPostBySlug(
   return {
     ...post[0],
     topics: postTopicRelations.map((pt) => ({
-      topic: {
-        id: pt.topicId,
-        name: pt.topicName,
-        slug: pt.topicSlug,
-        description: pt.topicDescription,
-      },
+      id: pt.topicId,
+      name: pt.topicName,
+      slug: pt.topicSlug,
+      description: pt.topicDescription,
     })),
   } as PostWithTopics;
 }
@@ -281,6 +250,12 @@ export async function getPosts(filters?: {
   limit?: number;
   offset?: number;
 }): Promise<PostWithTopics[]> {
+  try {
+    logger.info('getPosts called with filters', filters);
+  } catch (e) {
+    // Ignore logger errors
+  }
+
   // If filtering by topic, fetch topic ID first and return early if not found
   if (filters?.topic) {
     const topicResult = await db
@@ -365,6 +340,11 @@ export async function getPosts(filters?: {
     .orderBy(desc(posts.publishDate))
     .limit(filters?.limit || 10)
     .offset(filters?.offset || 0);
+
+  // If no posts found, return empty array early
+  if (postsResult.length === 0) {
+    return [];
+  }
 
   // Get all topics for the filtered posts to avoid N+1 queries
   const postIds = postsResult.map((p) => p.id);
@@ -465,12 +445,10 @@ export async function updatePost(
     const updatedPostWithTopics: PostWithTopics = {
       ...updatedPost,
       topics: postTopicRelations.map((pt) => ({
-        topic: {
-          id: pt.topicId,
-          name: pt.topicName,
-          slug: pt.topicSlug,
-          description: pt.topicDescription,
-        },
+        id: pt.topicId,
+        name: pt.topicName,
+        slug: pt.topicSlug,
+        description: pt.topicDescription,
       })),
     };
 

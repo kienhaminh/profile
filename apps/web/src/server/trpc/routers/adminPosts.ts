@@ -6,13 +6,17 @@ import {
   getPostBySlug,
   getPosts,
   updatePost,
-  type PostStatus,
   type UpdatePostData,
 } from '@/services/posts';
 import { updatePostSchema } from '@/lib/validation';
 import { adminProcedure, router } from '../init';
+import { POST_STATUS_VALUES, type PostStatus } from '@/types/enums';
 
-const statusEnum = z.enum(['draft', 'published', 'archived']);
+const statusEnum = z.enum([
+  POST_STATUS_VALUES[0] as 'draft',
+  POST_STATUS_VALUES[1] as 'published',
+  POST_STATUS_VALUES[2] as 'archived',
+]);
 
 const createPostSchema = z.object({
   title: z
@@ -125,12 +129,10 @@ export const adminPostsRouter = router({
         updateData.excerpt = input.data.excerpt;
       }
       if (input.data.status !== undefined) {
-        const validStatuses: PostStatus[] = ['draft', 'published', 'archived'];
-        if (!validStatuses.includes(input.data.status)) {
+        if (!POST_STATUS_VALUES.includes(input.data.status as PostStatus)) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
-            message:
-              'Invalid status value. Must be one of: draft, published, archived',
+            message: `Invalid status value. Must be one of: ${POST_STATUS_VALUES.join(', ')}`,
           });
         }
         updateData.status = input.data.status;

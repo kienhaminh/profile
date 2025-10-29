@@ -19,9 +19,33 @@ import {
 import { logger } from '@/lib/logger';
 import { authFetch, authDelete } from '@/lib/auth-client';
 import type { PostWithTopics } from '@/services/posts';
+import { PostsOverTimeChart } from '@/components/admin/posts-over-time-chart';
+import { TopicsDistributionChart } from '@/components/admin/topics-distribution-chart';
+import { HashtagsDistributionChart } from '@/components/admin/hashtags-distribution-chart';
+import { ProjectsStatsChart } from '@/components/admin/projects-stats-chart';
+
+interface DashboardStats {
+  postsOverTime: Array<{ month: string; count: string; status: string }>;
+  topicsDistribution: Array<{ name: string; post_count: string }>;
+  hashtagsDistribution: Array<{
+    name: string;
+    post_count: string;
+    project_count: string;
+  }>;
+  projectsStats: Array<{ status: string; count: string }>;
+  recentActivity: {
+    posts_this_week: string;
+    projects_this_week: string;
+    total_posts: string;
+    total_projects: string;
+    total_topics: string;
+    total_hashtags: string;
+  };
+}
 
 export default function AdminDashboard() {
   const [posts, setPosts] = useState<PostWithTopics[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
@@ -47,8 +71,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const response = await authFetch('/api/admin/stats');
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      logger.error('Failed to fetch stats:', err as Error);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
+    fetchStats();
   }, []);
 
   const handleEdit = (postId: string) => {
@@ -85,9 +121,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const publishedPosts = posts.filter((p) => p.status === 'published').length;
-  const draftPosts = posts.filter((p) => p.status === 'draft').length;
-
   return (
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
@@ -104,54 +137,63 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{posts.length}</div>
+              <div className="text-2xl font-bold">
+                {stats?.recentActivity.total_posts || posts.length}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.recentActivity.posts_this_week || 0} this week
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Published
+                Total Projects
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {publishedPosts}
+              <div className="text-2xl font-bold text-blue-600">
+                {stats?.recentActivity.total_projects || 0}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {stats?.recentActivity.projects_this_week || 0} this week
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                Topics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">
+                {stats?.recentActivity.total_topics || 0}
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Drafts
+                Hashtags
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                {draftPosts}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Analytics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-gray-500">
-                View in{' '}
-                <a
-                  href="https://analytics.google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  GA4
-                </a>
+              <div className="text-2xl font-bold text-pink-600">
+                {stats?.recentActivity.total_hashtags || 0}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {stats && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <PostsOverTimeChart data={stats.postsOverTime} />
+            <ProjectsStatsChart data={stats.projectsStats} />
+            <TopicsDistributionChart data={stats.topicsDistribution} />
+            <HashtagsDistributionChart data={stats.hashtagsDistribution} />
+          </div>
+        )}
 
         <div className="grid gap-6">
           <Card>
@@ -201,14 +243,14 @@ export default function AdminDashboard() {
                             <div className="flex gap-2 mt-2">
                               <span
                                 className={`px-2 py-1 text-xs rounded-full ${
-                                  post.status === 'published'
+                                  post.status === 'PUBLISHED'
                                     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
                                     : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
                                 }`}
                               >
                                 {post.status}
                               </span>
-                              {post.topics.map(({ topic }) => (
+                              {post.topics.map((topic) => (
                                 <span
                                   key={topic.id}
                                   className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full"

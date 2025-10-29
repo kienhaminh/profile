@@ -1,0 +1,112 @@
+---
+title: 'Blog Posts API'
+description: 'Endpoints for managing blog posts'
+---
+
+## Overview
+
+The Blog Posts API provides endpoints for retrieving published blog posts and related content. All endpoints are publicly accessible and don't require authentication.
+
+## Endpoints
+
+### List Blog Posts
+
+Get a paginated list of published blog posts with optional filtering.
+
+```http
+GET /api/blog/posts
+```
+
+**Query Parameters:**
+- `topic` (optional): Filter posts by topic slug
+- `limit` (optional): Maximum number of posts to return (1-100, default: 10)
+- `offset` (optional): Number of posts to skip (default: 0)
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Blog Post Title",
+    "slug": "blog-post-title",
+    "content": "Full blog post content...",
+    "excerpt": "Short excerpt or summary",
+    "status": "PUBLISHED",
+    "readTime": 5,
+    "coverImage": "https://example.com/image.jpg",
+    "publishDate": "2024-01-01T00:00:00.000Z",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "author": {
+      "id": "uuid",
+      "name": "Author Name",
+      "email": "author@example.com",
+      "bio": "Author biography"
+    },
+    "topics": [
+      {
+        "id": "uuid",
+        "name": "Technology",
+        "slug": "technology",
+        "description": "Tech-related content",
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "hashtags": [
+      {
+        "id": "uuid",
+        "name": "React",
+        "slug": "react",
+        "description": "React.js related posts",
+        "createdAt": "2024-01-01T00:00:00.000Z",
+        "updatedAt": "2024-01-01T00:00:00.000Z"
+      }
+    ]
+  }
+]
+```
+
+### Get Blog Post by Slug
+
+Retrieve a single published blog post by its URL slug.
+
+```http
+GET /api/blog/posts/{slug}
+```
+
+**Path Parameters:**
+- `slug`: The URL-friendly slug of the blog post
+
+**Response:** Same as individual blog post object above.
+
+### Get Related Blog Posts
+
+Retrieve blog posts related to a specific post ID.
+
+```http
+GET /api/blog/{id}/related
+```
+
+**Path Parameters:**
+- `id`: The UUID of the blog post to find related posts for
+
+**Response:** Array of blog post objects (same format as list endpoint).
+
+## Error Responses
+
+All endpoints may return the following error responses:
+
+**404 Not Found:**
+```json
+{
+  "error": "Blog post not found"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error"
+}
+```

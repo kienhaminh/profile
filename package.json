@@ -9,7 +9,8 @@
     "test": "turbo run test",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
-    "db:setup": "turbo run db:setup"
+    "db:setup": "turbo run db:setup",
+    "db:seed-all": "./seed-all.sh"
   },
   "devDependencies": {
     "turbo": "^2.5.8"

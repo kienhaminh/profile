@@ -1,0 +1,216 @@
+---
+title: 'Admin Content Management API'
+description: 'Endpoints for creating, updating, and managing all content types'
+---
+
+## Overview
+
+The Admin Content Management API provides full CRUD operations for all content types. All endpoints require admin authentication via HTTP-only cookies.
+
+## Blog Posts Management
+
+### List All Posts (Admin)
+
+Retrieve all blog posts regardless of publication status.
+
+```http
+GET /api/admin/posts
+```
+
+**Query Parameters:**
+- `status` (optional): Filter by status (`DRAFT`, `PUBLISHED`, `ARCHIVED`)
+- `topic` (optional): Filter by topic
+- `limit` (optional): Results per page (1-100, default: 10)
+- `offset` (optional): Number to skip (default: 0)
+
+### Create Blog Post
+
+Create a new blog post.
+
+```http
+POST /api/admin/posts
+```
+
+**Request Body:**
+```json
+{
+  "title": "My Blog Post",
+  "slug": "my-blog-post",
+  "content": "Full blog post content in Markdown...",
+  "status": "DRAFT",
+  "publishDate": "2024-01-15T10:00:00.000Z",
+  "excerpt": "Brief summary of the post",
+  "readTime": 5,
+  "coverImage": "https://example.com/image.jpg",
+  "authorId": "uuid-of-author",
+  "topicIds": ["uuid1", "uuid2"],
+  "hashtagIds": ["uuid3", "uuid4"]
+}
+```
+
+### Get Post by Slug (Admin)
+
+Retrieve any post by slug, regardless of status.
+
+```http
+GET /api/admin/posts/{slug}
+```
+
+### Update Post
+
+Update an existing blog post.
+
+```http
+PUT /api/admin/posts/{slug}
+```
+
+**Request Body:** Same as create, but all fields optional.
+
+### Delete Post
+
+Delete a blog post.
+
+```http
+DELETE /api/admin/posts/{slug}
+```
+
+## Projects Management
+
+### List Projects (Admin)
+
+```http
+GET /api/admin/projects
+```
+
+### Create Project
+
+```http
+POST /api/admin/projects
+```
+
+**Request Body:**
+```json
+{
+  "title": "My Project",
+  "slug": "my-project",
+  "description": "Project description...",
+  "status": "PUBLISHED",
+  "images": ["https://example.com/image1.jpg"],
+  "githubUrl": "https://github.com/user/project",
+  "liveUrl": "https://project.example.com",
+  "startDate": "2024-01-01T00:00:00.000Z",
+  "endDate": "2024-06-01T00:00:00.000Z",
+  "isOngoing": false,
+  "technologyIds": ["uuid1", "uuid2"],
+  "hashtagIds": ["uuid3", "uuid4"]
+}
+```
+
+### Update Project
+
+```http
+PUT /api/admin/projects/{id}
+```
+
+### Delete Project
+
+```http
+DELETE /api/admin/projects/{id}
+```
+
+## Taxonomy Management
+
+### Create/Update Hashtags, Topics, Technologies
+
+All taxonomy endpoints follow similar patterns:
+
+```http
+POST /api/admin/hashtags
+POST /api/admin/topics
+POST /api/admin/technologies
+```
+
+**Request Body (example for hashtag):**
+```json
+{
+  "name": "New Hashtag",
+  "slug": "new-hashtag",
+  "description": "Optional description"
+}
+```
+
+## Common Response Patterns
+
+### Success Responses
+
+**Create/Update (201/200):**
+```json
+{
+  "id": "uuid",
+  "title": "Content Title",
+  "slug": "content-slug",
+  // ... full object
+}
+```
+
+**Delete (204):** No content
+
+### Error Responses
+
+**400 Validation Error:**
+```json
+{
+  "error": "Validation Error",
+  "message": [
+    {
+      "code": "invalid_type",
+      "expected": "string",
+      "received": "number",
+      "path": ["title"],
+      "message": "Expected string, received number"
+    }
+  ]
+}
+```
+
+**401 Unauthorized:**
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+**404 Not Found:**
+```json
+{
+  "error": "Resource not found"
+}
+```
+
+**409 Conflict:**
+```json
+{
+  "error": "Conflict",
+  "message": "Slug already exists"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+## Validation Rules
+
+- **Titles**: 1-200 characters
+- **Slugs**: Lowercase letters, numbers, hyphens only
+- **Content**: Minimum 1 character
+- **URLs**: Must be valid URIs
+- **UUIDs**: Must be valid UUID format
+- **Dates**: ISO 8601 datetime strings
+
+## Authentication Required
+
+All admin endpoints require a valid admin session cookie. Ensure you're logged in via `/api/admin/login` before making requests.

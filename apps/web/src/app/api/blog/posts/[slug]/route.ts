@@ -14,7 +14,7 @@ export async function GET(
     }
 
     // Only return published posts for public API
-    if (post.status !== 'published') {
+    if (post.status !== 'PUBLISHED') {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 

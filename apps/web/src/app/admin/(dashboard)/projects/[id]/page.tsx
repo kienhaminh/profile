@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 import { authFetch } from '@/lib/auth-client';
+import type { ProjectStatus } from '@/types/enums';
 
 interface ProjectFormData {
   title: string;
   slug: string;
   description: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: ProjectStatus;
   images: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -25,7 +26,7 @@ interface ProjectData {
   title: string;
   slug: string;
   description: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: ProjectStatus;
   images: string[];
   githubUrl?: string;
   liveUrl?: string;

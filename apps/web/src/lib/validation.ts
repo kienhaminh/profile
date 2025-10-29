@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { POST_STATUS_VALUES, PROJECT_STATUS_VALUES } from '@/types/enums';
 
 /**
  * Validation schemas using Zod
@@ -17,7 +18,7 @@ export const createBlogSchema = z.object({
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }),
   content: z.string().min(1),
-  status: z.enum(['DRAFT', 'PUBLISHED']),
+  status: z.enum(POST_STATUS_VALUES as [string, ...string[]]),
   publishDate: z.string().datetime().optional().nullable(),
   excerpt: z.string().optional().nullable(),
   readTime: z.number().int().positive().optional().nullable(),
@@ -31,7 +32,7 @@ export const updateBlogSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   slug: z.string().regex(slugPattern).optional(),
   content: z.string().min(1).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+  status: z.enum(POST_STATUS_VALUES as [string, ...string[]]).optional(),
   publishDate: z.string().datetime().optional().nullable(),
   excerpt: z.string().optional().nullable(),
   readTime: z.number().int().positive().optional().nullable(),
@@ -45,7 +46,7 @@ export const updatePostSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).optional(),
   excerpt: z.string().max(500).optional(),
-  status: z.enum(['draft', 'published', 'archived']).optional(),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
   publishDate: z.string().datetime().optional(),
   coverImage: urlSchema.optional(),
   topics: z.array(z.string()).optional(),
@@ -58,7 +59,7 @@ export const createProjectSchema = z.object({
     message: 'Slug must contain only lowercase letters, numbers, and hyphens',
   }),
   description: z.string().min(1),
-  status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
+  status: z.enum(PROJECT_STATUS_VALUES as [string, ...string[]]).default('DRAFT'),
   images: z.array(urlSchema).default([]),
   githubUrl: urlSchema.optional().nullable(),
   liveUrl: urlSchema.optional().nullable(),
@@ -73,7 +74,7 @@ export const updateProjectSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   slug: z.string().regex(slugPattern).optional(),
   description: z.string().min(1).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+  status: z.enum(PROJECT_STATUS_VALUES as [string, ...string[]]).optional(),
   images: z.array(urlSchema).optional(),
   githubUrl: urlSchema.optional().nullable(),
   liveUrl: urlSchema.optional().nullable(),
@@ -136,14 +137,14 @@ export const paginationSchema = z.object({
 });
 
 export const blogFilterSchema = paginationSchema.extend({
-  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+  status: z.enum(POST_STATUS_VALUES as [string, ...string[]]).optional(),
   topicId: uuidSchema.optional(),
   hashtagId: uuidSchema.optional(),
   search: z.string().optional(),
 });
 
 export const projectFilterSchema = paginationSchema.extend({
-  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+  status: z.enum(PROJECT_STATUS_VALUES as [string, ...string[]]).optional(),
   technologyId: uuidSchema.optional(),
   hashtagId: uuidSchema.optional(),
   search: z.string().optional(),

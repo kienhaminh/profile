@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
+import type { ProjectStatus } from '@/types/enums';
 
 interface ProjectFormData {
   title: string;
   slug: string;
   description: string;
-  status: 'DRAFT' | 'PUBLISHED';
+  status: ProjectStatus;
   images: string[];
   githubUrl?: string;
   liveUrl?: string;

@@ -3,9 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { GoogleAds } from '@/components/ads/GoogleAds';
 import DOMPurify from 'isomorphic-dompurify';
 import { Share2, Bookmark, BookmarkCheck } from 'lucide-react';
+import { INFORMATION, CONTACT } from '@/constants/information';
 
 interface BlogPost {
   id: string;
@@ -15,7 +22,19 @@ interface BlogPost {
   excerpt: string | null;
   publishDate: string | null;
   readTime: number | null;
-  topics: Array<{ topic: { name: string } }>;
+  topics: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  }>;
+}
+
+interface RelatedPost {
+  id: string;
+  slug: string;
+  title: string;
+  score: number;
 }
 
 interface BlogPostPageProps {
@@ -26,6 +45,7 @@ interface BlogPostPageProps {
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -61,6 +81,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         // Sanitize the content to prevent XSS attacks
         const sanitizedContent = DOMPurify.sanitize(data.content);
         setPost({ ...data, content: sanitizedContent });
+
+        // Fetch related posts once we have the post ID
+        if (data.id) {
+          fetchRelatedPosts(data.id, signal);
+        }
       } else if (response.status === 404) {
         setError('Post not found');
       } else {
@@ -80,6 +105,28 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       if (!signal.aborted) {
         setLoading(false);
       }
+    }
+  };
+
+  const fetchRelatedPosts = async (postId: string, signal: AbortSignal) => {
+    try {
+      const response = await fetch(`/api/blog/${postId}/related?limit=5`, {
+        signal,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRelatedPosts(data.data || []);
+      } else {
+        console.warn('Failed to fetch related posts');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Related posts fetch was aborted');
+        return;
+      }
+      console.error('Error fetching related posts:', error);
+      // Don't show error to user for related posts failure
     }
   };
 
@@ -198,12 +245,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
               <Link href="/blog" className="text-gray-900 font-medium">
                 Blog
               </Link>
-              <Link
-                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || ''}`}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                Contact
-              </Link>
             </div>
           </div>
         </div>
@@ -217,7 +258,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           </h1>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {post.topics.map(({ topic }) => (
+            {post.topics.map((topic) => (
               <span
                 key={topic.name}
                 className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
@@ -249,6 +290,35 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             <GoogleAds slot={adSlotId} format="auto" responsive={true} />
           ) : null;
         })()}
+
+        {/* Related Posts Section */}
+        {relatedPosts.length > 0 && (
+          <div className="mt-12 pt-8 border-t">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Related Posts
+            </h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {relatedPosts.map((relatedPost) => (
+                <Link
+                  key={relatedPost.id}
+                  href={`/blog/${relatedPost.slug}`}
+                  className="block transition-transform hover:scale-[1.02]"
+                >
+                  <Card className="h-full hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="text-lg line-clamp-2">
+                        {relatedPost.title}
+                      </CardTitle>
+                      <CardDescription className="text-sm text-gray-500">
+                        Relevance score: {relatedPost.score}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-12 pt-8 border-t">
           <div className="flex justify-between items-center">
@@ -289,25 +359,117 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       </article>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white">
+      <footer className="bg-gray-900 text-white" role="contentinfo">
         <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-lg font-semibold">Let&apos;s Connect</h3>
-            <p className="mt-2 text-gray-400">
-              Interested in working together? Get in touch.
-            </p>
-            <div className="mt-6">
-              <Link
-                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'kien@example.com'}`}
-              >
-                <Button
-                  variant="outline"
-                  className="text-white border-white hover:bg-white hover:text-gray-900"
-                >
-                  Send Email
-                </Button>
-              </Link>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Contact Information */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">
+                Contact Information
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-3">📧</span>
+                  <Link
+                    href={`mailto:${CONTACT.email}`}
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    {CONTACT.email}
+                  </Link>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-3">📱</span>
+                  <Link
+                    href={`tel:${CONTACT.mobile}`}
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    {CONTACT.mobile}
+                  </Link>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-gray-400 mr-3 mt-0.5">📍</span>
+                  <span className="text-gray-300">{CONTACT.address}</span>
+                </div>
+              </div>
             </div>
+
+            {/* Social Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Connect With Me</h3>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-3">💼</span>
+                  <Link
+                    href={CONTACT.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    LinkedIn
+                  </Link>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-3">🐙</span>
+                  <Link
+                    href={CONTACT.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    GitHub
+                  </Link>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-gray-400 mr-3">📘</span>
+                  <Link
+                    href={CONTACT.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-300 hover:text-white transition-colors"
+                  >
+                    Facebook
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <div className="space-y-3">
+                <Link
+                  href="/projects"
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
+                  View My Projects
+                </Link>
+                <Link
+                  href="/blog"
+                  className="block text-gray-300 hover:text-white transition-colors"
+                >
+                  Read My Blog
+                </Link>
+                <Link
+                  href={`mailto:${CONTACT.email}`}
+                  className="inline-block mt-4"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-white border-white bg-transparent hover:bg-white hover:text-gray-900"
+                  >
+                    Get In Touch
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-8 border-t border-gray-800 text-center">
+            <p className="text-gray-400">
+              © {new Date().getFullYear()} {INFORMATION.name}. All rights
+              reserved.
+            </p>
           </div>
         </div>
       </footer>
