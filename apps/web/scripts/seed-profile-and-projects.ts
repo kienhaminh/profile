@@ -912,7 +912,7 @@ async function main(): Promise<void> {
     const existingAuthor = await db
       .select()
       .from(authorProfiles)
-      .where(eq(authorProfiles.email, authorData.email));
+      .where(eq(authorProfiles.email, authorData.email!));
 
     let authorId: string;
     if (existingAuthor.length > 0) {
@@ -920,7 +920,7 @@ async function main(): Promise<void> {
       await db
         .update(authorProfiles)
         .set(authorData)
-        .where(eq(authorProfiles.email, authorData.email));
+        .where(eq(authorProfiles.email, authorData.email!));
       authorId = existingAuthor[0].id;
     } else {
       console.log('   ✓ Creating new author...');

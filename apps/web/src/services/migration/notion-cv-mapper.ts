@@ -104,10 +104,6 @@ function cleanUrl(url: string): string {
  * Parse Notion CV markdown to author profile
  */
 export function parseNotionCvToAuthor(notionMd: string): NewAuthorProfile {
-  // Extract name from title
-  const nameMatch = notionMd.match(
-    /### Full Stack Developer[\s\S]*?\*\*Email\*\*:\s*([^\n]+)/
-  );
   const emailMatch = notionMd.match(/\*\*Email\*\*:\s*([^\n]+)/);
   const imageMatch = notionMd.match(/<image source="([^"]+)"><\/image>/);
 

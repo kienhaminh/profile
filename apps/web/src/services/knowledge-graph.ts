@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { posts, postTopics, postHashtags } from '@/db/schema';
-import { eq, and, inArray, ne, sql } from 'drizzle-orm';
+import { eq, and, inArray, ne } from 'drizzle-orm';
 import type { RelatedBlog } from '@/types/graph';
 import { logger } from '@/lib/logger';
 

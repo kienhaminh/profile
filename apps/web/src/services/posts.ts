@@ -3,7 +3,11 @@ import { posts, topics, postTopics, Topic } from '@/db/schema';
 import { eq, desc, inArray, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { generateUniqueSlug } from '@/lib/slug';
-import { type PostStatus, POST_STATUS, POST_STATUS_VALUES } from '@/types/enums';
+import {
+  type PostStatus,
+  POST_STATUS,
+  POST_STATUS_VALUES,
+} from '@/types/enums';
 
 type DrizzleTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
@@ -252,7 +256,7 @@ export async function getPosts(filters?: {
 }): Promise<PostWithTopics[]> {
   try {
     logger.info('getPosts called with filters', filters);
-  } catch (e) {
+  } catch {
     // Ignore logger errors
   }
 
