@@ -63,9 +63,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    const errorInstance =
-      error instanceof Error ? error : new Error('Unknown error');
-    logger.error('Error fetching related blogs', errorInstance);
+    logger.error('Error fetching related blogs', { error });
 
     return NextResponse.json(
       { error: 'Failed to fetch related blogs' },

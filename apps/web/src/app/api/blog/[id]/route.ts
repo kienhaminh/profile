@@ -7,7 +7,7 @@ import {
   ConflictError,
 } from '@/services/blog';
 import { updateBlogSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 
@@ -42,8 +42,14 @@ export async function PUT(
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = updateBlogSchema.parse(body);
+    const parsed = updateBlogSchema.parse(body);
     const { id } = await params;
+
+    // Cast status to PostStatus if provided
+    const data: import('@/types/blog').UpdatePostInput = {
+      ...parsed,
+      status: parsed.status as import('@/types/enums').PostStatus | undefined,
+    };
 
     const blog = await updateBlog(id, data);
     return NextResponse.json(blog, { status: 200 });

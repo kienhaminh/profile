@@ -14,7 +14,7 @@ interface BlogFormData {
   readTime?: number;
   coverImage?: string;
   topicIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 export default function NewBlogPage() {

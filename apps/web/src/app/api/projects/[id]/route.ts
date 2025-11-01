@@ -3,11 +3,10 @@ import {
   getProjectById,
   updateProject,
   deleteProject,
-  ProjectNotFoundError,
-  ProjectConflictError,
-} from '@/services/project';
+} from '@/services/projects';
+import { ProjectNotFoundError, ProjectConflictError } from '@/lib/errors';
 import { updateProjectSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 
@@ -42,7 +41,13 @@ export async function PUT(
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = updateProjectSchema.parse(body);
+    const parsed = updateProjectSchema.parse(body);
+
+    // Cast status to ProjectStatus if provided
+    const data: import('@/types/project').UpdateProjectInput = {
+      ...parsed,
+      status: parsed.status as import('@/types/enums').ProjectStatus | undefined,
+    };
 
     const { id } = await params;
     const project = await updateProject(id, data);

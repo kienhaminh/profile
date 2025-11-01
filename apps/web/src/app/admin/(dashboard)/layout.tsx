@@ -3,6 +3,8 @@ import { getServerAuth } from '@/lib/server-auth';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({
   children,
 }: {
@@ -15,7 +17,7 @@ export default async function AdminLayout({
     const authResult = await getServerAuth();
     ({ isAuthenticated, user } = authResult);
   } catch (error) {
-    logger.error('Authentication check failed in admin layout', error as Error);
+    logger.error('Authentication check failed in admin layout', { error });
     redirect('/admin/login');
   }
 

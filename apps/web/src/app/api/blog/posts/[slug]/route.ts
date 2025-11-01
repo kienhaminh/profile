@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPostBySlug } from '@/services/posts';
+import { POST_STATUS } from '@/types/enums';
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +15,7 @@ export async function GET(
     }
 
     // Only return published posts for public API
-    if (post.status !== 'PUBLISHED') {
+    if (post.status !== POST_STATUS.PUBLISHED) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 

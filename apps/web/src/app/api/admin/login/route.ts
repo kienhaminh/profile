@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateUser } from '@/services/auth';
 import { logger } from '@/lib/logger';
-import { setCSRFCookie } from '@/lib/csrf';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,14 +51,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    setCSRFCookie(response);
-
     return response;
   } catch (error) {
-    logger.error(
-      'Login error',
-      error instanceof Error ? error : new Error(String(error))
-    );
+    logger.error('Login error', { error });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -6,9 +6,9 @@ A modern, full-stack developer portfolio website with blog functionality, built 
 
 - **Framework**: Next.js 15 (App Router) with Turbopack
 - **API Layer**: tRPC 10 (type-safe procedures with React Query client)
-- **Database**: PostgreSQL (Supabase)
-- **ORM**: Drizzle ORM
-- **Styling**: Tailwind CSS
+- **Database**: PostgreSQL (Neon serverless or local)
+- **ORM**: Drizzle ORM with node-postgres driver
+- **Styling**: Tailwind CSS + shadcn/ui components
 - **TypeScript**: Strict mode enabled
 - **Testing**: Vitest with UI support
 - **Build System**: Turbo (monorepo orchestration)
@@ -17,14 +17,14 @@ A modern, full-stack developer portfolio website with blog functionality, built 
 ## 📋 Features
 
 - **Blog Management**: Create, edit, publish, and delete blog posts with rich content support
-- **Topics & Hashtags**: Categorize posts with topics and hashtags for better organization
-- **Projects Showcase**: Display projects with technologies, images, and links
+- **Tags System**: Unified tag model for categorizing both posts and projects
+- **Projects Showcase**: Display projects with images, technologies (tags), and links
 - **Admin Dashboard**: Secure admin area for content management with KPIs and analytics
 - **Authentication**: JWT-based admin authentication with bcrypt password hashing
 - **Analytics Integration**: Google Analytics 4 for tracking metrics
 - **SEO Optimized**: Meta tags, structured data, and performance optimizations
 - **Type Safety**: Full TypeScript coverage with runtime validation via Zod
-- **Database**: Connection pooling, migrations, and comprehensive schema management
+- **Database**: PostgreSQL with Drizzle ORM, migrations, and seeding
 
 ## 🏗️ Project Structure
 
@@ -45,6 +45,46 @@ portfolio-monorepo/
 ├── package.json             # Root package configuration
 ├── pnpm-workspace.yaml      # Monorepo workspace configuration
 └── turbo.json              # Build pipeline configuration
+```
+
+## 📊 Database
+
+The project uses PostgreSQL with Drizzle ORM for type-safe database operations.
+
+### Schema
+
+- **users**: Admin authentication (single admin account)
+- **posts**: Blog posts with content, metadata, and author relations
+- **tags**: Unified taxonomy for categorizing posts and projects
+- **postTags**: Many-to-many relation between posts and tags
+- **projects**: Portfolio projects with images and links
+- **projectTags**: Many-to-many relation between projects and tags
+- **configs**: Key-value store for site configuration (NAME, EMAIL, LINKEDIN, etc.)
+
+### Environment Setup
+
+Create a `.env.local` file in `apps/web/`:
+
+```bash
+DATABASE_URL="postgresql://user:password@host:port/database"
+SEED_ADMIN_USERNAME="admin"
+SEED_ADMIN_PASSWORD="your_secure_password"
+```
+
+### Database Commands
+
+```bash
+# Generate migrations from schema changes
+pnpm db:generate
+
+# Run migrations
+pnpm -w db:migrate
+
+# Seed database with admin user and configs
+pnpm -w db:seed
+
+# Full setup (migrate + seed)
+pnpm -w db:setup
 ```
 
 ## 🚀 Quick Start

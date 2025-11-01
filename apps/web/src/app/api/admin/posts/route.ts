@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPosts } from '@/services/posts';
-import { ensureAdminOrThrow } from '@/lib/admin-auth';
+import { getAllPosts } from '@/services/posts';
+import { ensureAdminOrThrow } from '@/lib/auth';
 import { POST_STATUS_VALUES, type PostStatus } from '@/types/enums';
 
 export async function GET(request: NextRequest) {
@@ -10,15 +10,6 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const statusParam = searchParams.get('status');
-    const topic = searchParams.get('topic');
-    const limit = Math.min(
-      Math.max(parseInt(searchParams.get('limit') || '10', 10) || 10, 1),
-      100
-    );
-    const offset = Math.max(
-      parseInt(searchParams.get('offset') || '0', 10) || 0,
-      0
-    );
 
     // Validate status parameter
     let validatedStatus: PostStatus | undefined;
@@ -34,12 +25,7 @@ export async function GET(request: NextRequest) {
       validatedStatus = statusParam as PostStatus;
     }
 
-    const posts = await getPosts({
-      status: validatedStatus,
-      topic: topic || undefined,
-      limit,
-      offset,
-    });
+    const posts = await getAllPosts(validatedStatus);
 
     return NextResponse.json(posts);
   } catch {

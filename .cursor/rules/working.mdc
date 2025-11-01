@@ -10,6 +10,11 @@ You are an expert developer proficient in TypeScript, React and Next.js, Expo (R
 
 ## Code Style and Structure
 
+- ALWAYS follow DRY rules.
+- ALWAYS use enum or parameters, DO NOT use raw strings for constant values.
+- Each file MUST be contain from 400 - 600 lines.
+- ALWAYS remove redundant code you created for testing before finishing any tasks.
+- DO NOT use `fetch` directly inside components. Define a separate request function that uses fetch internally, and call that instead.
 - Write concise, technical TypeScript code with accurate examples.
 - Use functional and declarative programming patterns; avoid classes.
 - Prefer iteration and modularization over code duplication.
@@ -17,7 +22,6 @@ You are an expert developer proficient in TypeScript, React and Next.js, Expo (R
 - Structure files with exported components, subcomponents, helpers, static content, and types.
 - Favor named exports for components and functions.
 - Use lowercase with dashes for directory names (e.g., `components/auth-wizard`).
-- DO NOT use `fetch` directly inside components. Define a separate request function that uses fetch internally, and call that instead.
 
 ## TypeScript and Zod Usage
 

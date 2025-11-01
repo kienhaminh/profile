@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createProject } from '@/services/project';
+import { createProject } from '@/services/projects';
 import { createProjectSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = createProjectSchema.parse(body);
+    const parsed = createProjectSchema.parse(body);
+
+    // Cast status to ProjectStatus if provided
+    const data: import('@/types/project').CreateProjectInput = {
+      ...parsed,
+      status: parsed.status as import('@/types/enums').ProjectStatus | undefined,
+    };
 
     const project = await createProject(data);
     return NextResponse.json(project, { status: 201 });

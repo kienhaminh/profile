@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
-import { authFetch } from '@/lib/auth-client';
+import { authPut } from '@/lib/auth';
 import type { ProjectStatus } from '@/types/enums';
+import type { Tag } from '@/types/tag';
 
 interface ProjectFormData {
   title: string;
@@ -17,8 +18,7 @@ interface ProjectFormData {
   startDate?: string | null;
   endDate?: string | null;
   isOngoing: boolean;
-  technologyIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 interface ProjectData {
@@ -33,8 +33,7 @@ interface ProjectData {
   startDate?: string;
   endDate?: string;
   isOngoing: boolean;
-  technologies: Array<{ id: string }>;
-  hashtags: Array<{ id: string }>;
+  tags: Tag[];
 }
 
 export default function EditProjectPage({
@@ -105,13 +104,7 @@ export default function EditProjectPage({
       }
 
       const { id } = await params;
-      const response = await authFetch(`/api/projects/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(processedData),
-      });
+      const response = await authPut(`/api/projects/${id}`, processedData);
 
       if (!response.ok) {
         let errorMessage = 'Failed to update project';
@@ -172,8 +165,7 @@ export default function EditProjectPage({
       ? new Date(project.endDate).toISOString().slice(0, 10)
       : '',
     isOngoing: project.isOngoing,
-    technologyIds: project.technologies?.map((t) => t.id) || [],
-    hashtagIds: project.hashtags?.map((h) => h.id) || [],
+    tagIds: project.tags?.map((t) => t.id) || [],
   };
 
   return (

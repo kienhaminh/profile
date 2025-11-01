@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHashtag, ConflictError } from '@/services/hashtag';
-import { createHashtagSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { createTag } from '@/services/tags';
+import { ConflictError } from '@/lib/errors';
+import { createTagInputSchema } from '@/types/tag';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = createHashtagSchema.parse(body);
+    const data = createTagInputSchema.parse(body);
 
-    const hashtag = await createHashtag(data);
+    const hashtag = await createTag(data);
     return NextResponse.json(hashtag, { status: 201 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {

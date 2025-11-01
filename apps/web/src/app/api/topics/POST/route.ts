@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTopic } from '@/services/topics';
-import { createTopicSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { createTag } from '@/services/tags';
+import { createTagInputSchema } from '@/types/tag';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
-import { logErrorAndReturnSanitized } from '@/lib/error-utils';
+import { logErrorAndReturnSanitized } from '@/lib/errors';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
-    const data = createTopicSchema.parse(body);
-    const topic = await createTopic(data);
+    const data = createTagInputSchema.parse(body);
+    const topic = await createTag(data);
     return NextResponse.json(topic, { status: 201 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
@@ -28,13 +28,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { status, body } = logErrorAndReturnSanitized(
-      error,
-      'topics POST',
-      'Conflict creating topic',
-      'An unexpected error occurred'
-    );
-
-    return NextResponse.json(body, { status });
+    return logErrorAndReturnSanitized(error, 'topics POST');
   }
 }

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HashtagSelect } from './HashtagSelect';
-import { TechnologySelect } from './TechnologySelect';
+import { TagSelect } from './TagSelect';
 import type { CreateProjectRequest } from '@/lib/validation';
 import { PROJECT_STATUS, type ProjectStatus } from '@/types/enums';
 
@@ -17,14 +16,12 @@ interface ProjectFormData {
   startDate?: string;
   endDate?: string;
   isOngoing: boolean;
-  technologyIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 // Type that matches the form data but allows optional fields for editing
 type ProjectFormEditData = Partial<CreateProjectRequest> & {
-  technologyIds?: string[];
-  hashtagIds?: string[];
+  tagIds?: string[];
 };
 
 interface ProjectFormProps {
@@ -51,8 +48,7 @@ export function ProjectForm({
     startDate: initialData?.startDate || '',
     endDate: initialData?.endDate || '',
     isOngoing: initialData?.isOngoing || false,
-    technologyIds: initialData?.technologyIds || [],
-    hashtagIds: initialData?.hashtagIds || [],
+    tagIds: initialData?.tagIds || [],
   });
 
   const [imageInput, setImageInput] = useState('');
@@ -411,22 +407,11 @@ export function ProjectForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-2">Technologies</label>
-        <TechnologySelect
-          value={formData.technologyIds}
-          onChange={(technologyIds) =>
-            setFormData((prev) => ({ ...prev, technologyIds }))
-          }
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Hashtags</label>
-        <HashtagSelect
-          value={formData.hashtagIds}
-          onChange={(hashtagIds) =>
-            setFormData((prev) => ({ ...prev, hashtagIds }))
-          }
+        <label className="block text-sm font-medium mb-2">Tags</label>
+        <TagSelect
+          value={formData.tagIds}
+          onChange={(tagIds) => setFormData((prev) => ({ ...prev, tagIds }))}
+          placeholder="Search or create tags for your project..."
         />
       </div>
 

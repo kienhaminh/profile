@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { listProjects } from '@/services/project';
-import { projectFilterSchema } from '@/lib/validation';
+import { getAllProjects } from '@/services/projects';
 import { ZodError } from 'zod';
+import { PROJECT_STATUS } from '@/types/enums';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const filters = projectFilterSchema.parse({
-      page: searchParams.get('page') || '0',
-      limit: searchParams.get('limit') || '20',
-      status: searchParams.get('status') || 'PUBLISHED', // Default to published for public API
-      technologyId: searchParams.get('technologyId') || undefined,
-      hashtagId: searchParams.get('hashtagId') || undefined,
-      search: searchParams.get('search') || undefined,
-    });
+    
+    // For now, only support status filtering
+    // TODO: Add full filter support with pagination
+    const statusParam = searchParams.get('status') || PROJECT_STATUS.PUBLISHED;
+    const status = statusParam as import('@/types/enums').ProjectStatus;
 
-    const result = await listProjects(filters);
+    const result = await getAllProjects(status);
     return NextResponse.json(result, { status: 200 });
   } catch (error) {
     if (error instanceof ZodError) {

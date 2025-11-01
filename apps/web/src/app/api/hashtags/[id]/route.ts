@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateHashtag, deleteHashtag } from '@/services/hashtag';
-import { updateHashtagSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { updateTag, deleteTag } from '@/services/tags';
+import { updateTagInputSchema } from '@/types/tag';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 
@@ -12,10 +12,10 @@ export async function PUT(
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = updateHashtagSchema.parse(body);
+    const data = updateTagInputSchema.parse(body);
     const { id } = await params;
 
-    const hashtag = await updateHashtag(id, data);
+    const hashtag = await updateTag(id, data);
     return NextResponse.json(hashtag, { status: 200 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
@@ -54,7 +54,7 @@ export async function DELETE(
   try {
     await ensureAdminOrThrow(request);
     const { id } = await params;
-    await deleteHashtag(id);
+    await deleteTag(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {

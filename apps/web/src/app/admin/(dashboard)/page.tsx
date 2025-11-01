@@ -7,6 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
+  FileText,
+  FolderKanban,
+  FolderTree,
+  Hash,
+  TrendingUp,
+} from 'lucide-react';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -17,8 +24,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { logger } from '@/lib/logger';
-import { authFetch, authDelete } from '@/lib/auth-client';
-import type { PostWithTopics } from '@/services/posts';
+import { authFetch, authDelete } from '@/lib/auth';
+import type { Blog } from '@/types/blog';
 import { PostsOverTimeChart } from '@/components/admin/posts-over-time-chart';
 import { TopicsDistributionChart } from '@/components/admin/topics-distribution-chart';
 import { HashtagsDistributionChart } from '@/components/admin/hashtags-distribution-chart';
@@ -44,13 +51,13 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const [posts, setPosts] = useState<PostWithTopics[]>([]);
+  const [posts, setPosts] = useState<Blog[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<PostWithTopics | null>(null);
+  const [postToDelete, setPostToDelete] = useState<Blog | null>(null);
   const router = useRouter();
 
   const fetchPosts = async () => {
@@ -65,7 +72,7 @@ export default function AdminDashboard() {
       const errorMessage =
         err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
-      logger.error('Failed to fetch posts:', err as Error);
+      logger.error('Failed to fetch posts', { error: err });
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +85,7 @@ export default function AdminDashboard() {
       const data = await response.json();
       setStats(data);
     } catch (err) {
-      logger.error('Failed to fetch stats:', err as Error);
+      logger.error('Failed to fetch stats', { error: err });
     }
   };
 
@@ -91,7 +98,7 @@ export default function AdminDashboard() {
     router.push(`/admin/blogs/${postId}`);
   };
 
-  const handleDelete = (post: PostWithTopics) => {
+  const handleDelete = (post: Blog) => {
     setPostToDelete(post);
     setDeleteDialogOpen(true);
   };
@@ -113,7 +120,7 @@ export default function AdminDashboard() {
       const errorMessage =
         err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
-      logger.error('Failed to delete post:', err as Error);
+      logger.error('Failed to delete post', { error: err });
     } finally {
       setDeletingPostId(null);
       setDeleteDialogOpen(false);
@@ -129,59 +136,95 @@ export default function AdminDashboard() {
           <p className="text-gray-600">Manage your blog posts and content</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Posts
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total Posts
+                </CardTitle>
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {stats?.recentActivity.total_posts || posts.length}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {stats?.recentActivity.posts_this_week || 0} this week
-              </p>
+              <div className="flex items-center gap-1 mt-2">
+                <TrendingUp className="w-3 h-3 text-green-500" />
+                <p className="text-xs text-gray-600 font-medium">
+                  {stats?.recentActivity.posts_this_week || 0} this week
+                </p>
+              </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total Projects
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total Projects
+                </CardTitle>
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                  <FolderKanban className="w-5 h-5 text-white" />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                 {stats?.recentActivity.total_projects || 0}
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {stats?.recentActivity.projects_this_week || 0} this week
+              <div className="flex items-center gap-1 mt-2">
+                <TrendingUp className="w-3 h-3 text-green-500" />
+                <p className="text-xs text-gray-600 font-medium">
+                  {stats?.recentActivity.projects_this_week || 0} this week
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full -mr-10 -mt-10"></div>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Topics
+                </CardTitle>
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <FolderTree className="w-5 h-5 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {stats?.recentActivity.total_topics || 0}
+              </div>
+              <p className="text-xs text-gray-500 mt-2 font-medium">
+                Content categories
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Topics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {stats?.recentActivity.total_topics || 0}
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Hashtags
+                </CardTitle>
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                  <Hash className="w-5 h-5 text-white" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Hashtags
-              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pink-600">
+              <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                 {stats?.recentActivity.total_hashtags || 0}
               </div>
+              <p className="text-xs text-gray-500 mt-2 font-medium">
+                Content tags
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -250,12 +293,12 @@ export default function AdminDashboard() {
                               >
                                 {post.status}
                               </span>
-                              {post.topics.map((topic) => (
+                              {post.tags.map((tag) => (
                                 <span
-                                  key={topic.id}
+                                  key={tag.id}
                                   className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full"
                                 >
-                                  {topic.name}
+                                  {tag.label}
                                 </span>
                               ))}
                             </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BlogForm } from '@/components/admin/BlogForm';
 import type { PostStatus } from '@/types/enums';
+import type { Tag } from '@/types/tag';
 
 interface BlogFormData {
   title: string;
@@ -15,7 +16,7 @@ interface BlogFormData {
   readTime?: number;
   coverImage?: string;
   topicIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 interface BlogData {
@@ -29,7 +30,7 @@ interface BlogData {
   readTime?: number;
   coverImage?: string;
   topics: Array<{ id: string }>;
-  hashtags: Array<{ id: string }>;
+  tags: Tag[];
 }
 
 export default function EditBlogPage({
@@ -145,7 +146,7 @@ export default function EditBlogPage({
     readTime: blog.readTime,
     coverImage: blog.coverImage || '',
     topicIds: blog.topics?.map((t) => t.id) || [],
-    hashtagIds: blog.hashtags?.map((h) => h.id) || [],
+    tagIds: blog.tags?.map((t) => t.id) || [],
   };
 
   return (

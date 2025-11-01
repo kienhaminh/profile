@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useReportWebVitals } from 'next/web-vitals';
 import { reportWebVitals } from '@/lib/web-vitals';
 
 export function WebVitalsReporter(): null {
-  useEffect(() => {
-    reportWebVitals();
-  }, []);
+  useReportWebVitals(reportWebVitals);
 
   return null;
 }

@@ -15,8 +15,7 @@ interface ProjectFormData {
   startDate?: string;
   endDate?: string;
   isOngoing: boolean;
-  technologyIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 export default function NewProjectPage() {

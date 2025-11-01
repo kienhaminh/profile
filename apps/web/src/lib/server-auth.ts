@@ -1,48 +1,55 @@
 import { cookies } from 'next/headers';
-import { db } from '@/db';
-import { adminUsers } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { timingSafeEqual } from 'crypto';
-import { verifyAdminToken } from './admin-auth';
+import { verifyAdminToken, type DecodedToken } from './auth';
 
-export async function getServerAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('admin-token')?.value;
+export interface ServerAuthResult {
+  isAuthenticated: boolean;
+  user: {
+    id: string;
+    role: string;
+  } | null;
+}
 
-  if (!token) {
-    return { isAuthenticated: false, user: null };
-  }
-
-  const configuredToken = process.env.ADMIN_API_TOKEN || '';
-
-  if (
-    configuredToken &&
-    token.length === configuredToken.length &&
-    timingSafeEqual(Buffer.from(token), Buffer.from(configuredToken))
-  ) {
-    return {
-      isAuthenticated: true,
-      user: { id: 'static-admin', role: 'admin' },
-    };
-  }
-
-  // Verify JWT token
+/**
+ * Server-side authentication check for use in Server Components
+ */
+export async function getServerAuth(): Promise<ServerAuthResult> {
   try {
-    const decoded = verifyAdminToken(token);
+    const cookieStore = await cookies();
+    const token = cookieStore.get('admin-token')?.value;
 
-    // Check if admin exists in database
-    const [admin] = await db
-      .select()
-      .from(adminUsers)
-      .where(eq(adminUsers.id, decoded.adminId))
-      .limit(1);
-
-    if (!admin) {
-      return { isAuthenticated: false, user: null };
+    if (!token) {
+      return {
+        isAuthenticated: false,
+        user: null,
+      };
     }
 
-    return { isAuthenticated: true, user: admin };
+    // Check for static token first
+    const configuredToken = process.env.ADMIN_API_TOKEN;
+    if (configuredToken && token === configuredToken) {
+      return {
+        isAuthenticated: true,
+        user: {
+          id: 'admin',
+          role: 'admin',
+        },
+      };
+    }
+
+    // Verify JWT token
+    const decoded: DecodedToken = verifyAdminToken(token);
+
+    return {
+      isAuthenticated: true,
+      user: {
+        id: decoded.adminId,
+        role: 'admin', // Could be expanded to include role from token
+      },
+    };
   } catch {
-    return { isAuthenticated: false, user: null };
+    return {
+      isAuthenticated: false,
+      user: null,
+    };
   }
 }

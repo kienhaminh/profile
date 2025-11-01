@@ -1,16 +1,10 @@
-import { cache } from 'react';
-import { headers } from 'next/headers';
 import { appRouter } from './routers/_app';
-import { createTRPCContext } from './context';
+import type { Context } from './context';
 
-export const createServerCaller = cache(async () => {
-  const headerEntries = await headers();
-  const headerMap = new Headers();
-
-  for (const [key, value] of headerEntries.entries()) {
-    headerMap.set(key, value);
-  }
-
-  const ctx = await createTRPCContext({ headers: headerMap });
-  return appRouter.createCaller(ctx);
-});
+/**
+ * Creates a server-side caller for tRPC
+ * This allows calling tRPC procedures directly from server-side code
+ */
+export function createServerCaller(context: Context) {
+  return appRouter.createCaller(context);
+}

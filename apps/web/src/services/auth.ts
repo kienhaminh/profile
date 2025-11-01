@@ -1,14 +1,12 @@
-import bcrypt from 'bcryptjs';
-import { db } from '@/db';
-import { adminUsers } from '@/db/schema';
-import { eq, or } from 'drizzle-orm';
+import { db } from '@/db/client';
+import { users } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import { sign as jwtSign, type SignOptions } from 'jsonwebtoken';
 import { logger } from '@/lib/logger';
-import { generateAdminToken } from '@/lib/admin-auth';
+import * as bcrypt from 'bcryptjs';
 
-export interface LoginCredentials {
-  username: string;
-  password: string;
-}
+const JWT_SECRET: string = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRATION: string = process.env.JWT_EXPIRATION || '24h';
 
 export interface AuthResult {
   success: boolean;
@@ -19,68 +17,56 @@ export interface AuthResult {
   };
 }
 
-// Generate a proper bcrypt hash for non-existent users to prevent timing attacks
-// This ensures consistent timing regardless of user existence by using a real hash
-const DUMMY_HASH = bcrypt.hashSync('dummy-password', 12);
-
-export async function authenticateUser(
-  credentials: LoginCredentials
-): Promise<AuthResult> {
+/**
+ * Authenticates a user with username and password
+ */
+export async function authenticateUser(credentials: {
+  username: string;
+  password: string;
+}): Promise<AuthResult> {
+  const { username, password } = credentials;
   try {
-    const user = await db
+    // Find user by username
+    const result = await db
       .select()
-      .from(adminUsers)
-      .where(
-        or(
-          eq(adminUsers.username, credentials.username),
-          eq(adminUsers.email, credentials.username)
-        )
-      )
+      .from(users)
+      .where(eq(users.username, username))
       .limit(1);
 
-    const adminUser = user[0];
-
-    // Use real password hash if user exists, otherwise use dummy hash
-    // This ensures consistent timing regardless of user existence
-    const passwordHash = adminUser ? adminUser.password : DUMMY_HASH;
-
-    const isValidPassword = await bcrypt.compare(
-      credentials.password,
-      passwordHash
-    );
-
-    if (!adminUser || !isValidPassword) {
+    if (result.length === 0) {
       return { success: false };
     }
 
-    // Update last login
-    await db
-      .update(adminUsers)
-      .set({ lastLogin: new Date() })
-      .where(eq(adminUsers.id, adminUser.id));
+    const user = result[0];
 
-    // Generate JWT token for authenticated admin
-    const token = generateAdminToken(adminUser.id);
+    // Compare hashed password
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      return { success: false };
+    }
+
+    // Generate JWT token
+    const token = jwtSign(
+      {
+        adminId: user.id,
+        username: user.username,
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION } as SignOptions
+    );
+
+    logger.info('User authenticated successfully', { username });
 
     return {
       success: true,
       token,
       user: {
-        id: adminUser.id,
-        username: adminUser.username,
+        id: user.id,
+        username: user.username,
       },
     };
-  } catch (error: unknown) {
-    // Use structured logging (e.g., winston, pino)
-    const err = error instanceof Error ? error : new Error(String(error));
-    logger.error('Authentication failed', err, {
-      errorMessage: err.message,
-      // Avoid logging stack traces or sensitive details in production
-    });
+  } catch (error) {
+    logger.error('Error authenticating user', { error, username });
     return { success: false };
   }
-}
-
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
 }

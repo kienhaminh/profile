@@ -1,20 +1,9 @@
-import { db } from '@/db';
-import { getAdminFromHeaders } from '@/lib/admin-auth';
+import { type FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 
-export interface CreateTRPCContextOptions {
-  headers: Headers;
-}
-
-export async function createTRPCContext(opts: CreateTRPCContextOptions) {
-  const requestHeaders = new Headers(opts.headers);
-  const admin = await getAdminFromHeaders(requestHeaders);
-
+export async function createTRPCContext(opts: FetchCreateContextFnOptions) {
   return {
-    db,
-    headers: requestHeaders,
-    admin,
-    adminId: admin?.adminId ?? null,
+    req: opts.req,
   };
 }
 
-export type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>;
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>;

@@ -13,7 +13,8 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    logger.error('Application error', error, {
+    logger.error('Application error', {
+      error,
       digest: error.digest,
     });
   }, [error]);

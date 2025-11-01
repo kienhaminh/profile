@@ -1,26 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { ensureAdminOrThrow } from '@/lib/auth';
+import { UnauthorizedError } from '@/lib/errors';
 
 export const runtime = 'nodejs';
 
 // Protected API routes that require authentication for mutations
-const PROTECTED_ROUTES = [
-  '/api/blog',
-  '/api/projects',
-  '/api/hashtags',
-  '/api/topics',
-  '/api/technologies',
-] as const;
+const PROTECTED_ROUTES = ['/api/blog', '/api/projects', '/api/tags'] as const;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
 
-  // Use the shared protected routes constant
-  const protectedRoutes = [...PROTECTED_ROUTES];
-
   // Check if the request is to a protected route
-  const isProtectedRoute = protectedRoutes.some((route) =>
+  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route)
   );
 
@@ -63,11 +55,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/api/blog/:path*',
-    '/api/projects/:path*',
-    '/api/hashtags/:path*',
-    '/api/topics/:path*',
-    '/api/technologies/:path*',
-  ],
+  matcher: ['/api/blog/:path*', '/api/projects/:path*', '/api/tags/:path*'],
 };

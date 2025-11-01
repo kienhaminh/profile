@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateTechnology, deleteTechnology } from '@/services/technology';
-import { updateTechnologySchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
-import {
-  TechnologyNotFoundError,
-  TechnologyConflictError,
-} from '@/lib/error-utils';
+import { updateTag, deleteTag } from '@/services/tags';
+import { updateTagInputSchema } from '@/types/tag';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
+import { NotFoundError, ConflictError } from '@/lib/errors';
 import { ZodError } from 'zod';
 
 
@@ -16,9 +13,9 @@ export async function PUT(
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = updateTechnologySchema.parse(body);
+    const data = updateTagInputSchema.parse(body);
     const { id } = await params;
-    const technology = await updateTechnology(id, data);
+    const technology = await updateTag(id, data);
     return NextResponse.json(technology, { status: 200 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
@@ -30,15 +27,15 @@ export async function PUT(
         { status: 400 }
       );
     }
-    if (error instanceof TechnologyNotFoundError) {
+    if (error instanceof NotFoundError) {
       return NextResponse.json(
-        { error: 'Technology Not Found', message: error.message },
+        { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
-    if (error instanceof TechnologyConflictError) {
+    if (error instanceof ConflictError) {
       return NextResponse.json(
-        { error: 'Technology Conflict', message: error.message },
+        { error: 'Conflict', message: error.message },
         { status: 409 }
       );
     }
@@ -58,21 +55,21 @@ export async function DELETE(
   try {
     await ensureAdminOrThrow(request);
     const { id } = await params;
-    await deleteTechnology(id);
+    await deleteTag(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (error instanceof TechnologyNotFoundError) {
+    if (error instanceof NotFoundError) {
       return NextResponse.json(
-        { error: 'Technology Not Found', message: error.message },
+        { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
-    if (error instanceof TechnologyConflictError) {
+    if (error instanceof ConflictError) {
       return NextResponse.json(
-        { error: 'Technology Conflict', message: error.message },
+        { error: 'Conflict', message: error.message },
         { status: 409 }
       );
     }

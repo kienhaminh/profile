@@ -1,26 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getPosts } from '@/services/posts';
+import { NextResponse } from 'next/server';
+import { getAllPosts } from '@/services/posts';
+import { POST_STATUS } from '@/types/enums';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const topic = searchParams.get('topic');
-    // parse and sanitize query parameters
-    const limit = Math.max(
-      1,
-      Math.min(100, parseInt(searchParams.get('limit') || '10', 10) || 10)
-    );
-    const offset = Math.max(
-      0,
-      parseInt(searchParams.get('offset') || '0', 10) || 0
-    );
-
-    const posts = await getPosts({
-      status: 'PUBLISHED', // Only published posts for public API
-      topic: topic || undefined,
-      limit,
-      offset,
-    });
+    // Only return published posts for public API
+    // TODO: Add pagination and topic filtering when needed
+    const posts = await getAllPosts(POST_STATUS.PUBLISHED);
 
     return NextResponse.json(posts);
   } catch (error) {

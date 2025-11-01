@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HashtagSelect } from './HashtagSelect';
+import { TagSelect } from './TagSelect';
 import { TopicSelect } from './TopicSelect';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { CreateBlogRequest } from '@/lib/validation';
@@ -17,13 +17,13 @@ interface BlogFormData {
   readTime?: number;
   coverImage?: string;
   topicIds: string[];
-  hashtagIds: string[];
+  tagIds: string[];
 }
 
 // Type that matches the form data but allows optional fields for editing
 type BlogFormEditData = Partial<CreateBlogRequest> & {
   topicIds?: string[];
-  hashtagIds?: string[];
+  tagIds?: string[];
 };
 
 interface BlogFormProps {
@@ -49,7 +49,7 @@ export function BlogForm({
     readTime: initialData?.readTime || undefined,
     coverImage: initialData?.coverImage || '',
     topicIds: initialData?.topicIds || [],
-    hashtagIds: initialData?.hashtagIds || [],
+    tagIds: initialData?.tagIds || [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -303,12 +303,11 @@ export function BlogForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-2">Hashtags</label>
-        <HashtagSelect
-          value={formData.hashtagIds}
-          onChange={(hashtagIds) =>
-            setFormData((prev) => ({ ...prev, hashtagIds }))
-          }
+        <label className="block text-sm font-medium mb-2">Tags</label>
+        <TagSelect
+          value={formData.tagIds}
+          onChange={(tagIds) => setFormData((prev) => ({ ...prev, tagIds }))}
+          placeholder="Search or create tags for your blog post..."
         />
       </div>
 

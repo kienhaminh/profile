@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { listHashtags } from '@/services/hashtag';
+import { getAllTags } from '@/services/tags';
 
 export async function GET() {
   try {
-    const hashtags = await listHashtags();
+    const hashtags = await getAllTags();
     return NextResponse.json(hashtags, { status: 200 });
   } catch {
     return NextResponse.json(

@@ -3,9 +3,9 @@ import { ZodError, type ZodIssue } from 'zod';
 import {
   updatePost,
   deletePost,
-  type UpdatePostData,
 } from '@/services/posts';
-import { ensureAdminOrThrow } from '@/lib/admin-auth';
+import type { UpdatePostInput } from '@/types/blog';
+import { ensureAdminOrThrow } from '@/lib/auth';
 import { updatePostSchema } from '@/lib/validation';
 import { POST_STATUS_VALUES, type PostStatus } from '@/types/enums';
 
@@ -41,7 +41,7 @@ export async function PATCH(
     }
 
     // Build updateData from validated values with proper type conversion
-    const updateData: UpdatePostData = {};
+    const updateData: UpdatePostInput = {};
     if (validatedData.title !== undefined)
       updateData.title = validatedData.title;
     if (validatedData.content !== undefined)
@@ -60,12 +60,12 @@ export async function PATCH(
       updateData.status = validatedData.status as PostStatus;
     }
     if (validatedData.publishDate !== undefined) {
-      updateData.publishDate = new Date(validatedData.publishDate);
+      updateData.publishDate = validatedData.publishDate;
     }
     if (validatedData.coverImage !== undefined)
       updateData.coverImage = validatedData.coverImage;
-    if (validatedData.topics !== undefined)
-      updateData.topics = validatedData.topics;
+    if (validatedData.tagIds !== undefined)
+      updateData.tagIds = validatedData.tagIds;
 
     const post = await updatePost(slug, updateData);
 
@@ -92,11 +92,7 @@ export async function DELETE(
     await ensureAdminOrThrow(request);
 
     const { slug } = await params;
-    const success = await deletePost(slug);
-
-    if (!success) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
-    }
+    await deletePost(slug);
 
     return NextResponse.json({ message: 'Post deleted successfully' });
   } catch (error) {

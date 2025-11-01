@@ -12,8 +12,7 @@ interface Project {
   description: string;
   isOngoing: boolean;
   createdAt: string;
-  technologies: Array<{ id: string; name: string }>;
-  hashtags: Array<{ id: string; name: string }>;
+  tags: Array<{ id: string; label: string }>;
 }
 
 export default function ProjectsListPage() {
@@ -163,11 +162,11 @@ export default function ProjectsListPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Technologies
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hashtags
+                <th
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  colSpan={2}
+                >
+                  Tags
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
@@ -202,26 +201,14 @@ export default function ProjectsListPage() {
                       {project.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4" colSpan={2}>
                     <div className="flex flex-wrap gap-1">
-                      {project.technologies?.map((tech) => (
+                      {project.tags?.map((tag) => (
                         <span
-                          key={tech.id}
-                          className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded"
-                        >
-                          {tech.name}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {project.hashtags?.map((hashtag) => (
-                        <span
-                          key={hashtag.id}
+                          key={tag.id}
                           className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
                         >
-                          {hashtag.name}
+                          {tag.label}
                         </span>
                       ))}
                     </div>

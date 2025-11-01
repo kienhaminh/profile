@@ -172,41 +172,20 @@ export default function ProjectDetail() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Technologies */}
-              {project.technologies && project.technologies.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Technologies Used</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {project.technologies.map((tech) => (
-                        <span
-                          key={tech.id}
-                          className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full"
-                        >
-                          {tech.name}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Hashtags */}
-              {project.hashtags && project.hashtags.length > 0 && (
+              {/* Tags */}
+              {project.tags && project.tags.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Tags</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
-                      {project.hashtags.map((hashtag) => (
+                      {project.tags.map((tag) => (
                         <span
-                          key={hashtag.id}
-                          className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-full"
+                          key={tag.id}
+                          className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full"
                         >
-                          #{hashtag.name}
+                          {tag.label}
                         </span>
                       ))}
                     </div>

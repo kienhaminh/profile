@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTechnology } from '@/services/technology';
-import { createTechnologySchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { createTag } from '@/services/tags';
+import { createTagInputSchema } from '@/types/tag';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = createTechnologySchema.parse(body);
+    const data = createTagInputSchema.parse(body);
 
-    const technology = await createTechnology(data);
+    const technology = await createTag(data);
     return NextResponse.json(technology, { status: 201 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {

@@ -1,16 +1,17 @@
 import { z } from 'zod';
+import { blogListItemSchema } from '@/types/blog';
 
 export const relatedBlogSchema = z.object({
-  id: z.string().uuid(),
-  slug: z.string().min(1),
-  title: z.string().min(1),
+  blog: blogListItemSchema,
   score: z.number().int().nonnegative(),
+  sharedTags: z.array(z.string()),
 });
 
 export type RelatedBlog = z.infer<typeof relatedBlogSchema>;
 
 export const relatedBlogsResponseSchema = z.object({
-  data: z.array(relatedBlogSchema),
+  relatedBlogs: z.array(relatedBlogSchema),
+  total: z.number().int().nonnegative(),
 });
 
 export type RelatedBlogsResponse = z.infer<typeof relatedBlogsResponseSchema>;

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createPost } from '@/services/posts';
-import { ensureAdminOrThrow, verifyAdminToken } from '@/lib/admin-auth';
-import { type PostStatus } from '@/types/enums';
+import { ensureAdminOrThrow, verifyAdminToken } from '@/lib/auth';
+import { type PostStatus, POST_STATUS_VALUES } from '@/types/enums';
 
 /**
  * Extracts the admin ID from the request token
@@ -64,7 +64,7 @@ const postSchema = z.object({
     .datetime('Publish date must be a valid datetime')
     .optional()
     .or(z.literal('')),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']),
+  status: z.enum(POST_STATUS_VALUES),
 });
 
 export async function POST(request: NextRequest) {
@@ -128,9 +128,11 @@ export async function POST(request: NextRequest) {
       content,
       excerpt,
       status: status as PostStatus,
-      publishDate: validatedPublishDate,
+      publishDate: validatedPublishDate
+        ? validatedPublishDate.toISOString()
+        : null,
       coverImage,
-      topics: topics || [],
+      tagIds: topics || [],
       authorId: adminId,
     });
 

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  updateTopic,
-  deleteTopic,
-  TopicNotFoundError,
-  TopicConflictError,
-} from '@/services/topics';
-import { updateTopicSchema } from '@/lib/validation';
-import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/admin-auth';
+import { updateTag, deleteTag } from '@/services/tags';
+import { updateTagInputSchema } from '@/types/tag';
+import { NotFoundError, ConflictError } from '@/lib/errors';
+import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 
 
@@ -17,9 +13,9 @@ export async function PUT(
   try {
     await ensureAdminOrThrow(request);
     const body = await request.json();
-    const data = updateTopicSchema.parse(body);
+    const data = updateTagInputSchema.parse(body);
     const { id } = await params;
-    const topic = await updateTopic(id, data);
+    const topic = await updateTag(id, data);
     return NextResponse.json(topic, { status: 200 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
@@ -31,13 +27,13 @@ export async function PUT(
         { status: 400 }
       );
     }
-    if (error instanceof TopicNotFoundError) {
+    if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: 'Not Found', message: error.message },
         { status: 404 }
       );
     }
-    if (error instanceof TopicConflictError) {
+    if (error instanceof ConflictError) {
       return NextResponse.json(
         { error: 'Conflict', message: error.message },
         { status: 409 }
@@ -59,13 +55,13 @@ export async function DELETE(
   try {
     await ensureAdminOrThrow(request);
     const { id } = await params;
-    await deleteTopic(id);
+    await deleteTag(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (error instanceof TopicNotFoundError) {
+    if (error instanceof NotFoundError) {
       return NextResponse.json(
         { error: 'Not Found', message: error.message },
         { status: 404 }

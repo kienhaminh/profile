@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     'clean code',
     'user experience',
   ],
-  authors: [{ name: 'Kien Ha', url: 'https://kienha.com' }],
+  authors: [{ name: 'Kien Ha', url: 'https://kienha.online' }],
   creator: 'Kien Ha',
   publisher: 'Kien Ha',
   openGraph: {
@@ -40,14 +40,14 @@ export const metadata: Metadata = {
     title: 'Kien Ha',
     description:
       'A full-stack developer studying AI. Building modern web applications with a focus on clean code and user experience.',
-    images: ['https://kienha.com/og-image.png'],
+    images: ['https://kienha.online/og-image.png'],
   },
   icons: {
     icon: '/favicon.ico',
   },
   manifest: '/manifest.json',
   alternates: {
-    canonical: 'https://kienha.com',
+    canonical: 'https://kienha.online',
   },
   robots: {
     index: true,

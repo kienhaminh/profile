@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { generateSlug, isValidSlug } from '@/lib/slug';
-import { authFetch, authPost } from '@/lib/auth-client';
+import { authFetch, authPost } from '@/lib/auth';
 
 interface Topic {
   id: string;
@@ -53,7 +53,7 @@ export function TopicSelect({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await authFetch('/api/topics');
+      const response = await authFetch('/api/tags');
       if (!response.ok) throw new Error('Failed to fetch topics');
       const data = await response.json();
       setTopics(data);
@@ -77,7 +77,7 @@ export function TopicSelect({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await authPost('/api/topics', { name, slug });
+      const response = await authPost('/api/tags', { label: name, slug });
 
       if (!response.ok) {
         const error = await response.json();
