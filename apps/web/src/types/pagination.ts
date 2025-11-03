@@ -9,3 +9,8 @@ export interface PaginatedResult<T> {
   data: T[];
   pagination: Pagination;
 }
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}

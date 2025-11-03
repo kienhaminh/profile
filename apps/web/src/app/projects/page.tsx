@@ -14,7 +14,9 @@ import {
 import { ExternalLink, Github, Mail, Linkedin, Rocket } from 'lucide-react';
 
 export default async function Projects() {
-  const projects = await getAllProjects(PROJECT_STATUS_FILTERS.PUBLISHED);
+  const { data: projects } = await getAllProjects(
+    PROJECT_STATUS_FILTERS.PUBLISHED
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">

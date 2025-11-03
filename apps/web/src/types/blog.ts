@@ -96,3 +96,16 @@ export const updatePostInputSchema = z.object({
   coverImage: z.string().nullable().optional(),
   tagIds: z.array(z.string().uuid()).optional(),
 });
+
+// Query input types
+export interface ListBlogsInput {
+  topic?: string;
+  limit?: number;
+}
+
+export const listBlogsInputSchema = z
+  .object({
+    topic: z.string().optional(),
+    limit: z.number().optional(),
+  })
+  .optional();

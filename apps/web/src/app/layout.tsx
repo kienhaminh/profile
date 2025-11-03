@@ -4,6 +4,8 @@ import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
 import { TRPCReactProvider } from '@/trpc/Provider';
+import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import './globals.css';
 
 const geistSans = Geist({
@@ -81,7 +83,7 @@ export default function RootLayout({
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <head>
         <GoogleAdsScript />
       </head>
@@ -90,7 +92,9 @@ export default function RootLayout({
       >
         {measurementId && <GoogleAnalytics measurementId={measurementId} />}
         <WebVitalsReporter />
+        <Navbar />
         <TRPCReactProvider>{children}</TRPCReactProvider>
+        <Footer />
       </body>
     </html>
   );

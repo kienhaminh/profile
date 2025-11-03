@@ -10,11 +10,15 @@ import {
 import type { Blog, CreatePostInput, UpdatePostInput } from '@/types/blog';
 import type { PostStatus } from '@/types/enums';
 import { NotFoundError, ConflictError } from '@/lib/errors';
+import type { PaginatedResult, PaginationParams } from '@/types/pagination';
 
 export { NotFoundError, ConflictError };
 
-export async function listBlogs(statusFilter?: PostStatus): Promise<Blog[]> {
-  return getAllPosts(statusFilter);
+export async function listBlogs(
+  statusFilter?: PostStatus,
+  pagination?: PaginationParams
+): Promise<PaginatedResult<Blog>> {
+  return getAllPosts(statusFilter, pagination);
 }
 
 export async function getBlogById(id: string): Promise<Blog> {

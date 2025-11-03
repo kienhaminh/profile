@@ -51,9 +51,10 @@ export async function GET(
     // Fetch related blogs
     const relatedBlogs = await getRelatedBlogsById(id, limit);
 
-    // Validate response with zod
+    // Validate response with zod (expects relatedBlogs + total)
     const response = relatedBlogsResponseSchema.parse({
-      data: relatedBlogs,
+      relatedBlogs,
+      total: relatedBlogs.length,
     });
 
     return NextResponse.json(response, {

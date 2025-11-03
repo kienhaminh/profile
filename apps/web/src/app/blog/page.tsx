@@ -4,16 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { INFORMATION, CONTACT } from '@/constants/information';
 import { trpc } from '@/trpc/react';
-import {
-  BookOpen,
-  Mail,
-  Linkedin,
-  Github,
-  ArrowRight,
-  Search,
-} from 'lucide-react';
+import { BookOpen, ArrowRight, Search } from 'lucide-react';
 
 export default function Blog() {
   const [selectedTopic, setSelectedTopic] = useState<string>('');
@@ -41,49 +33,6 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
-      {/* Navigation */}
-      <nav
-        className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b border-gray-200/50 shadow-sm"
-        aria-label="Main navigation"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link
-                href="/"
-                className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all"
-                aria-label="Home"
-              >
-                Kien Ha
-              </Link>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Link
-                href="/projects"
-                className="px-3 py-2 text-sm sm:text-base text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-              >
-                Projects
-              </Link>
-              <Link
-                href="/blog"
-                className="px-3 py-2 text-sm sm:text-base text-purple-600 bg-purple-50 rounded-lg font-medium transition-all duration-200"
-              >
-                Blog
-              </Link>
-              <Link href={`mailto:${CONTACT.email}`}>
-                <Button
-                  size="sm"
-                  className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
-                >
-                  <Mail className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Contact</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Header with gradient */}
       <div className="relative py-20 overflow-hidden">
         {/* Background decorative elements */}
@@ -200,12 +149,12 @@ export default function Blog() {
                       {post.title}
                     </CardTitle>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {post.topics.slice(0, 2).map((topic) => (
+                      {post.tags.slice(0, 2).map((tag) => (
                         <span
-                          key={topic.id}
+                          key={tag.id}
                           className="px-2.5 py-1 text-xs font-medium bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 rounded-full border border-purple-200"
                         >
-                          {topic.name}
+                          {tag.label}
                         </span>
                       ))}
                     </div>
@@ -253,155 +202,6 @@ export default function Blog() {
           </div>
         )}
       </div>
-
-      {/* Footer - Enhanced version matching homepage */}
-      <footer
-        className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden"
-        role="contentinfo"
-      >
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-600 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            {/* Contact Information */}
-            <div>
-              <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Contact Information
-              </h3>
-              <div className="space-y-4">
-                <Link
-                  href={`mailto:${CONTACT.email}`}
-                  className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-                >
-                  <div className="p-2 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors mr-3">
-                    <Mail className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <span className="text-gray-300 group-hover:text-white transition-colors">
-                    {CONTACT.email}
-                  </span>
-                </Link>
-                <Link
-                  href={`tel:${CONTACT.mobile}`}
-                  className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-                >
-                  <div className="p-2 rounded-lg bg-white/10 group-hover:bg-white/20 transition-colors mr-3">
-                    <Mail className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <span className="text-gray-300 group-hover:text-white transition-colors">
-                    {CONTACT.mobile}
-                  </span>
-                </Link>
-                <div className="flex items-start group">
-                  <div className="p-2 rounded-lg bg-white/10 mr-3 mt-0.5">
-                    <Mail className="w-5 h-5 text-pink-400" />
-                  </div>
-                  <span className="text-gray-300">{CONTACT.address}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div>
-              <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Connect With Me
-              </h3>
-              <div className="space-y-4">
-                <Link
-                  href={CONTACT.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-                >
-                  <div className="p-2 rounded-lg bg-white/10 group-hover:bg-blue-600 transition-colors mr-3">
-                    <Linkedin className="w-5 h-5" />
-                  </div>
-                  <span className="text-gray-300 group-hover:text-white transition-colors">
-                    LinkedIn
-                  </span>
-                </Link>
-                <Link
-                  href={CONTACT.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-                >
-                  <div className="p-2 rounded-lg bg-white/10 group-hover:bg-purple-600 transition-colors mr-3">
-                    <Github className="w-5 h-5" />
-                  </div>
-                  <span className="text-gray-300 group-hover:text-white transition-colors">
-                    GitHub
-                  </span>
-                </Link>
-                <Link
-                  href={CONTACT.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-                >
-                  <div className="p-2 rounded-lg bg-white/10 group-hover:bg-blue-500 transition-colors mr-3">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <span className="text-gray-300 group-hover:text-white transition-colors">
-                    Facebook
-                  </span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div>
-              <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">
-                Quick Links
-              </h3>
-              <div className="space-y-4">
-                <Link
-                  href="/projects"
-                  className="block text-gray-300 hover:text-white hover:translate-x-1 transition-all duration-200"
-                >
-                  View My Projects
-                </Link>
-                <Link
-                  href="/blog"
-                  className="block text-gray-300 hover:text-white hover:translate-x-1 transition-all duration-200"
-                >
-                  Read My Blog
-                </Link>
-                <Link
-                  href={`mailto:${CONTACT.email}`}
-                  className="inline-block mt-2"
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-white border-2 border-white/30 bg-transparent hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 hover:border-transparent transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
-                  >
-                    Get In Touch
-                    <Mail className="ml-2 w-4 h-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-white/10">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-gray-400 text-sm">
-                © {new Date().getFullYear()} {INFORMATION.name}. All rights
-                reserved.
-              </p>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <span>Made with</span>
-                <span className="text-red-500 animate-pulse">♥</span>
-                <span>using Next.js</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

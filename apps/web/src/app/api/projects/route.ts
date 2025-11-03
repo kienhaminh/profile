@@ -12,8 +12,20 @@ export async function GET(request: NextRequest) {
     const statusParam = searchParams.get('status') || PROJECT_STATUS.PUBLISHED;
     const status = statusParam as import('@/types/enums').ProjectStatus;
 
-    const result = await getAllProjects(status);
-    return NextResponse.json(result, { status: 200 });
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const page = pageParam ? Math.max(1, Number(pageParam) || 1) : undefined;
+    const limit =
+      limitParam && Number(limitParam) > 0 ? Number(limitParam) : undefined;
+
+    const result = await getAllProjects(status, {
+      page,
+      limit,
+    });
+    return NextResponse.json(
+      { items: result.data, pagination: result.pagination },
+      { status: 200 }
+    );
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

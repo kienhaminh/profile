@@ -239,9 +239,33 @@ export default function AdminDashboard() {
         )}
 
         <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Blog Posts ({posts.length})</CardTitle>
+          <Card className="border-2 hover:border-purple-200 transition-all duration-200">
+            <CardHeader className="border-b bg-gradient-to-r from-purple-50/50 to-blue-50/50">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg shadow-sm">
+                    <FileText className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl font-bold text-gray-900">
+                      Blog Posts
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {posts.length} {posts.length === 1 ? 'post' : 'posts'}{' '}
+                      total
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push('/admin/blogs')}
+                  className="gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  View All
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {error && (
@@ -275,39 +299,57 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   posts.map((post) => (
-                    <Card key={post.id}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h3 className="font-semibold">{post.title}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              /{post.slug}
-                            </p>
-                            <div className="flex gap-2 mt-2">
-                              <span
-                                className={`px-2 py-1 text-xs rounded-full ${
-                                  post.status === 'PUBLISHED'
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'
-                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100'
-                                }`}
-                              >
-                                {post.status}
-                              </span>
-                              {post.tags.map((tag) => (
-                                <span
-                                  key={tag.id}
-                                  className="px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 rounded-full"
-                                >
-                                  {tag.label}
-                                </span>
-                              ))}
+                    <Card
+                      key={post.id}
+                      className="hover:shadow-md transition-all duration-200 border hover:border-purple-200 group"
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="p-1.5 bg-gradient-to-br from-purple-100 to-blue-100 rounded-md group-hover:from-purple-200 group-hover:to-blue-200 transition-colors">
+                                <FileText className="h-4 w-4 text-purple-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-2 mb-1">
+                                  {post.title}
+                                </h3>
+                                <p className="text-sm text-muted-foreground font-mono mb-3">
+                                  /{post.slug}
+                                </p>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                  <span
+                                    className={`px-2.5 py-1 text-xs font-medium rounded-full border ${
+                                      post.status === 'PUBLISHED'
+                                        ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+                                        : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
+                                    }`}
+                                  >
+                                    {post.status}
+                                  </span>
+                                  {post.tags.slice(0, 3).map((tag) => (
+                                    <span
+                                      key={tag.id}
+                                      className="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-full hover:bg-blue-100 transition-colors dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+                                    >
+                                      {tag.label}
+                                    </span>
+                                  ))}
+                                  {post.tags.length > 3 && (
+                                    <span className="px-2.5 py-1 text-xs text-muted-foreground">
+                                      +{post.tags.length - 3} more
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 shrink-0">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleEdit(post.id)}
+                              className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700"
                             >
                               Edit
                             </Button>

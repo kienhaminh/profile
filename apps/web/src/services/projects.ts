@@ -1,6 +1,6 @@
 import { db } from '@/db/client';
 import { projects, projectTags, tags } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, count } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { NotFoundError } from '@/lib/errors';
 import type {
@@ -14,6 +14,7 @@ import {
 } from '@/types/project';
 import { PROJECT_STATUS, type ProjectStatus } from '@/types/enums';
 import type { Tag } from '@/types/tag';
+import type { PaginatedResult, PaginationParams } from '@/types/pagination';
 
 function normalizeProject(
   dbProject: typeof projects.$inferSelect,
@@ -38,14 +39,55 @@ function normalizeProject(
 }
 
 export async function getAllProjects(
-  statusFilter?: ProjectStatus
-): Promise<Project[]> {
+  statusFilter?: ProjectStatus,
+  pagination?: PaginationParams
+): Promise<PaginatedResult<Project>> {
   try {
-    const query = statusFilter
+    const hasPagination =
+      typeof pagination?.limit === 'number' && pagination.limit > 0;
+    const limit = hasPagination ? Math.max(1, pagination!.limit!) : undefined;
+    let currentPage = hasPagination ? Math.max(1, pagination!.page ?? 1) : 1;
+    let offset = hasPagination && limit ? (currentPage - 1) * limit : undefined;
+
+    let total = 0;
+    let totalPages = 0;
+
+    if (hasPagination && limit) {
+      const totalResult = await (statusFilter
+        ? db
+            .select({ value: count() })
+            .from(projects)
+            .where(eq(projects.status, statusFilter))
+        : db.select({ value: count() }).from(projects));
+
+      total = Number(totalResult[0]?.value ?? 0);
+      totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+      if (totalPages > 0 && currentPage > totalPages) {
+        currentPage = totalPages;
+        offset = (currentPage - 1) * limit;
+      } else if (totalPages === 0) {
+        currentPage = 1;
+        offset = 0;
+      }
+    }
+
+    let query = statusFilter
       ? db.select().from(projects).where(eq(projects.status, statusFilter))
       : db.select().from(projects);
 
-    const result = await query.orderBy(desc(projects.createdAt));
+    query = query.orderBy(desc(projects.createdAt));
+
+    if (hasPagination && limit) {
+      query = query.limit(limit).offset(offset ?? 0);
+    }
+
+    const result = await query;
+
+    if (!hasPagination) {
+      total = result.length;
+      totalPages = total === 0 ? 0 : 1;
+    }
 
     const projectsWithRelations = await Promise.all(
       result.map(async (project) => {
@@ -68,7 +110,15 @@ export async function getAllProjects(
       })
     );
 
-    return projectsWithRelations;
+    return {
+      data: projectsWithRelations,
+      pagination: {
+        page: currentPage,
+        limit: hasPagination ? limit! : projectsWithRelations.length,
+        total,
+        totalPages,
+      },
+    };
   } catch (error) {
     logger.error('Error getting all projects', { error, statusFilter });
     throw new Error('Failed to get projects');

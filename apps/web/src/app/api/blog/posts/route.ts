@@ -8,7 +8,10 @@ export async function GET() {
     // TODO: Add pagination and topic filtering when needed
     const posts = await getAllPosts(POST_STATUS.PUBLISHED);
 
-    return NextResponse.json(posts);
+    return NextResponse.json({
+      items: posts.data,
+      pagination: posts.pagination,
+    });
   } catch (error) {
     console.error('Error fetching blog posts:', error);
     return NextResponse.json(

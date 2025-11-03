@@ -75,7 +75,7 @@ export default function BlogsListPage() {
       if (!response.ok) throw new Error('Failed to fetch blogs');
 
       const data = await response.json();
-      setBlogs(data || []);
+      setBlogs(data?.items || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -122,9 +122,12 @@ export default function BlogsListPage() {
         </div>
         <Button
           asChild
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200"
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 text-white"
         >
-          <Link href="/admin/blogs/new" className="flex items-center gap-2">
+          <Link
+            href="/admin/blogs/new"
+            className="flex items-center gap-2 text-white"
+          >
             <Plus className="w-4 h-4" />
             Create New Blog
           </Link>
@@ -206,11 +209,11 @@ export default function BlogsListPage() {
               <Button
                 variant="default"
                 asChild
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 text-white"
               >
                 <Link
                   href="/admin/blogs/new"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 text-white"
                 >
                   <Sparkles className="w-4 h-4" />
                   Create your first blog post
@@ -220,86 +223,124 @@ export default function BlogsListPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Blog Posts ({blogs.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Topics</TableHead>
-                  <TableHead>Hashtags</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {blogs.map((blog) => (
-                  <TableRow key={blog.id}>
-                    <TableCell>
-                      <div className="font-medium">{blog.title}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {blog.slug}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          blog.status === POST_STATUS.PUBLISHED
-                            ? 'default'
-                            : 'secondary'
-                        }
-                      >
-                        {blog.status.charAt(0).toUpperCase() +
-                          blog.status.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {blog.topics?.map((topic) => (
-                          <Badge key={topic.id} variant="outline">
-                            {topic.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {blog.hashtags?.map((hashtag) => (
-                          <Badge key={hashtag.id} variant="outline">
-                            {hashtag.label}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(blog.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="mr-2"
-                      >
-                        <Link href={`/admin/blogs/${blog.id}`}>Edit</Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(blog.id, blog.title)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
+        <Card className="border-2 border-purple-100/50 shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-br from-white to-purple-50/30">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 border-b border-purple-200/50">
+                    <TableHead className="font-semibold text-gray-700">
+                      Title
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Status
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Topics
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Hashtags
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Created
+                    </TableHead>
+                    <TableHead className="text-right font-semibold text-gray-700">
+                      Actions
+                    </TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {blogs.map((blog, index) => (
+                    <TableRow
+                      key={blog.id}
+                      className="border-b border-purple-100/50 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-blue-50/30 transition-all duration-200 hover:shadow-md group"
+                    >
+                      <TableCell className="py-4">
+                        <div className="flex items-start gap-3">
+                          <div className="p-1.5 bg-gradient-to-br from-purple-100 to-blue-100 rounded-md group-hover:from-purple-200 group-hover:to-blue-200 transition-colors shadow-sm">
+                            <FileText className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-gray-900 group-hover:text-purple-700 transition-colors mb-1">
+                              {blog.title}
+                            </div>
+                            <div className="text-sm text-muted-foreground font-mono">
+                              /{blog.slug}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Badge
+                          variant={
+                            blog.status === POST_STATUS.PUBLISHED
+                              ? 'default'
+                              : 'secondary'
+                          }
+                          className={
+                            blog.status === POST_STATUS.PUBLISHED
+                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 shadow-sm'
+                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 shadow-sm'
+                          }
+                        >
+                          {blog.status.charAt(0).toUpperCase() +
+                            blog.status.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {blog.topics?.map((topic) => (
+                            <Badge
+                              key={topic.id}
+                              variant="outline"
+                              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300 shadow-sm transition-colors"
+                            >
+                              {topic.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {blog.hashtags?.map((hashtag) => (
+                            <Badge
+                              key={hashtag.id}
+                              variant="outline"
+                              className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 hover:border-purple-300 shadow-sm transition-colors"
+                            >
+                              {hashtag.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 text-muted-foreground">
+                        {new Date(blog.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 shadow-sm transition-all"
+                          >
+                            <Link href={`/admin/blogs/${blog.id}`}>Edit</Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(blog.id, blog.title)}
+                            className="text-destructive hover:text-destructive hover:bg-red-50 hover:border-red-300 shadow-sm transition-all"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

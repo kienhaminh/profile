@@ -4,13 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { generateSlug, isValidSlug } from '@/lib/slug';
 import { authFetch, authPost } from '@/lib/auth';
-
-interface Topic {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-}
+import type { Tag } from '@/types/tag';
 
 interface TopicSelectProps {
   value: string[];
@@ -23,7 +17,7 @@ export function TopicSelect({
   onChange,
   className = '',
 }: TopicSelectProps) {
-  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topics, setTopics] = useState<Tag[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -102,7 +96,7 @@ export function TopicSelect({
       e.preventDefault();
 
       const existingTopic = filteredTopics.find(
-        (t) => t.name.toLowerCase() === searchQuery.toLowerCase()
+        (t) => t.label?.toLowerCase() === searchQuery.toLowerCase()
       );
 
       if (existingTopic) {
@@ -137,7 +131,7 @@ export function TopicSelect({
   };
 
   const filteredTopics = topics.filter((topic) =>
-    topic.name.toLowerCase().includes(searchQuery.toLowerCase())
+    topic.label?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const selectedTopics = topics.filter((t) => value.includes(t.id));
@@ -151,7 +145,7 @@ export function TopicSelect({
             key={topic.id}
             className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-purple-100 text-purple-800 rounded"
           >
-            {topic.name}
+            {topic.label}
             <button
               type="button"
               onClick={() => handleRemove(topic.id)}
@@ -189,7 +183,7 @@ export function TopicSelect({
                     onClick={() => handleSelect(topic.id)}
                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex flex-col"
                   >
-                    <span className="font-medium">{topic.name}</span>
+                    <span className="font-medium">{topic.label}</span>
                     {topic.description && (
                       <span className="text-xs text-gray-500">
                         {topic.description}

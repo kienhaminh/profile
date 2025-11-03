@@ -15,7 +15,6 @@ interface BlogFormData {
   excerpt?: string;
   readTime?: number;
   coverImage?: string;
-  topicIds: string[];
   tagIds: string[];
 }
 
@@ -41,6 +40,7 @@ export default function EditBlogPage({
   const router = useRouter();
   const [blog, setBlog] = useState<BlogData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,7 +65,8 @@ export default function EditBlogPage({
   };
 
   const handleSubmit = async (data: BlogFormData) => {
-    setIsLoading(true);
+    setIsSaving(true);
+    setError(null);
     try {
       const { id } = await params;
       const response = await fetch(`/api/blog/${id}`, {
@@ -110,6 +111,7 @@ export default function EditBlogPage({
           ? error.message
           : 'Failed to update blog post. Please try again.';
       setError(errorMessage);
+      setIsSaving(false);
       throw error; // Re-throw to prevent form submission
     }
   };
@@ -145,7 +147,6 @@ export default function EditBlogPage({
     excerpt: blog.excerpt || '',
     readTime: blog.readTime,
     coverImage: blog.coverImage || '',
-    topicIds: blog.topics?.map((t) => t.id) || [],
     tagIds: blog.tags?.map((t) => t.id) || [],
   };
 
@@ -156,7 +157,20 @@ export default function EditBlogPage({
         <p className="text-gray-600">Update the details of your blog post</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+      <div className="bg-white rounded-lg shadow p-6 relative">
+        {isSaving && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <p className="text-sm text-gray-600">Saving blog post...</p>
+            </div>
+          </div>
+        )}
         <BlogForm
           mode="edit"
           initialData={initialData}

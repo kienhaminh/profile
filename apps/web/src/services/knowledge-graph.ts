@@ -6,6 +6,7 @@ import { logger } from '@/lib/logger';
 import type { BlogListItem } from '@/types/blog';
 import type { Tag } from '@/types/tag';
 import type { PostStatus } from '@/types/enums';
+import { POST_STATUS } from '@/types/enums';
 
 interface RelatedBlog {
   blog: BlogListItem;
@@ -73,7 +74,9 @@ export async function getRelatedBlogsById(
       const [post] = await db
         .select()
         .from(posts)
-        .where(eq(posts.id, postId))
+        .where(
+          and(eq(posts.id, postId), eq(posts.status, POST_STATUS.PUBLISHED))
+        )
         .limit(1);
 
       if (!post) continue;

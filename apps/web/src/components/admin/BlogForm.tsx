@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { TagSelect } from './TagSelect';
-import { TopicSelect } from './TopicSelect';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import type { CreateBlogRequest } from '@/lib/validation';
 import { POST_STATUS, type PostStatus } from '@/types/enums';
+import { Button } from '@/components/ui/button';
+import { Loader2, Wand2, FileText } from 'lucide-react';
 
 interface BlogFormData {
   title: string;
@@ -16,13 +17,11 @@ interface BlogFormData {
   excerpt?: string;
   readTime?: number;
   coverImage?: string;
-  topicIds: string[];
   tagIds: string[];
 }
 
 // Type that matches the form data but allows optional fields for editing
 type BlogFormEditData = Partial<CreateBlogRequest> & {
-  topicIds?: string[];
   tagIds?: string[];
 };
 
@@ -31,6 +30,14 @@ interface BlogFormProps {
   onSubmit: (data: BlogFormData) => Promise<void>;
   onCancel?: () => void;
   mode: 'create' | 'edit';
+}
+
+interface PromptData {
+  prompt: string;
+  topic: string;
+  targetAudience: string;
+  tone: 'professional' | 'casual' | 'technical' | 'conversational';
+  length: 'short' | 'medium' | 'long';
 }
 
 export function BlogForm({
@@ -48,12 +55,22 @@ export function BlogForm({
     excerpt: initialData?.excerpt || '',
     readTime: initialData?.readTime || undefined,
     coverImage: initialData?.coverImage || '',
-    topicIds: initialData?.topicIds || [],
     tagIds: initialData?.tagIds || [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Prompt mode state
+  const [isPromptMode, setIsPromptMode] = useState(false);
+  const [promptData, setPromptData] = useState<PromptData>({
+    prompt: '',
+    topic: '',
+    targetAudience: '',
+    tone: 'professional',
+    length: 'medium',
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     if (!initialData?.slug && formData.title) {
@@ -91,8 +108,99 @@ export function BlogForm({
     }
   };
 
+  const handlePromptChange = (field: keyof PromptData, value: string) => {
+    setPromptData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const generateContentFromPrompt = async () => {
+    if (!promptData.prompt.trim()) {
+      setErrors({ prompt: 'Prompt is required' });
+      return;
+    }
+
+    setIsGenerating(true);
+    setErrors({});
+
+    try {
+      const response = await fetch('/api/blog/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(promptData),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to generate content';
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const error = await response.json();
+            errorMessage = error.message || error.error || errorMessage;
+          } else {
+            // If not JSON, try to get text content
+            const textContent = await response.text();
+            errorMessage = textContent || errorMessage;
+          }
+        } catch (parseError) {
+          // If parsing fails, use default error message
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Parse JSON response with error handling
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (parseError) {
+        throw new Error('Invalid response format from server');
+      }
+
+      const { data } = responseData;
+
+      // Update form data with generated content
+      setFormData((prev) => ({
+        ...prev,
+        title: data.title || prev.title,
+        content: data.content || prev.content,
+        excerpt: data.excerpt || prev.excerpt,
+        readTime: data.readTime || prev.readTime,
+      }));
+
+      // Switch to manual mode after generation
+      setIsPromptMode(false);
+    } catch (error) {
+      setErrors({
+        prompt:
+          error instanceof Error ? error.message : 'Failed to generate content',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const togglePromptMode = () => {
+    setIsPromptMode((prev) => !prev);
+    if (!isPromptMode) {
+      // Switching to prompt mode - clear any existing errors
+      setErrors({});
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
+
+    if (isPromptMode) {
+      if (!promptData.prompt.trim()) {
+        newErrors.prompt = 'Prompt is required';
+      } else if (promptData.prompt.length < 10) {
+        newErrors.prompt = 'Prompt must be at least 10 characters long';
+      }
+      setErrors(newErrors);
+      return Object.keys(newErrors).length === 0;
+    }
 
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';
@@ -135,6 +243,12 @@ export function BlogForm({
       return;
     }
 
+    // If in prompt mode, generate content first
+    if (isPromptMode) {
+      await generateContentFromPrompt();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit(formData);
@@ -156,184 +270,368 @@ export function BlogForm({
         </div>
       )}
 
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium mb-2">
-          Title <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Enter blog title"
-        />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="slug" className="block text-sm font-medium mb-2">
-          Slug <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="slug"
-          name="slug"
-          value={formData.slug}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="blog-post-slug"
-        />
-        {errors.slug && (
-          <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="excerpt" className="block text-sm font-medium mb-2">
-          Excerpt
-        </label>
-        <textarea
-          id="excerpt"
-          name="excerpt"
-          value={formData.excerpt}
-          onChange={handleChange}
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Brief summary of the blog post"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="content" className="block text-sm font-medium mb-2">
-          Content <span className="text-red-500">*</span>
-        </label>
-        <RichTextEditor
-          value={formData.content}
-          onChange={handleContentChange}
-          placeholder="Write your blog content here..."
-          className="min-h-[400px]"
-        />
-        {errors.content && (
-          <p className="mt-1 text-sm text-red-600">{errors.content}</p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium mb-2">
-            Status
-          </label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={POST_STATUS.DRAFT}>Draft</option>
-            <option value={POST_STATUS.PUBLISHED}>Published</option>
-            <option value={POST_STATUS.ARCHIVED}>Archived</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="readTime" className="block text-sm font-medium mb-2">
-            Read Time (minutes)
-          </label>
-          <input
-            type="number"
-            id="readTime"
-            name="readTime"
-            value={formData.readTime || ''}
-            onChange={handleChange}
-            min="1"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="5"
+      {/* Mode Toggle */}
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center space-x-3">
+          <FileText
+            className={`h-5 w-5 ${!isPromptMode ? 'text-blue-600' : 'text-gray-400'}`}
           />
-          {errors.readTime && (
-            <p className="mt-1 text-sm text-red-600">{errors.readTime}</p>
-          )}
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="coverImage" className="block text-sm font-medium mb-2">
-          Cover Image URL
-        </label>
-        <input
-          type="url"
-          id="coverImage"
-          name="coverImage"
-          value={formData.coverImage}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="https://example.com/image.jpg"
-        />
-        {errors.coverImage && (
-          <p className="mt-1 text-sm text-red-600">{errors.coverImage}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="publishDate" className="block text-sm font-medium mb-2">
-          Publish Date
-        </label>
-        <input
-          type="datetime-local"
-          id="publishDate"
-          name="publishDate"
-          value={formData.publishDate}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Topics</label>
-        <TopicSelect
-          value={formData.topicIds}
-          onChange={(topicIds) =>
-            setFormData((prev) => ({ ...prev, topicIds }))
-          }
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">Tags</label>
-        <TagSelect
-          value={formData.tagIds}
-          onChange={(tagIds) => setFormData((prev) => ({ ...prev, tagIds }))}
-          placeholder="Search or create tags for your blog post..."
-        />
-      </div>
-
-      <div className="flex gap-3 pt-4">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isSubmitting
-            ? 'Saving...'
-            : mode === 'create'
-              ? 'Create Blog Post'
-              : 'Update Blog Post'}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:cursor-not-allowed"
+          <span
+            className={`font-medium ${!isPromptMode ? 'text-blue-600' : 'text-gray-400'}`}
           >
-            Cancel
-          </button>
-        )}
+            Manual Entry
+          </span>
+        </div>
+        <Button
+          type="button"
+          variant={isPromptMode ? 'default' : 'outline'}
+          size="sm"
+          onClick={togglePromptMode}
+          className="flex items-center space-x-2"
+        >
+          <Wand2 className="h-4 w-4" />
+          <span>AI Generate</span>
+        </Button>
       </div>
+
+      {isPromptMode ? (
+        /* Prompt Mode Form */
+        <div className="space-y-6">
+          <div>
+            <label
+              htmlFor="prompt"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Prompt <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="prompt"
+              value={promptData.prompt}
+              onChange={(e) => handlePromptChange('prompt', e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              placeholder="Describe what you want the blog post to be about. Be specific about the topic, key points to cover, and the desired outcome."
+            />
+            {errors.prompt && (
+              <p className="mt-1 text-sm text-red-600">{errors.prompt}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="topic"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Topic (Optional)
+              </label>
+              <input
+                type="text"
+                id="topic"
+                value={promptData.topic}
+                onChange={(e) => handlePromptChange('topic', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                placeholder="e.g., Web Development, Machine Learning"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="targetAudience"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Target Audience (Optional)
+              </label>
+              <input
+                type="text"
+                id="targetAudience"
+                value={promptData.targetAudience}
+                onChange={(e) =>
+                  handlePromptChange('targetAudience', e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                placeholder="e.g., Developers, Beginners, Business Owners"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="tone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Tone
+              </label>
+              <select
+                id="tone"
+                value={promptData.tone}
+                onChange={(e) =>
+                  handlePromptChange(
+                    'tone',
+                    e.target.value as PromptData['tone']
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              >
+                <option value="professional">Professional</option>
+                <option value="casual">Casual</option>
+                <option value="technical">Technical</option>
+                <option value="conversational">Conversational</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="length"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Length
+              </label>
+              <select
+                id="length"
+                value={promptData.length}
+                onChange={(e) =>
+                  handlePromptChange(
+                    'length',
+                    e.target.value as PromptData['length']
+                  )
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              >
+                <option value="short">Short (800-1200 words)</option>
+                <option value="medium">Medium (1500-2500 words)</option>
+                <option value="long">Long (3000+ words)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="submit"
+              disabled={isGenerating}
+              className="flex items-center space-x-2"
+            >
+              {isGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="h-4 w-4" />
+              )}
+              <span>{isGenerating ? 'Generating...' : 'Generate Content'}</span>
+            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isGenerating}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div>
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              placeholder="Enter blog title"
+            />
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="slug"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Slug <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="slug"
+              name="slug"
+              value={formData.slug}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              placeholder="blog-post-slug"
+            />
+            {errors.slug && (
+              <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="excerpt"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Excerpt
+            </label>
+            <textarea
+              id="excerpt"
+              name="excerpt"
+              value={formData.excerpt}
+              onChange={handleChange}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              placeholder="Brief summary of the blog post"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="content"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Content <span className="text-red-500">*</span>
+            </label>
+            <RichTextEditor
+              value={formData.content}
+              onChange={handleContentChange}
+              placeholder="Write your blog content here..."
+              className="min-h-[400px]"
+            />
+            {errors.content && (
+              <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              >
+                <option value={POST_STATUS.DRAFT}>Draft</option>
+                <option value={POST_STATUS.PUBLISHED}>Published</option>
+                <option value={POST_STATUS.ARCHIVED}>Archived</option>
+              </select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="readTime"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Read Time (minutes)
+              </label>
+              <input
+                type="number"
+                id="readTime"
+                name="readTime"
+                value={formData.readTime || ''}
+                onChange={handleChange}
+                min="1"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                placeholder="5"
+              />
+              {errors.readTime && (
+                <p className="mt-1 text-sm text-red-600">{errors.readTime}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="coverImage"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Cover Image URL
+            </label>
+            <input
+              type="url"
+              id="coverImage"
+              name="coverImage"
+              value={formData.coverImage}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              placeholder="https://example.com/image.jpg"
+            />
+            {errors.coverImage && (
+              <p className="mt-1 text-sm text-red-600">{errors.coverImage}</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="publishDate"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Publish Date
+            </label>
+            <input
+              type="datetime-local"
+              id="publishDate"
+              name="publishDate"
+              value={formData.publishDate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tags
+            </label>
+            <TagSelect
+              value={formData.tagIds}
+              onChange={(tagIds) =>
+                setFormData((prev) => ({ ...prev, tagIds }))
+              }
+              placeholder="Search or create tags for your blog post..."
+            />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : mode === 'create' ? (
+                'Create Blog Post'
+              ) : (
+                'Update Blog Post'
+              )}
+            </Button>
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </>
+      )}
     </form>
   );
 }

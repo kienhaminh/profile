@@ -25,9 +25,18 @@ export async function GET(request: NextRequest) {
       validatedStatus = statusParam as PostStatus;
     }
 
-    const posts = await getAllPosts(validatedStatus);
+    const pageParam = searchParams.get('page');
+    const limitParam = searchParams.get('limit');
+    const page = pageParam ? Math.max(1, Number(pageParam) || 1) : undefined;
+    const limit =
+      limitParam && Number(limitParam) > 0 ? Number(limitParam) : undefined;
 
-    return NextResponse.json(posts);
+    const posts = await getAllPosts(validatedStatus, { page, limit });
+
+    return NextResponse.json({
+      items: posts.data,
+      pagination: posts.pagination,
+    });
   } catch {
     console.error('Error fetching posts');
     return NextResponse.json(

@@ -188,19 +188,21 @@ export function HomeAnimations(): null {
 
     // Footer animation
     const footerSections = document.querySelectorAll('.footer-section');
-    gsap.from(footerSections, {
-      scrollTrigger: {
-        trigger: '.footer-section',
-        start: 'top 90%',
-        end: 'top 60%',
-        toggleActions: 'play none none reverse',
-      },
-      y: 50,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.2,
-      ease: 'power3.out',
-    });
+    if (footerSections.length > 0) {
+      gsap.from(footerSections, {
+        scrollTrigger: {
+          trigger: footerSections[0] as Element,
+          start: 'top 90%',
+          end: 'top 60%',
+          toggleActions: 'play none none reverse',
+        },
+        y: 50,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: 'power3.out',
+      });
+    }
 
     // Parallax effect for sections
     const parallaxSections = document.querySelectorAll('.parallax-section');
@@ -212,7 +214,8 @@ export function HomeAnimations(): null {
           end: 'bottom top',
           scrub: 1,
         },
-        y: (i, target) => -ScrollTrigger.maxScroll(window) * target.dataset.speed,
+        y: (i, target) =>
+          -ScrollTrigger.maxScroll(window) * target.dataset.speed,
       });
     });
 

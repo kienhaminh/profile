@@ -156,7 +156,7 @@ export function Sidebar() {
             <Button
               variant="outline"
               size="icon"
-              className="fixed top-4 left-4 z-50 transition-transform duration-200 hover:scale-105"
+              className="fixed top-4 left-4 z-50 transition-transform duration-200 hover:scale-105 bg-white border-gray-300 text-gray-900 hover:bg-gray-100 hover:text-gray-900 shadow-md"
             >
               <Menu className="h-4 w-4 transition-transform duration-200" />
             </Button>
