@@ -44,8 +44,3 @@ next-env.d.ts
 .DS_Store
 
 # Claude
-.claude/
-CLAUDE.md
-plans/
-.repomixignore
-docs/
