@@ -17,10 +17,12 @@ import {
 import { HomeAnimations } from '@/components/HomeAnimations';
 
 export default async function Home() {
-  const [{ data: featuredProjects }, { data: recentBlogs }] = await Promise.all([
-    getAllProjects(PROJECT_STATUS.PUBLISHED, { page: 1, limit: 2 }),
-    listBlogs(POST_STATUS.PUBLISHED, { page: 1, limit: 3 }),
-  ]);
+  const [{ data: featuredProjects }, { data: recentBlogs }] = await Promise.all(
+    [
+      getAllProjects(PROJECT_STATUS.PUBLISHED, { page: 1, limit: 2 }),
+      listBlogs(POST_STATUS.PUBLISHED, { page: 1, limit: 3 }),
+    ]
+  );
 
   const formatDate = (dateString: string | Date | null) => {
     if (!dateString) return '';

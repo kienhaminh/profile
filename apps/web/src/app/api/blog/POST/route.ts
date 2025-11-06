@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { CreatePostInput } from '@/types/blog';
+import type { PostStatus } from '@/types/enums';
 import { createBlog } from '@/services/blog';
 import { db } from '@/db/client';
 import { users } from '@/db/schema';
@@ -13,9 +15,9 @@ export async function POST(request: NextRequest) {
     const parsed = createBlogSchema.parse(body);
 
     // Cast status to PostStatus if provided
-    const data: import('@/types/blog').CreatePostInput = {
+    const data: CreatePostInput = {
       ...parsed,
-      status: parsed.status as import('@/types/enums').PostStatus | undefined,
+      status: parsed.status as PostStatus | undefined,
     };
 
     // In tests or when not provided, use the first user

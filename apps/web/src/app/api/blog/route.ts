@@ -6,6 +6,8 @@ import { createBlogSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
 import { POST_STATUS } from '@/types/enums';
+import type { PostStatus } from '@/types/enums';
+import type { CreatePostInput } from '@/types/blog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest) {
     // For now, only support status filtering
     // TODO: Add full filter support with pagination
     const statusParam = searchParams.get('status') || POST_STATUS.PUBLISHED;
-    const status = statusParam as import('@/types/enums').PostStatus;
+    const status = statusParam as PostStatus;
 
     const pageParam = searchParams.get('page');
     const limitParam = searchParams.get('limit');
@@ -55,10 +57,12 @@ export async function POST(request: NextRequest) {
 
     const parsed = schemaWithOptionalAuthorId.parse(body);
 
-    // Cast status to PostStatus if provided
-    const data: import('@/types/blog').CreatePostInput = {
+    // Cast status to PostStatus if provided. `authorId` is resolved below, so keep it optional here
+    const data: Omit<CreatePostInput, 'authorId'> & {
+      authorId?: string;
+    } = {
       ...parsed,
-      status: parsed.status as import('@/types/enums').PostStatus | undefined,
+      status: parsed.status as PostStatus | undefined,
     };
 
     // In tests or when not provided, use the first user

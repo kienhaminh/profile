@@ -6,10 +6,11 @@ import {
   NotFoundError,
   ConflictError,
 } from '@/services/blog';
+import type { UpdatePostInput } from '@/types/blog';
+import type { PostStatus } from '@/types/enums';
 import { updateBlogSchema } from '@/lib/validation';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
 import { ZodError } from 'zod';
-
 
 export async function GET(
   request: NextRequest,
@@ -46,9 +47,9 @@ export async function PUT(
     const { id } = await params;
 
     // Cast status to PostStatus if provided
-    const data: import('@/types/blog').UpdatePostInput = {
+    const data: UpdatePostInput = {
       ...parsed,
-      status: parsed.status as import('@/types/enums').PostStatus | undefined,
+      status: parsed.status as PostStatus | undefined,
     };
 
     const blog = await updateBlog(id, data);

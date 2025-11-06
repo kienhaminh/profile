@@ -66,10 +66,10 @@ export async function getAllPosts(
       }
     }
 
-    let query = statusFilter
-      ? db.select().from(posts).where(eq(posts.status, statusFilter))
-      : db.select().from(posts);
-
+    let query = db.select().from(posts).$dynamic();
+    if (statusFilter) {
+      query = query.where(eq(posts.status, statusFilter));
+    }
     query = query.orderBy(desc(posts.createdAt));
 
     if (hasPagination && limit) {

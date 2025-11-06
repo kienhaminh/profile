@@ -30,7 +30,7 @@ export async function getBlogBySlug(slug: string): Promise<Blog> {
 }
 
 export async function createBlog(
-  input: CreatePostInput,
+  input: Omit<CreatePostInput, 'authorId'>,
   authorId: string
 ): Promise<Blog> {
   return createPost({ ...input, authorId });

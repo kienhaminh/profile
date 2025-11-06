@@ -15,8 +15,5 @@
   "devDependencies": {
     "turbo": "^2.6.0"
   },
-  "packageManager": "pnpm@10.18.3",
-  "dependencies": {
-    "@upstash/redis": "^1.35.6"
-  }
+  "packageManager": "pnpm@10.18.3"
 }

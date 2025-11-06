@@ -72,10 +72,10 @@ export async function getAllProjects(
       }
     }
 
-    let query = statusFilter
-      ? db.select().from(projects).where(eq(projects.status, statusFilter))
-      : db.select().from(projects);
-
+    let query = db.select().from(projects).$dynamic();
+    if (statusFilter) {
+      query = query.where(eq(projects.status, statusFilter));
+    }
     query = query.orderBy(desc(projects.createdAt));
 
     if (hasPagination && limit) {
