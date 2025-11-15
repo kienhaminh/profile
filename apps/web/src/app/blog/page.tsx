@@ -31,15 +31,15 @@ export default function Blog(): React.JSX.Element {
       {/* Header */}
       <div className="relative py-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-6 animate-fade-in">
             <div className="flex justify-center">
-              <div className="p-4 rounded-full bg-primary/20 shadow-xl">
-                <BookOpen className="w-12 h-12 text-primary" />
+              <div className="p-4 rounded-full bg-primary/20 shadow-xl dark:shadow-primary/30 hover:scale-110 transition-all duration-300 hover:shadow-2xl dark:hover:shadow-primary/50">
+                <BookOpen className="w-12 h-12 text-primary animate-pulse" />
               </div>
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold">
               <span className="block text-foreground">My</span>
-              <span className="block text-primary text-glow">
+              <span className="block text-primary text-glow bg-clip-text">
                 Blog
               </span>
             </h1>

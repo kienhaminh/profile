@@ -115,13 +115,13 @@ export default async function Home() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left side - Summary */}
             <div className="space-y-6">
-              <div className="inline-flex items-center px-4 py-2 bg-accent rounded-full text-accent-foreground text-sm font-medium mb-4">
-                <Sparkles className="w-4 h-4 mr-2" />
+              <div className="inline-flex items-center px-4 py-2 bg-accent rounded-full text-accent-foreground text-sm font-medium mb-4 shadow-lg dark:shadow-primary/20 hover:shadow-xl dark:hover:shadow-primary/30 transition-all duration-300">
+                <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
                 AI Researcher & Full-stack Developer
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Hi, I&apos;m <span className="text-primary text-glow">Kien Ha</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight animate-fade-in">
+                Hi, I&apos;m <span className="text-primary text-glow bg-clip-text">Kien Ha</span>
               </h1>
 
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
@@ -140,54 +140,56 @@ export default async function Home() {
                   href={CONTACT.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl hover:scale-110"
+                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
                   aria-label="GitHub"
                 >
-                  <Github className="w-5 h-5" />
+                  <Github className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 </Link>
                 <Link
                   href={CONTACT.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl hover:scale-110"
+                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
                   aria-label="LinkedIn"
                 >
-                  <Linkedin className="w-5 h-5" />
+                  <Linkedin className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 </Link>
                 <Link
                   href={CONTACT.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl hover:scale-110"
+                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
                   aria-label="Facebook"
                 >
-                  <Facebook className="w-5 h-5" />
+                  <Facebook className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 </Link>
                 <Link
                   href={`mailto:${CONTACT.email}`}
-                  className="p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl hover:scale-110"
+                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
                   aria-label="Email"
                 >
-                  <Mail className="w-5 h-5" />
+                  <Mail className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                 </Link>
               </div>
             </div>
 
             {/* Right side - Avatar */}
             <div className="flex justify-center md:justify-end">
-              <div className="relative group">
-                <div className="absolute -inset-2 bg-primary rounded-full blur-2xl opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-2xl">
+              <div className="relative group animate-fade-in">
+                <div className="absolute -inset-4 bg-gradient-to-r from-primary via-secondary to-primary rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-all duration-1000 animate-pulse-glow"></div>
+                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-full overflow-hidden shadow-2xl dark:shadow-primary/30 group-hover:shadow-3xl dark:group-hover:shadow-primary/50 transition-all duration-500 ring-2 ring-primary/20 group-hover:ring-primary/40">
                   <Image
                     src={avatarImage}
                     alt="Kien Ha"
                     width={384}
                     height={384}
-                    className="w-full h-full object-cover filter blur-[0.5px]"
+                    className="w-full h-full object-cover filter blur-[0.5px] group-hover:scale-105 transition-transform duration-700"
                     priority
                   />
                   {/* Gradient overlay for soft bottom fade */}
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80 pointer-events-none"></div>
+                  {/* Cosmic shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
                 </div>
               </div>
             </div>
@@ -210,12 +212,12 @@ export default async function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Experience Highlight */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
               <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
                   <Code className="w-6 h-6 text-accent-foreground" />
                 </div>
-                <CardTitle>Full-stack Development</CardTitle>
+                <CardTitle className="group-hover:text-primary transition-colors">Full-stack Development</CardTitle>
                 <CardDescription>6+ years of experience</CardDescription>
               </CardHeader>
               <CardContent>
@@ -227,12 +229,12 @@ export default async function Home() {
             </Card>
 
             {/* AI Research */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
               <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
                   <Brain className="w-6 h-6 text-accent-foreground" />
                 </div>
-                <CardTitle>AI Research</CardTitle>
+                <CardTitle className="group-hover:text-primary transition-colors">AI Research</CardTitle>
                 <CardDescription>Medical AI & Deep Learning</CardDescription>
               </CardHeader>
               <CardContent>
@@ -245,12 +247,12 @@ export default async function Home() {
             </Card>
 
             {/* Innovation */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
               <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
                   <Rocket className="w-6 h-6 text-accent-foreground" />
                 </div>
-                <CardTitle>Innovation</CardTitle>
+                <CardTitle className="group-hover:text-primary transition-colors">Innovation</CardTitle>
                 <CardDescription>Continuous Learning</CardDescription>
               </CardHeader>
               <CardContent>

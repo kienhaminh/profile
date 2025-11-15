@@ -41,15 +41,15 @@ export default async function Projects() {
       {/* Header */}
       <div className="relative py-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
+          <div className="text-center space-y-6 animate-fade-in">
             <div className="flex justify-center">
-              <div className="p-4 rounded-full bg-primary/20 shadow-xl">
-                <Rocket className="w-12 h-12 text-primary" />
+              <div className="p-4 rounded-full bg-primary/20 shadow-xl dark:shadow-primary/30 hover:scale-110 transition-all duration-300 hover:shadow-2xl dark:hover:shadow-primary/50 group">
+                <Rocket className="w-12 h-12 text-primary animate-pulse group-hover:rotate-12 transition-transform" />
               </div>
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold">
               <span className="block text-foreground">{PAGE_CONTENT.TITLE}</span>
-              <span className="block text-primary text-glow">
+              <span className="block text-primary text-glow bg-clip-text">
                 Portfolio
               </span>
             </h1>
@@ -74,10 +74,11 @@ export default async function Projects() {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <Card
                 key={project.id}
-                className="cosmic-card group h-full border-2 border-border hover:border-primary hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] overflow-hidden relative"
+                className="cosmic-card group h-full border-2 border-border hover:border-primary overflow-hidden relative"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <CardHeader className="relative">
                   <div className="flex justify-between items-start mb-2">

@@ -132,36 +132,36 @@ export default function AdminDashboard() {
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage your blog posts and content</p>
+          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage your blog posts and content</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Posts
                 </CardTitle>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
                 {stats?.recentActivity.total_posts || posts.length}
               </div>
               <div className="flex items-center gap-1 mt-2">
                 <TrendingUp className="w-3 h-3 text-green-500" />
-                <p className="text-xs text-gray-600 font-medium">
+                <p className="text-xs text-muted-foreground font-medium">
                   {stats?.recentActivity.posts_this_week || 0} this week
                 </p>
               </div>
             </CardContent>
           </Card>
-          <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">

@@ -78,7 +78,7 @@ export function Navbar(): JSX.Element {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/90 border-b border-border/50 shadow-sm"
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/30 shadow-lg dark:shadow-primary/10"
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,10 +90,10 @@ export function Navbar(): JSX.Element {
               className="flex items-center space-x-2 group"
               aria-label="Home"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
-                <Code2 className="w-6 h-6 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-md group-hover:shadow-xl dark:group-hover:shadow-primary/50 transition-all duration-300 group-hover:scale-110">
+                <Code2 className="w-6 h-6 text-primary-foreground transition-transform group-hover:rotate-12" />
               </div>
-              <span className="text-xl font-bold text-primary hidden sm:block">
+              <span className="text-xl font-bold text-primary hidden sm:block group-hover:text-glow transition-all">
                 Kien Ha
               </span>
             </Link>
