@@ -121,7 +121,7 @@ export default async function Home() {
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-                Hi, I&apos;m <span className="text-primary">Kien Ha</span>
+                Hi, I&apos;m <span className="text-primary text-glow">Kien Ha</span>
               </h1>
 
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
@@ -210,7 +210,7 @@ export default async function Home() {
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
             {/* Experience Highlight */}
-            <Card className="border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
               <CardHeader>
                 <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
                   <Code className="w-6 h-6 text-accent-foreground" />
@@ -227,7 +227,7 @@ export default async function Home() {
             </Card>
 
             {/* AI Research */}
-            <Card className="border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
               <CardHeader>
                 <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
                   <Brain className="w-6 h-6 text-accent-foreground" />
@@ -245,7 +245,7 @@ export default async function Home() {
             </Card>
 
             {/* Innovation */}
-            <Card className="border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
+            <Card className="cosmic-card border-2 border-accent hover:border-primary hover:shadow-xl transition-all">
               <CardHeader>
                 <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4">
                   <Rocket className="w-6 h-6 text-accent-foreground" />
@@ -351,7 +351,7 @@ export default async function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProjects.map((project) => (
               <Link key={project.id} href={`/projects/${project.id}`}>
-                <Card className="h-full border-2 border-border hover:border-primary hover:shadow-2xl transition-all duration-300 group cursor-pointer">
+                <Card className="cosmic-card h-full border-2 border-border hover:border-primary hover:shadow-2xl transition-all duration-300 group cursor-pointer">
                   <CardHeader>
                     <CardTitle className="group-hover:text-primary transition-colors">
                       {project.title}
@@ -387,7 +387,7 @@ export default async function Home() {
             <Link href="/projects">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
+                className="stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
               >
                 View All Projects
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -418,7 +418,7 @@ export default async function Home() {
                   className="group block h-full"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <Card className="h-full relative overflow-hidden border-2 border-border/50 dark:border-border/30 bg-card/80 backdrop-blur-sm hover:border-primary dark:hover:border-primary hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1 animate-fade-in">
+                  <Card className="cosmic-card h-full relative overflow-hidden border-2 border-border/50 dark:border-border/30 bg-card/80 backdrop-blur-sm hover:border-primary dark:hover:border-primary hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1 animate-fade-in">
                     {/* Gradient overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -502,7 +502,7 @@ export default async function Home() {
               <Link href="/blog">
                 <Button
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
+                  className="stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
                 >
                   View All Posts
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -525,7 +525,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <Card className="border-2 border-border shadow-xl">
+          <Card className="cosmic-card border-2 border-border shadow-xl">
             <CardContent className="p-8">
               <form
                 action={`mailto:${CONTACT.email}`}
@@ -579,7 +579,7 @@ export default async function Home() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
+                  className="stellar-button w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
                 >
                   Send Message
                   <Mail className="ml-2 w-5 h-5 group-hover:rotate-12 transition-transform" />

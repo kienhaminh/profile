@@ -85,9 +85,13 @@ export default function RootLayout({
         >
           {measurementId && <GoogleAnalytics measurementId={measurementId} />}
           <WebVitalsReporter />
-          <Navbar />
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-          <Footer />
+          {/* Cosmic Starfield Background for Dark Matter Theme */}
+          <div className="starfield" aria-hidden="true" />
+          <div className="relative z-10">
+            <Navbar />
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <Footer />
+          </div>
           <Toaster />
         </ThemeProvider>
       </body>

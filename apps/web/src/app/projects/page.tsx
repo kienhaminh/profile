@@ -37,72 +37,23 @@ export default async function Projects() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Navigation */}
-      <nav
-        className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b border-gray-200/50 shadow-sm"
-        aria-label="Main navigation"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link
-                href="/"
-                className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all"
-                aria-label="Home"
-              >
-                {NAVIGATION_LABELS.KIEN_HA}
-              </Link>
-            </div>
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Link
-                href="/projects"
-                className="px-3 py-2 text-sm sm:text-base text-blue-600 bg-blue-50 rounded-lg font-medium transition-all duration-200"
-              >
-                {NAVIGATION_LABELS.PROJECTS}
-              </Link>
-              <Link
-                href="/blog"
-                className="px-3 py-2 text-sm sm:text-base text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
-              >
-                {NAVIGATION_LABELS.BLOG}
-              </Link>
-              <Link href={`mailto:${CONTACT.email}`}>
-                <Button
-                  size="sm"
-                  className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
-                >
-                  <Mail className="w-4 h-4 mr-1" />
-                  <span className="hidden sm:inline">Contact</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Header with gradient */}
+    <div className="min-h-screen bg-background pt-20">
+      {/* Header */}
       <div className="relative py-20 overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"></div>
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
-              <div className="p-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-xl">
-                <Rocket className="w-12 h-12 text-white" />
+              <div className="p-4 rounded-full bg-primary/20 shadow-xl">
+                <Rocket className="w-12 h-12 text-primary" />
               </div>
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold">
-              <span className="block text-gray-900">{PAGE_CONTENT.TITLE}</span>
-              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="block text-foreground">{PAGE_CONTENT.TITLE}</span>
+              <span className="block text-primary text-glow">
                 Portfolio
               </span>
             </h1>
-            <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-4 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {PAGE_CONTENT.SUBTITLE}
             </p>
           </div>
@@ -113,27 +64,24 @@ export default async function Projects() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         {projects.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-              <Rocket className="w-12 h-12 text-purple-600" />
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+              <Rocket className="w-12 h-12 text-primary" />
             </div>
-            <p className="text-xl text-gray-700 mb-2 font-semibold">
+            <p className="text-xl text-foreground mb-2 font-semibold">
               Coming Soon!
             </p>
-            <p className="text-gray-600">{PAGE_CONTENT.NO_PROJECTS}</p>
+            <p className="text-muted-foreground">{PAGE_CONTENT.NO_PROJECTS}</p>
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <Card
                 key={project.id}
-                className="group h-full border-2 border-gray-100 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white/80 backdrop-blur-sm overflow-hidden relative"
+                className="cosmic-card group h-full border-2 border-border hover:border-primary hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] overflow-hidden relative"
               >
-                {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
                 <CardHeader className="relative">
                   <div className="flex justify-between items-start mb-2">
-                    <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
                       <Link
                         href={`/projects/${project.slug}`}
                         className="hover:underline"
@@ -152,7 +100,7 @@ export default async function Projects() {
                   </div>
                 </CardHeader>
                 <CardContent className="relative space-y-4">
-                  <p className="text-gray-600 line-clamp-3 leading-relaxed">
+                  <p className="text-muted-foreground line-clamp-3 leading-relaxed">
                     {project.description}
                   </p>
 
@@ -160,7 +108,7 @@ export default async function Projects() {
                     {project.tags?.slice(0, 3).map((tag) => (
                       <span
                         key={tag.id}
-                        className="px-2.5 py-1 text-xs font-medium bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-full border border-blue-200"
+                        className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full border border-border"
                       >
                         {tag.label}
                       </span>
@@ -172,7 +120,7 @@ export default async function Projects() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"
+                        className="flex-1 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
                         asChild
                       >
                         <Link
@@ -189,7 +137,7 @@ export default async function Projects() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white transition-all"
+                        className="flex-1 border-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground transition-all"
                         asChild
                       >
                         <Link
@@ -210,16 +158,11 @@ export default async function Projects() {
         )}
       </div>
 
-      {/* Footer - Enhanced version matching homepage */}
+      {/* Footer */}
       <footer
-        className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden"
+        className="relative bg-card text-foreground overflow-hidden border-t border-border"
         role="contentinfo"
       >
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-600 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-600 rounded-full blur-3xl"></div>
-        </div>
 
         <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">

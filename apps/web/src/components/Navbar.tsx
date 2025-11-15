@@ -123,7 +123,7 @@ export function Navbar(): JSX.Element {
 
           {/* Theme toggle and Contact Me button on the right */}
           <div className="flex items-center gap-2">
-            {/* <ThemeToggle /> */}
+            <ThemeToggle />
             {isHomePage ? (
               <Button
                 onClick={handleContactClick}
