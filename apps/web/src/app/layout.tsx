@@ -87,6 +87,8 @@ export default function RootLayout({
           <WebVitalsReporter />
           {/* Cosmic Starfield Background for Dark Matter Theme */}
           <div className="starfield" aria-hidden="true" />
+          {/* Aurora Borealis Effect Layer */}
+          <div className="aurora-layer" aria-hidden="true" />
           <div className="relative z-10">
             <Navbar />
             <TRPCReactProvider>{children}</TRPCReactProvider>

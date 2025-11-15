@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -65,6 +64,12 @@ html {
   --letter-spacing: 0rem;
   --spacing: 0.25rem;
   --tracking-normal: 0rem;
+
+  /* Light mode cosmic accents */
+  --glow-primary: oklch(0.6716 0.1368 48.5130 / 0.3);
+  --glow-secondary: oklch(0.5360 0.0398 196.0280 / 0.3);
+  --gradient-cosmic: linear-gradient(135deg, oklch(0.6716 0.1368 48.5130), oklch(0.5360 0.0398 196.0280));
+  --backdrop-blur: 12px;
 }
 
 .dark {
@@ -123,6 +128,13 @@ html {
   --shadow-offset-y: 1px;
   --letter-spacing: 0rem;
   --spacing: 0.25rem;
+
+  /* Dark Matter cosmic glow effects */
+  --glow-primary: oklch(0.7214 0.1337 49.9802 / 0.4);
+  --glow-secondary: oklch(0.5940 0.0443 196.0233 / 0.4);
+  --glow-accent: oklch(0.8721 0.0864 68.5474 / 0.3);
+  --gradient-cosmic: linear-gradient(135deg, oklch(0.7214 0.1337 49.9802), oklch(0.5940 0.0443 196.0233), oklch(0.8721 0.0864 68.5474));
+  --backdrop-blur: 16px;
 }
 
 @theme inline {
@@ -191,6 +203,9 @@ html {
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-glow-primary: var(--glow-primary);
+  --color-glow-secondary: var(--glow-secondary);
+  --backdrop-blur: var(--backdrop-blur);
 }
 
 @layer components {
@@ -384,10 +399,45 @@ html {
   @keyframes cosmic-glow {
     0%,
     100% {
-      box-shadow: 0 0 20px oklch(0.75 0.22 90 / 0.3);
+      box-shadow: 0 0 20px var(--glow-primary);
     }
     50% {
-      box-shadow: 0 0 40px oklch(0.75 0.22 90 / 0.6);
+      box-shadow: 0 0 40px var(--glow-primary), 0 0 60px var(--glow-secondary);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 10px var(--glow-primary), 0 0 20px var(--glow-primary);
+    }
+    50% {
+      box-shadow: 0 0 20px var(--glow-primary), 0 0 40px var(--glow-secondary), 0 0 60px var(--glow-accent, var(--glow-primary));
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  @keyframes aurora {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: translateY(0) scale(1);
+    }
+    33% {
+      opacity: 0.6;
+      transform: translateY(-10px) scale(1.05);
+    }
+    66% {
+      opacity: 0.4;
+      transform: translateY(5px) scale(0.95);
     }
   }
 
@@ -399,6 +449,7 @@ html {
     height: 100%;
     pointer-events: none;
     z-index: 0;
+    overflow: hidden;
   }
 
   .dark .starfield::before,
@@ -419,76 +470,167 @@ html {
       radial-gradient(1px 1px at 80% 10%, oklch(0.92 0.01 90), transparent),
       radial-gradient(2px 2px at 90% 60%, oklch(0.75 0.22 90), transparent),
       radial-gradient(1px 1px at 33% 50%, oklch(0.92 0.01 90), transparent),
-      radial-gradient(1px 1px at 75% 90%, oklch(0.92 0.01 90), transparent);
+      radial-gradient(1px 1px at 75% 90%, oklch(0.92 0.01 90), transparent),
+      radial-gradient(1px 1px at 15% 80%, oklch(0.85 0.15 200), transparent),
+      radial-gradient(2px 2px at 85% 20%, oklch(0.88 0.12 280), transparent),
+      radial-gradient(1px 1px at 40% 60%, oklch(0.92 0.01 90), transparent);
     background-size: 200% 200%;
     animation: twinkle 8s ease-in-out infinite;
   }
 
   .dark .starfield::after {
     animation-delay: 4s;
-    opacity: 0.5;
+    opacity: 0.6;
+  }
+
+  /* Aurora borealis effect */
+  .dark .aurora-layer {
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(
+      ellipse at 50% 50%,
+      var(--glow-primary) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 80% 20%,
+      var(--glow-secondary) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 20% 80%,
+      var(--glow-accent, var(--glow-primary)) 0%,
+      transparent 40%
+    );
+    opacity: 0.03;
+    animation: aurora 20s ease-in-out infinite;
+    filter: blur(80px);
   }
 
   /* Cosmic Card Glow Effect */
-  .dark .cosmic-card {
+  .cosmic-card {
     position: relative;
-    background: oklch(0.12 0.01 280);
+    backdrop-filter: blur(var(--backdrop-blur));
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark .cosmic-card {
+    background: oklch(0.12 0.01 280 / 0.95);
     border: 1px solid oklch(0.22 0.02 280);
-    transition: all 0.3s ease;
+  }
+
+  .cosmic-card:hover {
+    transform: translateY(-4px);
   }
 
   .dark .cosmic-card:hover {
-    border-color: oklch(0.75 0.22 90);
+    border-color: var(--primary);
     box-shadow:
-      0 0 20px oklch(0.75 0.22 90 / 0.3),
-      0 0 40px oklch(0.75 0.22 90 / 0.1);
+      0 0 20px var(--glow-primary),
+      0 0 40px var(--glow-secondary),
+      0 10px 40px -10px rgba(0, 0, 0, 0.5);
   }
 
   .dark .cosmic-card::before {
     content: '';
     position: absolute;
-    inset: -1px;
-    background: linear-gradient(
-      135deg,
-      oklch(0.75 0.22 90 / 0.2),
-      transparent,
-      oklch(0.75 0.22 90 / 0.2)
-    );
+    inset: -2px;
+    background: var(--gradient-cosmic);
     border-radius: inherit;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s ease;
     pointer-events: none;
     z-index: -1;
+    filter: blur(10px);
   }
 
   .dark .cosmic-card:hover::before {
-    opacity: 1;
+    opacity: 0.5;
+  }
+
+  .dark .cosmic-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      transparent 0%,
+      var(--glow-primary) 50%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    background-size: 200% 200%;
+    animation: shimmer 3s linear infinite;
+  }
+
+  .dark .cosmic-card:hover::after {
+    opacity: 0.1;
   }
 
   /* Stellar Button Glow */
+  .stellar-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .dark .stellar-button {
-    background: oklch(0.75 0.22 90);
+    background: var(--gradient-cosmic);
     color: oklch(0.08 0.01 280);
-    box-shadow: 0 0 20px oklch(0.75 0.22 90 / 0.4);
-    transition: all 0.3s ease;
+    box-shadow: 0 0 20px var(--glow-primary);
+    animation: pulse-glow 3s ease-in-out infinite;
   }
 
   .dark .stellar-button:hover {
     box-shadow:
-      0 0 30px oklch(0.75 0.22 90 / 0.6),
-      0 0 60px oklch(0.75 0.22 90 / 0.3);
-    transform: translateY(-2px);
+      0 0 30px var(--glow-primary),
+      0 0 60px var(--glow-secondary),
+      0 0 90px var(--glow-accent, var(--glow-primary));
+    transform: translateY(-3px) scale(1.02);
+  }
+
+  .dark .stellar-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+
+  .dark .stellar-button:hover::before {
+    transform: translateX(100%);
   }
 
   /* Cosmic Text Glow */
-  .dark .text-glow {
-    text-shadow:
-      0 0 10px oklch(0.75 0.22 90 / 0.5),
-      0 0 20px oklch(0.75 0.22 90 / 0.3);
+  .text-glow {
+    transition: text-shadow 0.3s ease;
   }
 
-  .tech-skills-slider .slick-list {
-    min-height: 200px;
+  .dark .text-glow {
+    text-shadow:
+      0 0 10px var(--glow-primary),
+      0 0 20px var(--glow-secondary),
+      0 0 30px var(--glow-accent, var(--glow-primary));
+  }
+
+  .dark .text-glow:hover {
+    text-shadow:
+      0 0 15px var(--glow-primary),
+      0 0 30px var(--glow-secondary),
+      0 0 45px var(--glow-accent, var(--glow-primary));
   }
 
   /* Enhanced Blog post prose styling */
