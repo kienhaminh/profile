@@ -27,29 +27,23 @@ export default function Blog(): React.JSX.Element {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
-      {/* Header with gradient */}
+    <div className="min-h-screen bg-background pt-20">
+      {/* Header */}
       <div className="relative py-20 overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-pink-400/20 rounded-full blur-3xl" />
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
-              <div className="p-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-xl">
-                <BookOpen className="w-12 h-12 text-white" />
+              <div className="p-4 rounded-full bg-primary/20 shadow-xl">
+                <BookOpen className="w-12 h-12 text-primary" />
               </div>
             </div>
             <h1 className="text-4xl sm:text-5xl font-extrabold">
-              <span className="block text-gray-900">My</span>
-              <span className="block bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 bg-clip-text text-transparent">
+              <span className="block text-foreground">My</span>
+              <span className="block text-primary text-glow">
                 Blog
               </span>
             </h1>
-            <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-4 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Thoughts on AI, development, and technology
             </p>
           </div>
@@ -59,7 +53,7 @@ export default function Blog(): React.JSX.Element {
       {/* Topic Filter */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <div className="flex items-center gap-3 flex-wrap justify-center">
-          <Search className="w-5 h-5 text-gray-500" aria-hidden="true" />
+          <Search className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
           {TOPIC_OPTIONS.map((topic) => {
             const isSelected = selectedTopic === topic;
             return (
@@ -71,8 +65,8 @@ export default function Blog(): React.JSX.Element {
                 className={cn(
                   'transition-all',
                   isSelected
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-md'
-                    : 'border-2 hover:border-purple-300'
+                    ? 'stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-md'
+                    : 'border-2 hover:border-primary'
                 )}
                 aria-label={`Filter by ${BLOG_TOPIC_LABELS[topic]}`}
                 aria-pressed={isSelected}
@@ -94,13 +88,13 @@ export default function Blog(): React.JSX.Element {
           </div>
         ) : isError ? (
           <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center">
-              <BookOpen className="w-12 h-12 text-red-600" />
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-destructive/20 flex items-center justify-center">
+              <BookOpen className="w-12 h-12 text-destructive" />
             </div>
-            <p className="text-xl text-gray-700 mb-2 font-semibold">
+            <p className="text-xl text-foreground mb-2 font-semibold">
               Oops! Something went wrong
             </p>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Unable to load posts right now. Please try again later.
             </p>
           </div>
@@ -112,13 +106,13 @@ export default function Blog(): React.JSX.Element {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
-              <BookOpen className="w-12 h-12 text-purple-600" />
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
+              <BookOpen className="w-12 h-12 text-primary" />
             </div>
-            <p className="text-xl text-gray-700 mb-2 font-semibold">
+            <p className="text-xl text-foreground mb-2 font-semibold">
               {selectedTopic ? 'No posts found' : 'Coming Soon!'}
             </p>
-            <p className="text-gray-500 mb-6">
+            <p className="text-muted-foreground mb-6">
               {selectedTopic
                 ? `No posts found for topic "${BLOG_TOPIC_LABELS[selectedTopic]}".`
                 : 'No blog posts yet. Check back soon for exciting content!'}
@@ -127,7 +121,7 @@ export default function Blog(): React.JSX.Element {
               <Button
                 variant="outline"
                 onClick={() => setSelectedTopic(BLOG_TOPICS.ALL)}
-                className="border-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white transition-all"
+                className="stellar-button border-2 border-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-all"
               >
                 View All Posts
               </Button>

@@ -5,37 +5,38 @@ html {
 }
 
 :root {
-  --background: oklch(0.98 0.01 335.69);
-  --foreground: oklch(0.22 0 0);
-  --card: oklch(0.96 0.01 335.69);
-  --card-foreground: oklch(0.14 0 0);
-  --popover: oklch(0.95 0.01 316.67);
-  --popover-foreground: oklch(0.4 0.04 309.35);
-  --primary: oklch(0.51 0.21 286.5);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.49 0.04 300.23);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.96 0.01 335.69);
-  --muted-foreground: oklch(0.14 0 0);
-  --accent: oklch(0.92 0.04 303.47);
-  --accent-foreground: oklch(0.14 0 0);
-  --destructive: oklch(0.57 0.23 29.21);
-  --border: oklch(0.83 0.02 308.26);
-  --input: oklch(0.57 0.02 309.68);
-  --ring: oklch(0.5 0.13 293.77);
-  --chart-1: oklch(0.61 0.21 279.42);
-  --chart-2: oklch(0.72 0.15 157.67);
-  --chart-3: oklch(0.66 0.17 324.24);
-  --chart-4: oklch(0.81 0.15 127.91);
-  --chart-5: oklch(0.68 0.17 258.25);
-  --sidebar: oklch(0.99 0 0);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.56 0.11 228.27);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0 0);
-  --sidebar-accent-foreground: oklch(0.25 0 0);
-  --sidebar-border: oklch(0.9 0 0);
-  --sidebar-ring: oklch(0.56 0.11 228.27);
+  /* Light mode - Stellar Light */
+  --background: oklch(0.98 0.005 280);
+  --foreground: oklch(0.15 0.01 280);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.01 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 280);
+  --primary: oklch(0.70 0.20 90);
+  --primary-foreground: oklch(0.10 0.01 280);
+  --secondary: oklch(0.65 0.12 280);
+  --secondary-foreground: oklch(0.10 0.01 280);
+  --muted: oklch(0.95 0.01 280);
+  --muted-foreground: oklch(0.50 0.01 280);
+  --accent: oklch(0.70 0.20 90);
+  --accent-foreground: oklch(0.10 0.01 280);
+  --destructive: oklch(0.60 0.25 30);
+  --border: oklch(0.88 0.01 280);
+  --input: oklch(0.88 0.01 280);
+  --ring: oklch(0.70 0.20 90);
+  --chart-1: oklch(0.70 0.20 90);
+  --chart-2: oklch(0.65 0.15 280);
+  --chart-3: oklch(0.68 0.18 200);
+  --chart-4: oklch(0.72 0.15 320);
+  --chart-5: oklch(0.75 0.12 50);
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.15 0.01 280);
+  --sidebar-primary: oklch(0.70 0.20 90);
+  --sidebar-primary-foreground: oklch(0.10 0.01 280);
+  --sidebar-accent: oklch(0.96 0.01 280);
+  --sidebar-accent-foreground: oklch(0.15 0.01 280);
+  --sidebar-border: oklch(0.88 0.01 280);
+  --sidebar-ring: oklch(0.70 0.20 90);
 
   --font-sans: var(--font-roboto-sans), Roboto, sans-serif;
   --font-serif: Merriweather, serif;
@@ -43,69 +44,71 @@ html {
     var(--font-roboto-mono), 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo,
     Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
-  --radius: 1rem;
+  --radius: 0.5rem;
 
-  --shadow-2xs: 0px 1px 3px 0px oklch(0 0 0 / 0.01);
-  --shadow-xs: 0px 1px 3px 0px oklch(0 0 0 / 0.01);
+  --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.05);
+  --shadow-xs: 0px 1px 3px 0px oklch(0 0 0 / 0.08);
   --shadow-sm:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    0px 2px 4px 0px oklch(0 0 0 / 0.08), 0px 1px 2px -1px oklch(0 0 0 / 0.08);
   --shadow:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    0px 4px 6px 0px oklch(0 0 0 / 0.08), 0px 2px 4px -1px oklch(0 0 0 / 0.08);
   --shadow-md:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+    0px 6px 8px 0px oklch(0 0 0 / 0.10), 0px 4px 6px -1px oklch(0 0 0 / 0.10);
   --shadow-lg:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+    0px 10px 15px 0px oklch(0 0 0 / 0.12), 0px 6px 8px -2px oklch(0 0 0 / 0.10);
   --shadow-xl:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
-  --shadow-2xl: 0px 1px 3px 0px oklch(0 0 0 / 0.03);
+    0px 20px 25px 0px oklch(0 0 0 / 0.15), 0px 10px 15px -3px oklch(0 0 0 / 0.12);
+  --shadow-2xl: 0px 25px 50px 0px oklch(0 0 0 / 0.20);
 }
 
 .dark {
-  --background: oklch(0.15 0.01 317.69);
-  --foreground: oklch(0.95 0.01 321.5);
-  --card: oklch(0.22 0.02 322.13);
-  --card-foreground: oklch(0.95 0.01 321.5);
-  --popover: oklch(0.22 0.02 322.13);
-  --popover-foreground: oklch(0.95 0.01 321.5);
-  --primary: oklch(0.6 0.22 279.81);
-  --primary-foreground: oklch(0.98 0.01 321.51);
-  --secondary: oklch(0.45 0.03 294.79);
-  --secondary-foreground: oklch(0.95 0.01 321.5);
-  --muted: oklch(0.22 0.01 319.5);
-  --muted-foreground: oklch(0.7 0.01 320.7);
-  --accent: oklch(0.35 0.06 299.57);
-  --accent-foreground: oklch(0.95 0.01 321.5);
-  --destructive: oklch(0.57 0.23 29.21);
-  --border: oklch(0.4 0.04 309.35);
-  --input: oklch(0.4 0.04 309.35);
-  --ring: oklch(0.5 0.15 294.97);
-  --chart-1: oklch(0.5 0.25 274.99);
-  --chart-2: oklch(0.6 0.15 150.16);
-  --chart-3: oklch(0.65 0.2 309.96);
-  --chart-4: oklch(0.6 0.17 132.98);
-  --chart-5: oklch(0.6 0.2 255.25);
-  --sidebar: oklch(0.2 0.01 317.74);
-  --sidebar-foreground: oklch(0.95 0.01 321.5);
-  --sidebar-primary: oklch(0.59 0.11 225.82);
-  --sidebar-primary-foreground: oklch(0.95 0.01 321.5);
-  --sidebar-accent: oklch(0.3 0.01 319.52);
-  --sidebar-accent-foreground: oklch(0.95 0.01 321.5);
-  --sidebar-border: oklch(0.35 0.01 319.53 / 30%);
-  --sidebar-ring: oklch(0.59 0.11 225.82);
+  /* Dark Matter Theme - Cosmic Deep Blacks with Stellar Accents */
+  --background: oklch(0.08 0.01 280);
+  --foreground: oklch(0.92 0.01 90);
+  --card: oklch(0.12 0.01 280);
+  --card-foreground: oklch(0.92 0.01 90);
+  --popover: oklch(0.10 0.01 280);
+  --popover-foreground: oklch(0.92 0.01 90);
+  --primary: oklch(0.75 0.22 90);
+  --primary-foreground: oklch(0.08 0.01 280);
+  --secondary: oklch(0.25 0.03 280);
+  --secondary-foreground: oklch(0.92 0.01 90);
+  --muted: oklch(0.18 0.01 280);
+  --muted-foreground: oklch(0.60 0.01 90);
+  --accent: oklch(0.75 0.22 90);
+  --accent-foreground: oklch(0.08 0.01 280);
+  --destructive: oklch(0.62 0.25 30);
+  --border: oklch(0.22 0.02 280);
+  --input: oklch(0.20 0.02 280);
+  --ring: oklch(0.75 0.22 90);
+  --chart-1: oklch(0.75 0.22 90);
+  --chart-2: oklch(0.65 0.18 280);
+  --chart-3: oklch(0.68 0.20 200);
+  --chart-4: oklch(0.70 0.18 320);
+  --chart-5: oklch(0.72 0.15 50);
+  --sidebar: oklch(0.10 0.01 280);
+  --sidebar-foreground: oklch(0.92 0.01 90);
+  --sidebar-primary: oklch(0.75 0.22 90);
+  --sidebar-primary-foreground: oklch(0.08 0.01 280);
+  --sidebar-accent: oklch(0.18 0.02 280);
+  --sidebar-accent-foreground: oklch(0.92 0.01 90);
+  --sidebar-border: oklch(0.20 0.02 280);
+  --sidebar-ring: oklch(0.75 0.22 90);
 
-  --shadow-2xs: 0px 1px 3px 0px oklch(0 0 0 / 0.01);
-  --shadow-xs: 0px 1px 3px 0px oklch(0 0 0 / 0.01);
+  /* Cosmic glow shadows for dark matter theme */
+  --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.4), 0px 0px 4px 0px oklch(0.75 0.22 90 / 0.05);
+  --shadow-xs: 0px 1px 3px 0px oklch(0 0 0 / 0.5), 0px 0px 6px 0px oklch(0.75 0.22 90 / 0.08);
   --shadow-sm:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    0px 2px 4px 0px oklch(0 0 0 / 0.5), 0px 0px 8px 0px oklch(0.75 0.22 90 / 0.10);
   --shadow:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    0px 4px 6px 0px oklch(0 0 0 / 0.5), 0px 0px 12px 0px oklch(0.75 0.22 90 / 0.12);
   --shadow-md:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+    0px 6px 8px 0px oklch(0 0 0 / 0.6), 0px 0px 16px 0px oklch(0.75 0.22 90 / 0.15);
   --shadow-lg:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+    0px 10px 15px 0px oklch(0 0 0 / 0.7), 0px 0px 24px 0px oklch(0.75 0.22 90 / 0.18);
   --shadow-xl:
-    0px 1px 3px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
-  --shadow-2xl: 0px 1px 3px 0px oklch(0 0 0 / 0.03);
+    0px 20px 25px 0px oklch(0 0 0 / 0.8), 0px 0px 32px 0px oklch(0.75 0.22 90 / 0.20);
+  --shadow-2xl: 0px 25px 50px 0px oklch(0 0 0 / 0.9), 0px 0px 48px 0px oklch(0.75 0.22 90 / 0.25);
 }
 
 @theme inline {
@@ -323,6 +326,135 @@ html {
     50% {
       background-position: 100% 50%;
     }
+  }
+
+  /* Dark Matter Theme: Cosmic Starfield Background */
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes cosmic-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px oklch(0.75 0.22 90 / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px oklch(0.75 0.22 90 / 0.6);
+    }
+  }
+
+  .dark .starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .dark .starfield::before,
+  .dark .starfield::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(
+        2px 2px at 20% 30%,
+        oklch(0.92 0.01 90),
+        transparent
+      ),
+      radial-gradient(2px 2px at 60% 70%, oklch(0.92 0.01 90), transparent),
+      radial-gradient(1px 1px at 50% 50%, oklch(0.92 0.01 90), transparent),
+      radial-gradient(1px 1px at 80% 10%, oklch(0.92 0.01 90), transparent),
+      radial-gradient(2px 2px at 90% 60%, oklch(0.75 0.22 90), transparent),
+      radial-gradient(1px 1px at 33% 50%, oklch(0.92 0.01 90), transparent),
+      radial-gradient(1px 1px at 75% 90%, oklch(0.92 0.01 90), transparent);
+    background-size: 200% 200%;
+    animation: twinkle 8s ease-in-out infinite;
+  }
+
+  .dark .starfield::after {
+    animation-delay: 4s;
+    opacity: 0.5;
+  }
+
+  /* Cosmic Card Glow Effect */
+  .dark .cosmic-card {
+    position: relative;
+    background: oklch(0.12 0.01 280);
+    border: 1px solid oklch(0.22 0.02 280);
+    transition: all 0.3s ease;
+  }
+
+  .dark .cosmic-card:hover {
+    border-color: oklch(0.75 0.22 90);
+    box-shadow:
+      0 0 20px oklch(0.75 0.22 90 / 0.3),
+      0 0 40px oklch(0.75 0.22 90 / 0.1);
+  }
+
+  .dark .cosmic-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(
+      135deg,
+      oklch(0.75 0.22 90 / 0.2),
+      transparent,
+      oklch(0.75 0.22 90 / 0.2)
+    );
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .dark .cosmic-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Stellar Button Glow */
+  .dark .stellar-button {
+    background: oklch(0.75 0.22 90);
+    color: oklch(0.08 0.01 280);
+    box-shadow: 0 0 20px oklch(0.75 0.22 90 / 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .dark .stellar-button:hover {
+    box-shadow:
+      0 0 30px oklch(0.75 0.22 90 / 0.6),
+      0 0 60px oklch(0.75 0.22 90 / 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Cosmic Text Glow */
+  .dark .text-glow {
+    text-shadow:
+      0 0 10px oklch(0.75 0.22 90 / 0.5),
+      0 0 20px oklch(0.75 0.22 90 / 0.3);
   }
 
   .tech-skills-slider .slick-list {
