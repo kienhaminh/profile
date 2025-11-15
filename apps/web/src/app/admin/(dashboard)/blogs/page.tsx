@@ -250,7 +250,7 @@ export default function BlogsListPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {blogs.map((blog, index) => (
+                  {blogs.map((blog) => (
                     <TableRow
                       key={blog.id}
                       className="border-b border-purple-100/50 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-blue-50/30 transition-all duration-200 hover:shadow-md group"

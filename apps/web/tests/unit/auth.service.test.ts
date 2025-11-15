@@ -1,23 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as bcrypt from 'bcryptjs';
-import { verifyCredentials, getUserById } from '@/services/auth.service';
-import { UnauthorizedError, NotFoundError } from '@/lib/errors';
 
 // Mock the database client
-vi.mock('@/db/client', () => {
-  const mockDb = {
+vi.mock('@/db/client', () => ({
+  db: {
     select: vi.fn(),
     from: vi.fn(),
     where: vi.fn(),
     limit: vi.fn(),
-  };
-  return { db: mockDb };
-});
+  },
+}));
 
 // Mock bcryptjs
 vi.mock('bcryptjs', () => ({
   compare: vi.fn(),
   hash: vi.fn(),
+}));
+
+// Mock jsonwebtoken
+vi.mock('jsonwebtoken', () => ({
+  sign: vi.fn(() => 'mock-jwt-token'),
 }));
 
 // Mock logger
@@ -30,17 +31,20 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
-describe('auth.service', () => {
-  let mockDb: any;
+// Import after mocks
+import * as bcrypt from 'bcryptjs';
+import { db } from '@/db/client';
+import { authenticateUser } from '@/services/auth';
 
-  beforeEach(async () => {
+describe('auth.service', () => {
+  const mockDb = db as any;
+
+  beforeEach(() => {
     vi.clearAllMocks();
-    const { db } = await import('@/db/client');
-    mockDb = db;
   });
 
-  describe('verifyCredentials', () => {
-    it('should verify valid credentials', async () => {
+  describe('authenticateUser', () => {
+    it('should authenticate user with valid credentials', async () => {
       const mockUser = {
         id: '123',
         username: 'admin',
@@ -54,12 +58,16 @@ describe('auth.service', () => {
       vi.mocked(mockDb.limit).mockResolvedValue([mockUser]);
       vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
-      const result = await verifyCredentials('admin', 'password123');
+      const result = await authenticateUser({
+        username: 'admin',
+        password: 'password123',
+      });
 
-      expect(result).toEqual({
+      expect(result.success).toBe(true);
+      expect(result.token).toBe('mock-jwt-token');
+      expect(result.user).toEqual({
         id: mockUser.id,
         username: mockUser.username,
-        createdAt: mockUser.createdAt,
       });
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'password123',
@@ -67,18 +75,23 @@ describe('auth.service', () => {
       );
     });
 
-    it('should throw UnauthorizedError for invalid username', async () => {
+    it('should fail authentication for invalid username', async () => {
       vi.mocked(mockDb.select).mockReturnValue(mockDb);
       vi.mocked(mockDb.from).mockReturnValue(mockDb);
       vi.mocked(mockDb.where).mockReturnValue(mockDb);
       vi.mocked(mockDb.limit).mockResolvedValue([]);
 
-      await expect(
-        verifyCredentials('invalid', 'password123')
-      ).rejects.toThrow(UnauthorizedError);
+      const result = await authenticateUser({
+        username: 'invalid',
+        password: 'password123',
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.token).toBeUndefined();
+      expect(result.user).toBeUndefined();
     });
 
-    it('should throw UnauthorizedError for invalid password', async () => {
+    it('should fail authentication for invalid password', async () => {
       const mockUser = {
         id: '123',
         username: 'admin',
@@ -92,14 +105,30 @@ describe('auth.service', () => {
       vi.mocked(mockDb.limit).mockResolvedValue([mockUser]);
       vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
-      await expect(verifyCredentials('admin', 'wrong_password')).rejects.toThrow(
-        UnauthorizedError
-      );
-    });
-  });
+      const result = await authenticateUser({
+        username: 'admin',
+        password: 'wrong_password',
+      });
 
-  describe('getUserById', () => {
-    it('should return user when found', async () => {
+      expect(result.success).toBe(false);
+      expect(result.token).toBeUndefined();
+    });
+
+    it('should handle authentication errors gracefully', async () => {
+      vi.mocked(mockDb.select).mockReturnValue(mockDb);
+      vi.mocked(mockDb.from).mockReturnValue(mockDb);
+      vi.mocked(mockDb.where).mockReturnValue(mockDb);
+      vi.mocked(mockDb.limit).mockRejectedValue(new Error('Database error'));
+
+      const result = await authenticateUser({
+        username: 'admin',
+        password: 'password123',
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it('should generate JWT token on successful authentication', async () => {
       const mockUser = {
         id: '123',
         username: 'admin',
@@ -111,23 +140,16 @@ describe('auth.service', () => {
       vi.mocked(mockDb.from).mockReturnValue(mockDb);
       vi.mocked(mockDb.where).mockReturnValue(mockDb);
       vi.mocked(mockDb.limit).mockResolvedValue([mockUser]);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
-      const result = await getUserById('123');
-
-      expect(result).toEqual({
-        id: mockUser.id,
-        username: mockUser.username,
-        createdAt: mockUser.createdAt,
+      const result = await authenticateUser({
+        username: 'admin',
+        password: 'password123',
       });
-    });
 
-    it('should throw NotFoundError when user not found', async () => {
-      vi.mocked(mockDb.select).mockReturnValue(mockDb);
-      vi.mocked(mockDb.from).mockReturnValue(mockDb);
-      vi.mocked(mockDb.where).mockReturnValue(mockDb);
-      vi.mocked(mockDb.limit).mockResolvedValue([]);
-
-      await expect(getUserById('nonexistent')).rejects.toThrow(NotFoundError);
+      expect(result.success).toBe(true);
+      expect(result.token).toBeTruthy();
+      expect(typeof result.token).toBe('string');
     });
   });
 });

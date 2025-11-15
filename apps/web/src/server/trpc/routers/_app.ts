@@ -13,7 +13,7 @@ import { NotFoundError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 
 const t = initTRPC.context<Context>().create({
-  errorFormatter({ shape, error }) {
+  errorFormatter({ shape }) {
     return {
       ...shape,
       data: {

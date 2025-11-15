@@ -12,8 +12,10 @@ interface PortfolioSectionProps {
   projects: Project[];
 }
 
+const ALL_TAB = { slug: 'all', label: 'All' } as const;
+
 export function PortfolioSection({ projects }: PortfolioSectionProps) {
-  const allTab = { slug: 'all', label: 'All' } as const;
+  const allTab = ALL_TAB;
 
   const tagTabs = useMemo(() => {
     const map = new Map<string, string>();
@@ -22,12 +24,12 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
       allTab,
       ...Array.from(map.entries()).map(([slug, label]) => ({ slug, label })),
     ];
-  }, [projects]);
+  }, [projects, allTab]);
 
   const [active, setActive] = useState<string>(allTab.slug);
   const filtered = useMemo(
     () => filterProjectsByTag(projects, active === allTab.slug ? null : active),
-    [projects, active]
+    [projects, active, allTab]
   );
 
   return (
@@ -134,6 +136,8 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
 }
 
 export default PortfolioSection;
+
+
 
 
 

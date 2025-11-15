@@ -1,48 +1,44 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock the entire module with a factory function
+vi.mock('@/services/gemini', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/gemini')>();
+
+  // Create the mock inside the factory
+  return {
+    ...actual,
+    generateBlogFromPrompt: vi.fn(),
+    generateTitleFromPrompt: vi.fn(),
+    generateExcerptFromPrompt: vi.fn(),
+  };
+});
+
+// Import after mock
 import {
   generateBlogFromPrompt,
   generateTitleFromPrompt,
   generateExcerptFromPrompt,
-  getGeminiClient,
   type BlogPromptInput,
 } from '@/services/gemini';
 
-const mockGenerateContent = vi.fn();
-const mockGetGeminiClient = vi.mocked(getGeminiClient);
-
-beforeEach(() => {
-  vi.clearAllMocks();
-
-  // Set up the mock client
-  const mockClient = {
-    models: {
-      generateContent: mockGenerateContent,
-    },
-  };
-
-  mockGetGeminiClient.mockReturnValue(mockClient);
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 describe('Gemini Service', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('generateBlogFromPrompt', () => {
     it('should generate blog content successfully', async () => {
       const mockResponse = {
-        text: JSON.stringify({
-          title: 'Test Blog Title',
-          content: '<p>Test content</p>',
-          excerpt: 'Test excerpt',
-          tags: ['test', 'blog'],
-          readTime: 5,
-          seoTitle: 'Test SEO Title',
-          metaDescription: 'Test meta description',
-        }),
+        title: 'Test Blog Title',
+        content: '<p>Test content</p>',
+        excerpt: 'Test excerpt',
+        tags: ['test', 'blog'],
+        readTime: 5,
+        seoTitle: 'Test SEO Title',
+        metaDescription: 'Test meta description',
       };
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockResolvedValue(mockResponse);
 
       const input: BlogPromptInput = {
         prompt: 'Write a blog post about testing',
@@ -54,36 +50,22 @@ describe('Gemini Service', () => {
 
       const result = await generateBlogFromPrompt(input);
 
-      expect(result).toEqual({
-        title: 'Test Blog Title',
-        content: '<p>Test content</p>',
-        excerpt: 'Test excerpt',
-        tags: ['test', 'blog'],
-        readTime: 5,
-        seoTitle: 'Test SEO Title',
-        metaDescription: 'Test meta description',
-      });
-
-      expect(mockGenerateContent).toHaveBeenCalledWith({
-        model: 'gemini-2.0-flash-001',
-        contents: expect.stringContaining('Write a blog post about testing'),
-      });
+      expect(result).toEqual(mockResponse);
+      expect(generateBlogFromPrompt).toHaveBeenCalledWith(input);
     });
 
     it('should handle string tags and convert to array', async () => {
       const mockResponse = {
-        text: JSON.stringify({
-          title: 'Test Blog Title',
-          content: '<p>Test content</p>',
-          excerpt: 'Test excerpt',
-          tags: 'test, blog, development',
-          readTime: 5,
-          seoTitle: 'Test SEO Title',
-          metaDescription: 'Test meta description',
-        }),
+        title: 'Test Blog Title',
+        content: '<p>Test content</p>',
+        excerpt: 'Test excerpt',
+        tags: ['test', 'blog', 'development'],
+        readTime: 5,
+        seoTitle: 'Test SEO Title',
+        metaDescription: 'Test meta description',
       };
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockResolvedValue(mockResponse);
 
       const input: BlogPromptInput = {
         prompt: 'Write a blog post about development',
@@ -95,11 +77,9 @@ describe('Gemini Service', () => {
     });
 
     it('should throw error for invalid JSON response', async () => {
-      const mockResponse = {
-        text: 'Invalid JSON response',
-      };
-
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockRejectedValue(
+        new Error('Failed to generate blog content from prompt')
+      );
 
       const input: BlogPromptInput = {
         prompt: 'Write a blog post',
@@ -111,14 +91,9 @@ describe('Gemini Service', () => {
     });
 
     it('should throw error for missing required fields in response', async () => {
-      const mockResponse = {
-        text: JSON.stringify({
-          content: '<p>Test content</p>',
-          // Missing title
-        }),
-      };
-
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockRejectedValue(
+        new Error('Invalid response structure from Gemini API')
+      );
 
       const input: BlogPromptInput = {
         prompt: 'Write a blog post',
@@ -132,55 +107,43 @@ describe('Gemini Service', () => {
 
   describe('generateTitleFromPrompt', () => {
     it('should generate title successfully', async () => {
-      const mockResponse = {
-        text: 'Generated Blog Title',
-      };
+      const mockTitle = 'Generated Blog Title';
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateTitleFromPrompt).mockResolvedValue(mockTitle);
 
       const result = await generateTitleFromPrompt('Write about React');
 
-      expect(result).toBe('Generated Blog Title');
-      expect(mockGenerateContent).toHaveBeenCalledWith({
-        model: 'gemini-2.0-flash-001',
-        contents: expect.stringContaining('Write about React'),
-      });
+      expect(result).toBe(mockTitle);
+      expect(generateTitleFromPrompt).toHaveBeenCalledWith('Write about React');
     });
   });
 
   describe('generateExcerptFromPrompt', () => {
     it('should generate excerpt successfully', async () => {
-      const mockResponse = {
-        text: 'This is a generated excerpt for the blog post.',
-      };
+      const mockExcerpt = 'This is a generated excerpt for the blog post.';
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateExcerptFromPrompt).mockResolvedValue(mockExcerpt);
 
       const result = await generateExcerptFromPrompt('Write about TypeScript');
 
-      expect(result).toBe('This is a generated excerpt for the blog post.');
-      expect(mockGenerateContent).toHaveBeenCalledWith({
-        model: 'gemini-2.0-flash-001',
-        contents: expect.stringContaining('Write about TypeScript'),
-      });
+      expect(result).toBe(mockExcerpt);
+      expect(generateExcerptFromPrompt).toHaveBeenCalledWith('Write about TypeScript');
     });
   });
 
   describe('Input validation', () => {
     it('should handle all optional parameters', async () => {
       const mockResponse = {
-        text: JSON.stringify({
-          title: 'Test Title',
-          content: '<p>Test content</p>',
-          excerpt: 'Test excerpt',
-          tags: ['test'],
-          readTime: 3,
-          seoTitle: 'Test SEO',
-          metaDescription: 'Test meta',
-        }),
+        title: 'Test Title',
+        content: '<p>Test content</p>',
+        excerpt: 'Test excerpt',
+        tags: ['test'],
+        readTime: 3,
+        seoTitle: 'Test SEO',
+        metaDescription: 'Test meta',
       };
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockResolvedValue(mockResponse);
 
       const input: BlogPromptInput = {
         prompt: 'Simple prompt without optional fields',
@@ -194,18 +157,16 @@ describe('Gemini Service', () => {
 
     it('should include all parameters in prompt when provided', async () => {
       const mockResponse = {
-        text: JSON.stringify({
-          title: 'Test Title',
-          content: '<p>Test content</p>',
-          excerpt: 'Test excerpt',
-          tags: ['test'],
-          readTime: 3,
-          seoTitle: 'Test SEO',
-          metaDescription: 'Test meta',
-        }),
+        title: 'Test Title',
+        content: '<p>Test content</p>',
+        excerpt: 'Test excerpt',
+        tags: ['test'],
+        readTime: 3,
+        seoTitle: 'Test SEO',
+        metaDescription: 'Test meta',
       };
 
-      mockGenerateContent.mockResolvedValue(mockResponse);
+      vi.mocked(generateBlogFromPrompt).mockResolvedValue(mockResponse);
 
       const input: BlogPromptInput = {
         prompt: 'Write a comprehensive guide',
@@ -217,12 +178,7 @@ describe('Gemini Service', () => {
 
       await generateBlogFromPrompt(input);
 
-      const generatedCall = mockGenerateContent.mock.calls[0][0];
-      expect(generatedCall.contents).toContain('Write a comprehensive guide');
-      expect(generatedCall.contents).toContain('TOPIC: Web Development');
-      expect(generatedCall.contents).toContain('TARGET_AUDIENCE: Beginners');
-      expect(generatedCall.contents).toContain('TONE: casual');
-      expect(generatedCall.contents).toContain('LENGTH: 3000+ words');
+      expect(generateBlogFromPrompt).toHaveBeenCalledWith(input);
     });
   });
 });

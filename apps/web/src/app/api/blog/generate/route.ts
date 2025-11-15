@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   generateBlogFromPrompt,
   generateTitleFromPrompt,
-  generateExcerptFromPrompt,
   type BlogPromptInput,
 } from '@/services/gemini';
 import { ensureAdminOrThrow, UnauthorizedError } from '@/lib/auth';
@@ -27,7 +26,7 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Invalid Request',
@@ -107,7 +106,7 @@ export async function PATCH(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (parseError) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Invalid Request',

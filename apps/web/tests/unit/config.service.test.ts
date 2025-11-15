@@ -1,25 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  getAllConfigs,
-  getConfigByKey,
-  upsertConfig,
-} from '@/services/config.service';
 
 // Mock the database client
-const mockDb = {
-  select: vi.fn(),
-  from: vi.fn(),
-  where: vi.fn(),
-  limit: vi.fn(),
-  insert: vi.fn(),
-  values: vi.fn(),
-  onConflictDoUpdate: vi.fn(),
-  returning: vi.fn(),
-  delete: vi.fn(),
-};
-
 vi.mock('@/db/client', () => ({
-  db: mockDb,
+  db: {
+    select: vi.fn(),
+    from: vi.fn(),
+    where: vi.fn(),
+    limit: vi.fn(),
+    insert: vi.fn(),
+    values: vi.fn(),
+    onConflictDoUpdate: vi.fn(),
+    returning: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 // Mock logger
@@ -32,7 +25,16 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
+// Import after mocks
+import { db } from '@/db/client';
+import {
+  getAllConfigs,
+  getConfigByKey,
+  upsertConfig,
+} from '@/services/config';
+
 describe('config.service', () => {
+  const mockDb = db as any;
   beforeEach(() => {
     vi.clearAllMocks();
   });

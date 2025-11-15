@@ -42,6 +42,42 @@ export const INFORMATION = {
   email,
   phone,
   address,
+  title:
+    process.env.NEXT_PUBLIC_SITE_TITLE ||
+    'Full-stack Developer & AI Researcher',
+  bio:
+    process.env.NEXT_PUBLIC_SITE_BIO ||
+    'Full-stack developer specializing in modern web technologies and AI integration. Building scalable applications with React, Next.js, TypeScript, and Python. Currently pursuing research in AI applications for medical field.',
+  socialLinks: {
+    github: process.env.NEXT_PUBLIC_GITHUB || 'https://github.com/kienhaminh',
+    linkedin:
+      process.env.NEXT_PUBLIC_LINKEDIN || 'http://linkedin.com/in/haminhkien',
+    facebook:
+      process.env.NEXT_PUBLIC_FACEBOOK ||
+      'https://www.facebook.com/haminh.kien',
+    twitter: process.env.NEXT_PUBLIC_TWITTER || '',
+  },
+  // Academic & Research Profiles
+  academicProfiles: {
+    googleScholar: '', // Add your Google Scholar profile URL
+    researchGate: '', // Add your ResearchGate profile URL
+    orcid: '', // Add your ORCID URL
+  },
+  // Organization/Institution
+  organization: {
+    name: 'NAPA GLOBAL',
+    type: 'company' as const, // 'company' | 'university' | 'research-institution'
+  },
+  // Academic Credentials
+  currentInstitution: {
+    name: 'Chonnam National University',
+    department: 'Department of AI Convergence',
+    degree: "Master's Student",
+  },
+  alumniOf: {
+    name: 'Danang University of Education',
+    degree: 'Bachelor of Information Technology',
+  },
 } as const;
 
 // Export validation status for debugging/logging
@@ -109,14 +145,7 @@ export const EXPERIENCE: Experience[] = [
 export const SKILLS: Skills = {
   language: ['English'],
   programmingLanguage: ['JavaScript', 'Python'],
-  framework: [
-    'ReactJS',
-    'NextJS',
-    'React Native',
-    'NestJS',
-    'LangChain',
-    'LangGraph',
-  ],
+  framework: ['ReactJS', 'NextJS', 'NestJS', 'LangChain'],
   service: [
     'AWS',
     'Docker',

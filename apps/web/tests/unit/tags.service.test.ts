@@ -1,10 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  getAllTags,
-  getTagById,
-  getTagBySlug,
-  createTag,
-} from '@/services/tags.service';
 import { NotFoundError, ConflictError } from '@/lib/errors';
 
 // Mock slugify
@@ -13,21 +7,19 @@ vi.mock('slugify', () => ({
 }));
 
 // Mock the database client
-const mockDb = {
-  select: vi.fn(),
-  from: vi.fn(),
-  where: vi.fn(),
-  limit: vi.fn(),
-  insert: vi.fn(),
-  values: vi.fn(),
-  returning: vi.fn(),
-  update: vi.fn(),
-  set: vi.fn(),
-  delete: vi.fn(),
-};
-
 vi.mock('@/db/client', () => ({
-  db: mockDb,
+  db: {
+    select: vi.fn(),
+    from: vi.fn(),
+    where: vi.fn(),
+    limit: vi.fn(),
+    insert: vi.fn(),
+    values: vi.fn(),
+    returning: vi.fn(),
+    update: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+  },
 }));
 
 // Mock logger
@@ -40,7 +32,17 @@ vi.mock('@/lib/logger', () => ({
   },
 }));
 
+// Import after mocks
+import { db } from '@/db/client';
+import {
+  getAllTags,
+  getTagById,
+  getTagBySlug,
+  createTag,
+} from '@/services/tags';
+
 describe('tags.service', () => {
+  const mockDb = db as any;
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -143,7 +143,7 @@ export function BlogForm({
             const textContent = await response.text();
             errorMessage = textContent || errorMessage;
           }
-        } catch (parseError) {
+        } catch {
           // If parsing fails, use default error message
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
@@ -154,7 +154,7 @@ export function BlogForm({
       let responseData;
       try {
         responseData = await response.json();
-      } catch (parseError) {
+      } catch {
         throw new Error('Invalid response format from server');
       }
 

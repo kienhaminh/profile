@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INFORMATION, CONTACT } from '@/constants/information';
@@ -6,12 +7,29 @@ import { getAllProjects } from '@/services/projects';
 import {
   PROJECT_STATUS_FILTERS,
   STATUS_BADGE_STYLES,
-  TAG_STYLES,
   PROJECT_BUTTON_LABELS,
   NAVIGATION_LABELS,
   PAGE_CONTENT,
 } from '@/constants/projects';
 import { ExternalLink, Github, Mail, Linkedin, Rocket } from 'lucide-react';
+import { generateMetadata as generateSEOMetadata } from '@/config/seo';
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: 'Projects',
+  description:
+    'Explore my portfolio of web development projects, including full-stack applications built with React, Next.js, TypeScript, Node.js, and AI integrations. Real-world applications showcasing modern development practices.',
+  keywords: [
+    'portfolio',
+    'projects',
+    'web applications',
+    'react projects',
+    'nextjs projects',
+    'full-stack projects',
+    'typescript projects',
+    'AI applications',
+  ],
+  url: '/projects',
+});
 
 export default async function Projects() {
   const { data: projects } = await getAllProjects(

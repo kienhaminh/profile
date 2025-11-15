@@ -1,56 +1,38 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Roboto, Roboto_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
 import { TRPCReactProvider } from '@/trpc/Provider';
+import { ThemeProvider } from '@/components/theme-provider';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { Toaster } from '@/components/ui/sonner';
+import { WebsiteSchema, PersonSchema } from '@/components/seo/JsonLd';
+import {
+  generateMetadata,
+  generateWebsiteSchema,
+  SEO_CONFIG,
+} from '@/config/seo';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const robotoSans = Roboto({
+  variable: '--font-roboto-sans',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const robotoMono = Roboto_Mono({
+  variable: '--font-roboto-mono',
   subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: 'Kien Ha',
-  description:
-    'A full-stack developer studying AI. Building modern web applications with a focus on clean code and user experience.',
-  keywords: [
-    'full-stack developer',
-    'AI',
-    'web development',
-    'clean code',
-    'user experience',
-  ],
-  authors: [{ name: 'Kien Ha', url: 'https://kienha.online' }],
-  creator: 'Kien Ha',
-  publisher: 'Kien Ha',
-  openGraph: {
-    title: 'Kien Ha',
-    description:
-      'A full-stack developer studying AI. Building modern web applications with a focus on clean code and user experience.',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Kien Ha',
-    description:
-      'A full-stack developer studying AI. Building modern web applications with a focus on clean code and user experience.',
-    images: ['https://kienha.online/og-image.png'],
-  },
+  ...generateMetadata(),
   icons: {
     icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   manifest: '/manifest.json',
-  alternates: {
-    canonical: 'https://kienha.online',
-  },
   robots: {
     index: true,
     follow: true,
@@ -59,9 +41,11 @@ export const metadata: Metadata = {
     'max-snippet': -1,
   },
   category: 'technology',
-  applicationName: 'Kien Ha',
   formatDetection: {
     telephone: false,
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
   other: {
     'theme-color': '#000000',
@@ -81,20 +65,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
+  const websiteSchema = generateWebsiteSchema();
 
   return (
-    <html lang="en" data-scroll-behavior="smooth">
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <GoogleAdsScript />
+        <WebsiteSchema data={websiteSchema} />
+        <PersonSchema data={SEO_CONFIG.organization} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
       >
-        {measurementId && <GoogleAnalytics measurementId={measurementId} />}
-        <WebVitalsReporter />
-        <Navbar />
-        <TRPCReactProvider>{children}</TRPCReactProvider>
-        <Footer />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {measurementId && <GoogleAnalytics measurementId={measurementId} />}
+          <WebVitalsReporter />
+          <Navbar />
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <Footer />
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

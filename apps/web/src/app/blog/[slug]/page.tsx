@@ -11,7 +11,9 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { GoogleAds } from '@/components/ads/GoogleAds';
+import { BlogPostSkeleton } from '@/components/blog';
 import DOMPurify from 'isomorphic-dompurify';
+import { toast } from 'sonner';
 import {
   Share2,
   Bookmark,
@@ -21,23 +23,9 @@ import {
   ArrowLeft,
   ArrowRight,
 } from 'lucide-react';
-import type { RelatedBlog } from '@/types/graph';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string | null;
-  publishDate: string | null;
-  readTime: number | null;
-  tags: Array<{
-    id: string;
-    label: string;
-    slug: string;
-    description: string | null;
-  }>;
-}
+import type { Blog } from '@/types/blog';
+import { fetchPostBySlug, fetchRelatedPosts } from '@/lib/blog-client';
+import { BLOG_CONFIG } from '@/constants/blog';
 
 interface RelatedPost {
   id: string;
@@ -52,45 +40,47 @@ interface BlogPostPageProps {
   }>;
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const [post, setPost] = useState<BlogPost | null>(null);
+function formatDate(dateString: string | null): string {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.Element {
+  const [post, setPost] = useState<Blog | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
 
-  const fetchPost = useCallback(
+  const loadPost = useCallback(
     async (signal: AbortSignal) => {
       try {
         setLoading(true);
         setError(null);
 
         const { slug } = await params;
-        const response = await fetch(`/api/blog/posts/${slug}`, {
-          signal,
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const sanitizedContent = DOMPurify.sanitize(data.content);
-          setPost({ ...data, content: sanitizedContent });
+        const data = await fetchPostBySlug(slug, { signal });
+        
+        const sanitizedContent = DOMPurify.sanitize(data.content);
+        setPost({ ...data, content: sanitizedContent });
 
-          if (data.id) {
-            fetchRelatedPosts(data.id, signal);
+        if (data.id) {
+          loadRelatedPosts(data.id, signal);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            return;
           }
-        } else if (response.status === 404) {
-          setError('Post not found');
+          setError(error.message);
         } else {
           setError('Failed to load post');
         }
-      } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
-          console.log('Post fetch was aborted');
-          return;
-        }
-
-        console.error('Error fetching post:', error);
-        setError('Failed to load post');
       } finally {
         if (!signal.aborted) {
           setLoading(false);
@@ -100,16 +90,31 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     [params]
   );
 
+  const loadRelatedPosts = async (postId: string, signal: AbortSignal): Promise<void> => {
+    try {
+      const related = await fetchRelatedPosts(
+        postId,
+        BLOG_CONFIG.RELATED_POSTS_LIMIT,
+        { signal }
+      );
+      setRelatedPosts(related);
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+      console.warn('Failed to fetch related posts:', error);
+    }
+  };
+
   useEffect(() => {
     const controller = new AbortController();
-    fetchPost(controller.signal);
+    loadPost(controller.signal);
 
     return () => {
       controller.abort();
     };
-  }, [fetchPost]);
+  }, [loadPost]);
 
-  // Check bookmark status from localStorage when post loads
   useEffect(() => {
     if (post) {
       const bookmarked = localStorage.getItem(`bookmark-${post.slug}`);
@@ -117,15 +122,13 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     }
   }, [post]);
 
-  // Reading progress indicator
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = (): void => {
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
       const scrollTop = window.scrollY;
       const scrollableHeight = documentHeight - windowHeight;
 
-      // Handle edge case where content is shorter than viewport
       if (scrollableHeight <= 0) {
         setReadingProgress(100);
         return;
@@ -135,7 +138,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       setReadingProgress(Math.min(100, Math.max(0, progress)));
     };
 
-    // Calculate initial progress after a short delay to ensure content is rendered
     const timeoutId = setTimeout(() => {
       handleScroll();
     }, 100);
@@ -150,45 +152,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     };
   }, []);
 
-  const fetchRelatedPosts = async (postId: string, signal: AbortSignal) => {
-    try {
-      const response = await fetch(`/api/blog/${postId}/related?limit=5`, {
-        signal,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setRelatedPosts(
-          (data.relatedBlogs || []).map((rb: RelatedBlog) => ({
-            id: rb.blog.id,
-            slug: rb.blog.slug,
-            title: rb.blog.title,
-            score: rb.score,
-          }))
-        );
-      } else {
-        console.warn('Failed to fetch related posts');
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Related posts fetch was aborted');
-        return;
-      }
-      console.error('Error fetching related posts:', error);
-      // Don't show error to user for related posts failure
-    }
-  };
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  // Share handler with Web Share API fallback to clipboard
   const handleShare = useCallback(async () => {
     if (!post) return;
 
@@ -199,59 +162,43 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     };
 
     try {
-      // Try Web Share API first
       if (navigator.share) {
         await navigator.share(shareData);
-        alert('Post shared successfully!');
+        toast.success('Post shared successfully!');
       } else {
-        // Fallback to clipboard
         await navigator.clipboard.writeText(window.location.href);
-        alert('Post URL copied to clipboard!');
+        toast.success('Post URL copied to clipboard!');
       }
     } catch (error) {
-      // Handle cases where user cancels sharing or clipboard fails
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Share failed:', error);
-        alert('Share failed. Please try again.');
+        toast.error('Failed to share. Please try again.');
       }
     }
   }, [post]);
 
-  // Bookmark handler with debouncing and localStorage persistence
   const handleBookmark = useCallback(async () => {
     if (!post) return;
 
     const newBookmarkState = !isBookmarked;
 
-    // Update state immediately for responsive UI
-    setIsBookmarked(newBookmarkState);
-
-    // Persist to localStorage
     try {
       if (newBookmarkState) {
         localStorage.setItem(`bookmark-${post.slug}`, 'true');
+        toast.success('Post bookmarked!');
       } else {
         localStorage.removeItem(`bookmark-${post.slug}`);
+        toast.success('Bookmark removed');
       }
+      setIsBookmarked(newBookmarkState);
     } catch (error) {
-      // Revert state if localStorage fails
-      setIsBookmarked(!newBookmarkState);
       console.error('Failed to update bookmark:', error);
-      alert('Failed to update bookmark. Please try again.');
+      toast.error('Failed to update bookmark. Please try again.');
     }
   }, [post, isBookmarked]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
-        <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 font-medium">Loading post...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <BlogPostSkeleton />;
   }
 
   if (error || !post) {
@@ -473,8 +420,6 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </div>
       </article>
-
-      {/* Footer moved to Root layout */}
     </div>
   );
 }

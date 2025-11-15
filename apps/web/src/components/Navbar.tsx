@@ -4,80 +4,164 @@ import type { JSX } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CONTACT } from '@/constants/information';
-import { Mail } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Code2 } from 'lucide-react';
 
 interface NavLinkConfig {
   href: string;
   label: string;
-  match: (pathname: string) => boolean;
+  scrollTo?: string; // ID to scroll to on home page
 }
 
 function getNavLinks(): NavLinkConfig[] {
   return [
     {
-      href: '/projects',
-      label: 'Projects',
-      match: (pathname: string) => pathname.startsWith('/projects'),
-    },
-    {
       href: '/blog',
       label: 'Blog',
-      match: (pathname: string) => pathname.startsWith('/blog'),
+      scrollTo: 'blog',
+    },
+    {
+      href: '/projects',
+      label: 'Projects',
+      scrollTo: 'projects',
+    },
+    {
+      href: '/#about',
+      label: 'About Me',
+      scrollTo: 'about',
     },
   ];
 }
 
+function scrollToSection(sectionId: string) {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    const navHeight = 64; // navbar height
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth',
+    });
+  }
+}
+
 function getLinkClasses(isActive: boolean): string {
   if (isActive) {
-    return 'px-3 py-2 text-sm sm:text-base text-purple-600 bg-purple-50 rounded-lg font-medium transition-all duration-200';
+    return 'px-4 py-2 text-sm font-medium text-primary hover:text-primary/90 transition-colors';
   }
-  return 'px-3 py-2 text-sm sm:text-base text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2';
+  return 'px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors';
 }
 
 export function Navbar(): JSX.Element {
   const pathname = usePathname() ?? '/';
   const links = getNavLinks();
+  const isHomePage = pathname === '/';
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    link: NavLinkConfig
+  ) => {
+    if (isHomePage && link.scrollTo) {
+      e.preventDefault();
+      scrollToSection(link.scrollTo);
+    }
+  };
+
+  const handleContactClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isHomePage) {
+      e.preventDefault();
+      scrollToSection('contact');
+    }
+  };
 
   return (
     <nav
-      className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b border-gray-200/50 shadow-sm"
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/90 border-b border-border/50 shadow-sm"
       aria-label="Main navigation"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo on the left */}
           <div className="flex items-center">
             <Link
               href="/"
-              className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-purple-700 transition-all"
+              className="flex items-center space-x-2 group"
               aria-label="Home"
             >
-              {process.env.NEXT_PUBLIC_SITE_NAME || 'Kien Ha'}
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
+                <Code2 className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-primary hidden sm:block">
+                Kien Ha
+              </span>
             </Link>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
+
+          {/* Menu in the center */}
+          <div className="hidden md:flex items-center space-x-1">
             {links.map((link) => {
-              const isActive = link.match(pathname);
+              const isActive =
+                (link.href === '/blog' && pathname.startsWith('/blog')) ||
+                (link.href === '/projects' &&
+                  pathname.startsWith('/projects')) ||
+                (link.href === '/#about' && pathname === '/' && false); // about is always not active in navbar
+
               return (
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={getLinkClasses(isActive)}
                 >
                   {link.label}
                 </Link>
               );
             })}
-            <Link href={`mailto:${CONTACT.email}`}>
-              <Button
-                size="sm"
-                className="ml-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
-              >
-                <Mail className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Contact</span>
-              </Button>
-            </Link>
           </div>
+
+          {/* Theme toggle and Contact Me button on the right */}
+          <div className="flex items-center gap-2">
+            {/* <ThemeToggle /> */}
+            {isHomePage ? (
+              <Button
+                onClick={handleContactClick}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                Contact Me
+              </Button>
+            ) : (
+              <Link href="/#contact">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
+                  Contact Me
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div className="md:hidden px-4 pb-3 space-y-1">
+        {links.map((link) => {
+          const isActive =
+            (link.href === '/blog' && pathname.startsWith('/blog')) ||
+            (link.href === '/projects' && pathname.startsWith('/projects'));
+
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={(e) => handleNavClick(e, link)}
+              className={`block ${getLinkClasses(isActive)}`}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
+        <div className="pt-2">
+          <ThemeToggle />
         </div>
       </div>
     </nav>
