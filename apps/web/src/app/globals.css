@@ -633,10 +633,6 @@ html {
       0 0 45px var(--glow-accent, var(--glow-primary));
   }
 
-  .tech-skills-slider .slick-list {
-    min-height: 200px;
-  }
-
   /* Enhanced Blog post prose styling */
   .prose {
     @apply text-foreground;
