@@ -50,9 +50,9 @@ export function ChatInterface() {
                 });
               // Convert createdAt strings to Date objects
               setMessages(
-                existingMessages.map((msg) => ({
+                existingMessages.map(({ createdAt, ...msg }) => ({
                   ...msg,
-                  createdAt: new Date(msg.createdAt),
+                  createdAt: new Date(createdAt),
                 }))
               );
             } else {
