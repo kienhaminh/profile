@@ -139,7 +139,7 @@ export function ChatInterface() {
                 Welcome! 👋
               </h2>
               <p className="text-muted-foreground">
-                I'm here to answer questions about Kien Ha's background,
+                I&apos;m here to answer questions about Kien Ha&apos;s background,
                 skills, experience, and projects. Feel free to ask me anything!
               </p>
             </div>
