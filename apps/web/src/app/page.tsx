@@ -527,7 +527,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <Card className="cosmic-card border-2 border-border shadow-xl">
+          <Card className="cosmic-card-border border-2 border-border shadow-xl">
             <CardContent className="p-8">
               <form
                 action={`mailto:${CONTACT.email}`}

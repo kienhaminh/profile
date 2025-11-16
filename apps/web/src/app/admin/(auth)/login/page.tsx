@@ -47,15 +47,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted p-4">
+      <Card className="w-full max-w-md shadow-2xl border-2 border-border bg-card/80 backdrop-blur-sm">
         <CardHeader className="space-y-2 pb-6">
           <div className="flex items-center justify-center mb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <Shield className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg dark:shadow-primary/30">
+              <Shield className="w-8 h-8 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl text-center font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl text-center font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             Admin Login
           </CardTitle>
           <p className="text-sm text-center text-muted-foreground">
@@ -69,8 +69,8 @@ export default function LoginPage() {
             aria-label="Admin login form"
           >
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+              <div className="p-3 bg-destructive/10 border border-destructive/30 text-destructive rounded-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
                 {error}
               </div>
             )}
@@ -83,7 +83,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   type="text"
@@ -93,7 +93,7 @@ export default function LoginPage() {
                   disabled={loading}
                   autoComplete="username"
                   aria-required="true"
-                  className="mt-1 block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
+                  className="mt-1 block w-full pl-10 pr-3 py-2.5 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-primary disabled:bg-muted disabled:cursor-not-allowed transition-all duration-200 hover:border-primary/50"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   type="password"
@@ -116,13 +116,13 @@ export default function LoginPage() {
                   disabled={loading}
                   autoComplete="current-password"
                   aria-required="true"
-                  className="mt-1 block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 hover:border-gray-400"
+                  className="mt-1 block w-full pl-10 pr-3 py-2.5 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-primary disabled:bg-muted disabled:cursor-not-allowed transition-all duration-200 hover:border-primary/50"
                 />
               </div>
             </div>
             <Button
               type="submit"
-              className="w-full mt-6 h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full mt-6 h-11 stellar-button bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
               aria-label="Submit login"
               disabled={loading}
             >

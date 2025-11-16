@@ -68,7 +68,7 @@ export function ContactButton({ className }: ContactButtonProps) {
       onClick={handleClick}
       variant="default"
       size="lg"
-      className={className}
+      className={`stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group ${className || ''}`}
     >
       Contact Me
       <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -98,11 +98,12 @@ export function ViewWorkButton({ className }: ViewWorkButtonProps) {
   return (
     <Button
       onClick={handleClick}
-      variant="secondary"
+      variant="outline"
       size="lg"
-      className={className}
+      className={`border-2 border-primary/50 hover:border-primary hover:bg-primary/10 text-foreground hover:text-primary shadow-md hover:shadow-xl dark:shadow-primary/20 dark:hover:shadow-primary/40 transition-all duration-300 group ${className || ''}`}
     >
       View My Work
+      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
     </Button>
   );
 }
