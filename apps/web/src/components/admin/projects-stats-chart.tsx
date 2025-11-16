@@ -20,9 +20,9 @@ const COLORS = {
 
 export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
   const chartData = data.map((item) => ({
-    name: item.status.charAt(0).toUpperCase() + item.status.slice(1),
+    name: item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
     value: parseInt(item.count),
-    status: item.status,
+    status: item.status.toLowerCase(),
   }));
 
   return (

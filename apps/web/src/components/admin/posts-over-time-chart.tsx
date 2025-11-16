@@ -31,13 +31,14 @@ export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
       });
       const existing = acc.find((d) => d.month === monthStr);
       const count = parseInt(item.count);
+      const statusKey = item.status.toLowerCase();
       if (existing) {
-        const currentValue = existing[item.status];
-        existing[item.status] = (typeof currentValue === 'number' ? currentValue : 0) + count;
+        const currentValue = existing[statusKey];
+        existing[statusKey] = (typeof currentValue === 'number' ? currentValue : 0) + count;
       } else {
         acc.push({
           month: monthStr,
-          [item.status]: count,
+          [statusKey]: count,
         });
       }
       return acc;
