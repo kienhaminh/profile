@@ -10,6 +10,19 @@ const PROTECTED_ROUTES = ['/api/blog', '/api/projects', '/api/tags'] as const;
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
+  const hostname = request.headers.get('host') || '';
+
+  // Handle subdomain routing for chat
+  // Check if the request is from chat subdomain (chat.kienha.online or chat.localhost:3000)
+  const isChatSubdomain =
+    hostname.startsWith('chat.') || hostname.startsWith('chat:');
+
+  if (isChatSubdomain && pathname === '/') {
+    // Rewrite to the chat page
+    const url = request.nextUrl.clone();
+    url.pathname = '/chat';
+    return NextResponse.rewrite(url);
+  }
 
   // Check if the request is to a protected route
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
@@ -55,5 +68,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/blog/:path*', '/api/projects/:path*', '/api/tags/:path*'],
+  matcher: [
+    '/',
+    '/api/blog/:path*',
+    '/api/projects/:path*',
+    '/api/tags/:path*',
+  ],
 };

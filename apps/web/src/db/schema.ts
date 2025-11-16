@@ -195,3 +195,55 @@ export const projectTagsRelations = relations(projectTags, ({ one }) => ({
     references: [tags.id],
   }),
 }));
+
+// Chat sessions table
+export const chatSessions = pgTable(
+  'chat_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    visitorId: text('visitor_id'), // Optional identifier for tracking visitors
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    createdAtIdx: index('chat_sessions_created_at_idx').on(table.createdAt),
+    visitorIdIdx: index('chat_sessions_visitor_id_idx').on(table.visitorId),
+  })
+);
+
+// Chat messages table
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => chatSessions.id, { onDelete: 'cascade' }),
+    role: text('role').notNull(), // 'user' | 'assistant'
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sessionIdIdx: index('chat_messages_session_id_idx').on(table.sessionId),
+    createdAtIdx: index('chat_messages_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Chat sessions relations
+export const chatSessionsRelations = relations(chatSessions, ({ many }) => ({
+  messages: many(chatMessages),
+}));
+
+// Chat messages relations
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  session: one(chatSessions, {
+    fields: [chatMessages.sessionId],
+    references: [chatSessions.id],
+  }),
+}));
