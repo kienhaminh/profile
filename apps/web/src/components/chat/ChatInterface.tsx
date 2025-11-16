@@ -48,7 +48,13 @@ export function ChatInterface() {
                 await utils.client.chat.getMessages.query({
                   sessionId: storedSessionId,
                 });
-              setMessages(existingMessages);
+              // Convert createdAt strings to Date objects
+              setMessages(
+                existingMessages.map((msg) => ({
+                  ...msg,
+                  createdAt: new Date(msg.createdAt),
+                }))
+              );
             } else {
               throw new Error('Session not found');
             }
