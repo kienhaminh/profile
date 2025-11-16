@@ -96,7 +96,7 @@ export async function saveChatMessage(
       .set({ updatedAt: new Date() })
       .where(eq(chatSessions.id, sessionId));
 
-    return message;
+    return message as ChatMessageRecord;
   } catch (error) {
     logger.error('Error saving chat message', { error, sessionId, role });
     throw new Error('Failed to save chat message');
