@@ -121,7 +121,8 @@ export async function getChatMessages(
       .orderBy(chatMessages.createdAt)
       .limit(limit);
 
-    return messages;
+    // Type assertion to ensure role is correctly typed
+    return messages as ChatMessageRecord[];
   } catch (error) {
     logger.error('Error getting chat messages', { error, sessionId });
     throw new Error('Failed to get chat messages');
