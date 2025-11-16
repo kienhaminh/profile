@@ -311,10 +311,6 @@ Please respond to the latest user message naturally and helpfully, staying in ch
     const result = await genAI.models.generateContent({
       model: 'gemini-2.0-flash-001',
       contents: fullPrompt,
-      generationConfig: {
-        temperature: options.temperature ?? 0.7,
-        maxOutputTokens: options.maxTokens ?? 1024,
-      },
     });
 
     const text = result.text;
@@ -374,10 +370,6 @@ Please respond to the latest user message naturally and helpfully, staying in ch
     const result = await genAI.models.generateContentStream({
       model: 'gemini-2.0-flash-001',
       contents: fullPrompt,
-      generationConfig: {
-        temperature: options.temperature ?? 0.7,
-        maxOutputTokens: options.maxTokens ?? 1024,
-      },
     });
 
     for await (const chunk of result) {
