@@ -574,6 +574,43 @@ html {
     opacity: 0.1;
   }
 
+  /* Cosmic Card Border Only - for contact form */
+  .cosmic-card-border {
+    position: relative;
+    backdrop-filter: blur(var(--backdrop-blur));
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark .cosmic-card-border {
+    background: oklch(0.12 0.01 280 / 0.95);
+    border: 2px solid oklch(0.22 0.02 280);
+  }
+
+  .dark .cosmic-card-border:hover {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px var(--glow-primary);
+  }
+
+  .dark .cosmic-card-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: var(--gradient-cosmic);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(8px);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    padding: 2px;
+  }
+
+  .dark .cosmic-card-border:hover::before {
+    opacity: 0.6;
+  }
+
   /* Stellar Button Glow */
   .stellar-button {
     position: relative;
