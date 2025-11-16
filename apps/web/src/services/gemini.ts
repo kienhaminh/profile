@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { logger } from '@/lib/logger';
+import { getAIContext } from '@/config/knowledge-base';
 
 // Get Gemini AI client
 export function getGeminiClient(): GoogleGenAI | null {
@@ -254,4 +255,141 @@ export async function generateExcerptFromPrompt(
     }
     throw new Error('Failed to generate excerpt from prompt');
   }
+}
+
+// ==================== CHAT FUNCTIONALITY ====================
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatCompletionOptions {
+  messages: ChatMessage[];
+  temperature?: number;
+  maxTokens?: number;
+}
+
+/**
+ * Generate a chat response using Gemini AI
+ * @param options - Chat completion options including message history
+ * @returns The AI-generated response
+ */
+export async function generateChatResponse(
+  options: ChatCompletionOptions
+): Promise<string> {
+  const genAI = getGeminiClient();
+  if (!genAI) {
+    throw new Error('GOOGLE_API_KEY environment variable is required');
+  }
+
+  try {
+    logger.info('Generating chat response', {
+      messageCount: options.messages.length,
+    });
+
+    // Get the AI context from knowledge base
+    const systemContext = getAIContext();
+
+    // Format the conversation history
+    const conversationHistory = options.messages
+      .map((msg) => {
+        const prefix = msg.role === 'user' ? 'User' : 'Assistant';
+        return `${prefix}: ${msg.content}`;
+      })
+      .join('\n\n');
+
+    // Combine system context with conversation history
+    const fullPrompt = `${systemContext}
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+Please respond to the latest user message naturally and helpfully, staying in character as an assistant representing the person described above. Keep responses concise but informative.`;
+
+    // Generate response
+    const result = await genAI.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: fullPrompt,
+    });
+
+    const text = result.text;
+
+    if (!text) {
+      throw new Error('Empty response from Gemini AI');
+    }
+
+    logger.info('Successfully generated chat response', {
+      responseLength: text.length,
+    });
+
+    return text.trim();
+  } catch (error) {
+    logger.error('Error generating chat response', { error });
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to generate chat response');
+  }
+}
+
+/**
+ * Stream a chat response using Gemini AI (for real-time streaming)
+ * @param options - Chat completion options
+ * @returns An async generator that yields response chunks
+ */
+export async function* streamChatResponse(
+  options: ChatCompletionOptions
+): AsyncGenerator<string> {
+  const genAI = getGeminiClient();
+  if (!genAI) {
+    throw new Error('GOOGLE_API_KEY environment variable is required');
+  }
+
+  try {
+    logger.info('Starting chat response stream', {
+      messageCount: options.messages.length,
+    });
+
+    const systemContext = getAIContext();
+    const conversationHistory = options.messages
+      .map((msg) => {
+        const prefix = msg.role === 'user' ? 'User' : 'Assistant';
+        return `${prefix}: ${msg.content}`;
+      })
+      .join('\n\n');
+
+    const fullPrompt = `${systemContext}
+
+CONVERSATION HISTORY:
+${conversationHistory}
+
+Please respond to the latest user message naturally and helpfully, staying in character as an assistant representing the person described above. Keep responses concise but informative.`;
+
+    // Generate streaming response
+    const result = await genAI.models.generateContentStream({
+      model: 'gemini-2.0-flash-001',
+      contents: fullPrompt,
+    });
+
+    for await (const chunk of result) {
+      if (chunk.text) {
+        yield chunk.text;
+      }
+    }
+
+    logger.info('Successfully completed chat response stream');
+  } catch (error) {
+    logger.error('Error streaming chat response', { error });
+    throw new Error(
+      `Failed to stream response: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Validate that Gemini API is properly configured
+ */
+export function validateGeminiConfig(): boolean {
+  return !!process.env.GOOGLE_API_KEY;
 }

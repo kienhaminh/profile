@@ -11,6 +11,13 @@ import { getProjectById } from '@/services/projects';
 import { POST_STATUS } from '@/types/enums';
 import { NotFoundError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
+import {
+  createChatSession,
+  getChatSession,
+  getChatMessages,
+  processChatMessage,
+  getRecentChatSessions,
+} from '@/services/chat';
 
 const t = initTRPC.context<Context>().create({
   errorFormatter({ shape }) {
@@ -126,6 +133,147 @@ export const appRouter = router({
             code: 'INTERNAL_SERVER_ERROR',
             message:
               error instanceof Error ? error.message : 'Failed to create tag',
+            cause: error,
+          });
+        }
+      }),
+  }),
+
+  // Chat router
+  chat: router({
+    // Create a new chat session
+    createSession: publicProcedure
+      .input(
+        z.object({
+          visitorId: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          return await createChatSession(input.visitorId);
+        } catch (error) {
+          logger.error('Error in chat.createSession mutation', {
+            error,
+            input,
+          });
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to create chat session',
+            cause: error,
+          });
+        }
+      }),
+
+    // Get a chat session by ID
+    getSession: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          const session = await getChatSession(input.sessionId);
+          if (!session) {
+            throw new NotFoundError('Chat session not found');
+          }
+          return session;
+        } catch (error) {
+          if (error instanceof NotFoundError) {
+            throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Chat session not found',
+              cause: error,
+            });
+          }
+          logger.error('Error in chat.getSession query', { error, input });
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to get chat session',
+            cause: error,
+          });
+        }
+      }),
+
+    // Get messages for a session
+    getMessages: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+          limit: z.number().min(1).max(200).default(100),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          return await getChatMessages(input.sessionId, input.limit);
+        } catch (error) {
+          logger.error('Error in chat.getMessages query', { error, input });
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to get chat messages',
+            cause: error,
+          });
+        }
+      }),
+
+    // Send a message and get AI response
+    sendMessage: publicProcedure
+      .input(
+        z.object({
+          sessionId: z.string(),
+          message: z.string().min(1).max(2000),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          const response = await processChatMessage(
+            input.sessionId,
+            input.message
+          );
+          return { response };
+        } catch (error) {
+          logger.error('Error in chat.sendMessage mutation', { error, input });
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to process chat message',
+            cause: error,
+          });
+        }
+      }),
+
+    // Get recent chat sessions (for admin/analytics)
+    getRecentSessions: publicProcedure
+      .input(
+        z.object({
+          limit: z.number().min(1).max(50).default(10),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          return await getRecentChatSessions(input.limit);
+        } catch (error) {
+          logger.error('Error in chat.getRecentSessions query', {
+            error,
+            input,
+          });
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to get recent chat sessions',
             cause: error,
           });
         }
