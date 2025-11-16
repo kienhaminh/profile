@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { trpc } from '@/trpc/client';
+import { trpc } from '@/trpc/react';
 import { Loader2 } from 'lucide-react';
 
 interface Message {
