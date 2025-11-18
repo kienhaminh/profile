@@ -10,6 +10,7 @@ import {
   FolderTree,
   LogOut,
   Menu,
+  Wrench,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,11 @@ const menuItems = [
     name: 'Topic',
     href: '/admin/topics',
     icon: FolderTree,
+  },
+  {
+    name: 'Tools',
+    href: '/admin/tools',
+    icon: Wrench,
   },
 ];
 
