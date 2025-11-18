@@ -122,7 +122,7 @@ export default function EditBlogPage({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="mb-8 space-y-4 animate-fade-in">
             <Skeleton className="h-10 w-32" />
@@ -130,7 +130,7 @@ export default function EditBlogPage({
             <Skeleton className="h-5 w-96" />
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 p-8 space-y-6">
+          <div className="cosmic-card rounded-xl shadow-lg p-8 space-y-6">
             <div className="space-y-4">
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
@@ -154,7 +154,7 @@ export default function EditBlogPage({
 
   if (error || !blog) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="mb-8 animate-fade-in">
             <Link href="/admin/blogs">
@@ -165,23 +165,23 @@ export default function EditBlogPage({
             </Link>
           </div>
 
-          <div className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-8 shadow-lg animate-fade-in">
+          <div className="bg-destructive/10 border-2 border-destructive/30 rounded-xl p-8 shadow-lg animate-fade-in">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <AlertCircle className="w-6 h-6 text-red-600" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-destructive" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-red-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   {error ? 'Error Loading Blog' : 'Blog Not Found'}
                 </h3>
-                <p className="text-red-700">
+                <p className="text-muted-foreground">
                   {error || 'The blog post you\'re looking for could not be found.'}
                 </p>
                 <div className="mt-4">
                   <Link href="/admin/blogs">
                     <Button
                       variant="outline"
-                      className="border-red-300 text-red-700 hover:bg-red-100"
+                      className="border-destructive/30 hover:bg-destructive/10"
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Return to Blogs
@@ -211,7 +211,7 @@ export default function EditBlogPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8 space-y-4 animate-fade-in">
           <Link href="/admin/blogs">
@@ -241,24 +241,24 @@ export default function EditBlogPage({
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-500 rounded-r-lg shadow-sm animate-fade-in">
+          <div className="mb-6 p-4 bg-destructive/10 border-l-4 border-destructive rounded-r-lg shadow-sm animate-fade-in">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700 font-medium">{error}</p>
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive font-medium">{error}</p>
             </div>
           </div>
         )}
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-100 p-8 relative cosmic-card-border animate-fade-in">
+        <div className="cosmic-card rounded-xl shadow-lg p-8 relative animate-fade-in">
           {isSaving && (
-            <div className="absolute inset-0 bg-white/90 backdrop-blur-md z-50 flex items-center justify-center rounded-xl">
+            <div className="absolute inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center rounded-xl">
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <div className="absolute inset-0 animate-ping rounded-full bg-primary/20"></div>
-                  <div className="relative animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-primary"></div>
+                  <div className="relative animate-spin rounded-full h-12 w-12 border-4 border-muted border-t-primary"></div>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-gray-900">Saving your changes...</p>
+                  <p className="text-lg font-semibold text-foreground">Saving your changes...</p>
                   <p className="text-sm text-muted-foreground mt-1">This will only take a moment</p>
                 </div>
               </div>

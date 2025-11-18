@@ -203,11 +203,11 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-8 animate-fade-in">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-red-100 to-pink-100 border-4 border-red-200 flex items-center justify-center shadow-lg">
-              <Calendar className="w-12 h-12 text-red-600" />
+            <div className="w-24 h-24 mx-auto rounded-full bg-destructive/20 border-4 border-destructive/30 flex items-center justify-center shadow-lg">
+              <Calendar className="w-12 h-12 text-destructive" />
             </div>
             <div className="space-y-3">
               <h1 className="text-4xl font-bold text-foreground">Post Not Found</h1>
@@ -216,7 +216,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
               </p>
             </div>
             <Link href="/blog">
-              <Button className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105">
+              <Button className="stellar-button shadow-lg hover:shadow-xl transition-all hover:scale-105">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
               </Button>
@@ -228,9 +228,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200/50 backdrop-blur-sm z-50">
+      <div className="fixed top-0 left-0 right-0 h-1 bg-muted/30 backdrop-blur-sm z-50">
         <div
           className="h-full bg-gradient-to-r from-primary via-secondary to-primary transition-all duration-150 ease-out shadow-sm"
           style={{ width: `${readingProgress}%` }}
@@ -259,14 +259,14 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
 
           {/* Cover Image */}
           {post.coverImage && (
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-gray-100 animate-fade-in">
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-border animate-fade-in cosmic-card">
               <img
                 src={post.coverImage}
                 alt={post.title}
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 loading="eager"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent"></div>
             </div>
           )}
 
@@ -352,7 +352,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
         </header>
 
         {/* Content */}
-        <div className="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-12 prose-h2:text-3xl prose-h2:mb-4 prose-h2:mt-10 prose-h3:text-2xl prose-h3:mb-3 prose-h3:mt-8 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-strong:font-bold prose-ul:my-6 prose-ol:my-6 prose-li:my-2 prose-blockquote:border-l-purple-500 prose-blockquote:bg-purple-50 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-code:text-purple-700 prose-code:bg-purple-50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-pre:bg-gray-900 prose-pre:text-gray-100">
+        <div className="prose prose-lg max-w-none">
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
