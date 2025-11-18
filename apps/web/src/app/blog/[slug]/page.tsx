@@ -205,16 +205,18 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
         <div className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-red-100 to-pink-100 flex items-center justify-center">
+          <div className="text-center space-y-8 animate-fade-in">
+            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-red-100 to-pink-100 border-4 border-red-200 flex items-center justify-center shadow-lg">
               <Calendar className="w-12 h-12 text-red-600" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Post Not Found</h1>
-            <p className="text-gray-600 text-lg">
-              {error || "The post you're looking for doesn't exist."}
-            </p>
+            <div className="space-y-3">
+              <h1 className="text-4xl font-bold text-foreground">Post Not Found</h1>
+              <p className="text-muted-foreground text-lg max-w-md mx-auto">
+                {error || "The post you're looking for doesn't exist or has been removed."}
+              </p>
+            </div>
             <Link href="/blog">
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white">
+              <Button className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground shadow-lg hover:shadow-xl transition-all hover:scale-105">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
               </Button>
@@ -228,10 +230,15 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
       {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200 z-50">
+      <div className="fixed top-0 left-0 right-0 h-1 bg-gray-200/50 backdrop-blur-sm z-50">
         <div
-          className="h-full bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 transition-all duration-150 ease-out"
+          className="h-full bg-gradient-to-r from-primary via-secondary to-primary transition-all duration-150 ease-out shadow-sm"
           style={{ width: `${readingProgress}%` }}
+          role="progressbar"
+          aria-valuenow={readingProgress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Reading progress"
         />
       </div>
 
@@ -243,53 +250,77 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
             <Button
               variant="ghost"
               size="sm"
-              className="text-gray-600 hover:text-gray-900 mb-2"
+              className="text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all mb-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Blog
             </Button>
           </Link>
 
+          {/* Cover Image */}
+          {post.coverImage && (
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-gray-100 animate-fade-in">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            </div>
+          )}
+
           {/* Title */}
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-foreground leading-tight animate-fade-in">
             {post.title}
           </h1>
 
+          {/* Excerpt */}
+          {post.excerpt && (
+            <p className="text-xl text-muted-foreground leading-relaxed border-l-4 border-primary pl-6 py-2 bg-gradient-to-r from-primary/5 to-transparent rounded-r-lg animate-fade-in">
+              {post.excerpt}
+            </p>
+          )}
+
           {/* Tags */}
-          <div className="flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <Badge
-                key={tag.id}
-                variant="secondary"
-                className="bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200 hover:from-purple-100 hover:to-pink-100 transition-all"
-              >
-                {tag.label}
-              </Badge>
-            ))}
-          </div>
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 animate-fade-in">
+              {post.tags.map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="bg-gradient-to-r from-primary/10 to-secondary/10 text-primary border border-primary/20 hover:from-primary/20 hover:to-secondary/20 transition-all hover:scale-105"
+                >
+                  {tag.label}
+                </Badge>
+              ))}
+            </div>
+          )}
 
           {/* Metadata */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
-              <span>{formatDate(post.publishDate)}</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground animate-fade-in">
+            {post.publishDate && (
+              <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full">
+                <Calendar className="w-4 h-4 text-primary" />
+                <span className="font-medium">{formatDate(post.publishDate)}</span>
+              </div>
+            )}
             {post.readTime && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span>{post.readTime} min read</span>
+              <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="font-medium">{post.readTime} min read</span>
               </div>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-4">
+          <div className="flex gap-2 pt-4 animate-fade-in">
             <Button
               variant="outline"
               size="sm"
               onClick={handleShare}
               aria-label={`Share post: ${post.title}`}
-              className="border-2 hover:border-purple-300 transition-all"
+              className="border-2 hover:border-primary/50 hover:bg-primary/5 transition-all hover:scale-105"
             >
               <Share2 className="w-4 h-4 mr-2" />
               Share
@@ -304,10 +335,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
                   : `Bookmark post: ${post.title}`
               }
               aria-pressed={isBookmarked}
-              className={`border-2 transition-all ${
+              className={`border-2 transition-all hover:scale-105 ${
                 isBookmarked
-                  ? 'border-purple-300 bg-purple-50 text-purple-700'
-                  : 'hover:border-purple-300'
+                  ? 'border-primary/50 bg-primary/10 text-primary'
+                  : 'hover:border-primary/50 hover:bg-primary/5'
               }`}
             >
               {isBookmarked ? (
@@ -335,9 +366,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
 
         {/* Related Posts Section */}
         {relatedPosts.length > 0 && (
-          <div className="mt-16 pt-12 border-t border-gray-200">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <div className="mt-16 pt-12 border-t border-border/50">
+            <h2 className="text-3xl font-bold text-foreground mb-8 flex items-center gap-3">
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 Related Posts
               </span>
             </h2>
@@ -348,17 +379,17 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
                   href={`/blog/${relatedPost.slug}`}
                   className="group block"
                 >
-                  <Card className="h-full border-2 border-gray-100 hover:border-purple-300 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-white/80 backdrop-blur-sm overflow-hidden">
+                  <Card className="h-full border-2 border-border hover:border-primary/50 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-card/80 backdrop-blur-sm overflow-hidden cosmic-card-border">
                     <CardHeader>
-                      <CardTitle className="text-lg group-hover:text-purple-600 transition-colors line-clamp-2 mb-2">
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2 mb-2">
                         {relatedPost.title}
                       </CardTitle>
-                      <CardDescription className="text-xs text-gray-500">
+                      <CardDescription className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full inline-block">
                         Similarity: {Math.round(relatedPost.score * 100)}%
                       </CardDescription>
                     </CardHeader>
                     <div className="px-6 pb-6">
-                      <span className="inline-flex items-center text-sm font-semibold text-purple-600 group-hover:text-pink-600 transition-colors">
+                      <span className="inline-flex items-center text-sm font-semibold text-primary group-hover:text-secondary transition-colors">
                         Read More
                         <ArrowRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </span>
@@ -371,12 +402,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
         )}
 
         {/* Bottom Navigation */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
+        <div className="mt-12 pt-8 border-t border-border/50">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <Link href="/blog">
               <Button
                 variant="outline"
-                className="border-2 hover:border-purple-300 transition-all"
+                className="border-2 hover:border-primary/50 hover:bg-primary/5 transition-all hover:scale-105"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
@@ -388,7 +419,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
                 size="sm"
                 onClick={handleShare}
                 aria-label={`Share post: ${post.title}`}
-                className="border-2 hover:border-purple-300 transition-all"
+                className="border-2 hover:border-primary/50 hover:bg-primary/5 transition-all hover:scale-105"
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 Share
@@ -403,10 +434,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
                     : `Bookmark post: ${post.title}`
                 }
                 aria-pressed={isBookmarked}
-                className={`border-2 transition-all ${
+                className={`border-2 transition-all hover:scale-105 ${
                   isBookmarked
-                    ? 'border-purple-300 bg-purple-50 text-purple-700'
-                    : 'hover:border-purple-300'
+                    ? 'border-primary/50 bg-primary/10 text-primary'
+                    : 'hover:border-primary/50 hover:bg-primary/5'
                 }`}
               >
                 {isBookmarked ? (
