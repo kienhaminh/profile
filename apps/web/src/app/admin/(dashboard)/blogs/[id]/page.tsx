@@ -130,7 +130,7 @@ export default function EditBlogPage({
             <Skeleton className="h-5 w-96" />
           </div>
 
-          <div className="cosmic-card rounded-xl shadow-lg p-8 space-y-6">
+          <div className="bg-card rounded-xl shadow-lg border border-border p-8 space-y-6">
             <div className="space-y-4">
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
@@ -249,7 +249,7 @@ export default function EditBlogPage({
           </div>
         )}
 
-        <div className="cosmic-card rounded-xl shadow-lg p-8 relative animate-fade-in">
+        <div className="bg-card rounded-xl shadow-lg border border-border p-8 relative animate-fade-in">
           {isSaving && (
             <div className="absolute inset-0 bg-background/95 backdrop-blur-md z-50 flex items-center justify-center rounded-xl">
               <div className="flex flex-col items-center gap-4">

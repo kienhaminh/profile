@@ -145,17 +145,17 @@ export function TagSelect({
       aria-haspopup="listbox"
       aria-label="Select tags"
     >
-      <div className="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md bg-white min-h-[42px]">
+      <div className="flex flex-wrap gap-2 p-3 border border-input rounded-md bg-background text-foreground min-h-[42px]">
         {selectedTags.map((tag) => (
           <span
             key={tag.id}
-            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-800 rounded"
+            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-primary/10 text-primary border border-primary/20 rounded"
           >
             {tag.label}
             <button
               type="button"
               onClick={() => handleRemove(tag.id)}
-              className="hover:text-green-600"
+              className="hover:text-primary/80 transition-colors"
               aria-label={`Remove ${tag.label}`}
             >
               <X size={14} />
@@ -172,20 +172,20 @@ export function TagSelect({
           placeholder={
             value.length === 0 ? placeholder : ''
           }
-          className="flex-1 min-w-[120px] outline-none text-sm"
+          className="flex-1 min-w-[120px] outline-none text-sm bg-transparent text-foreground placeholder:text-muted-foreground"
           disabled={isLoading}
         />
       </div>
 
-      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-sm text-destructive mt-1">{error}</p>}
 
       {isOpen && (
         <div
           id="tag-dropdown"
-          className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-3 text-sm text-gray-500">Loading...</div>
+            <div className="p-3 text-sm text-muted-foreground">Loading...</div>
           ) : unselectedTags.length > 0 ? (
             <ul>
               {unselectedTags.map((tag) => (
@@ -193,11 +193,11 @@ export function TagSelect({
                   <button
                     type="button"
                     onClick={() => handleSelect(tag.id)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex flex-col"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors flex flex-col text-foreground"
                   >
                     <span className="font-medium">{tag.label}</span>
                     {tag.description && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {tag.description}
                       </span>
                     )}
@@ -206,11 +206,11 @@ export function TagSelect({
               ))}
             </ul>
           ) : searchQuery.trim() ? (
-            <div className="p-3 text-sm text-gray-500">
+            <div className="p-3 text-sm text-muted-foreground">
               Press Enter to create &quot;{searchQuery}&quot;
             </div>
           ) : (
-            <div className="p-3 text-sm text-gray-500">
+            <div className="p-3 text-sm text-muted-foreground">
               {tags.length === 0
                 ? 'No tags available. Type to create one.'
                 : 'All tags selected'}
