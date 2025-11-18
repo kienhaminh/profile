@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 const richTextEditorVariants = cva(
-  'min-h-[200px] w-full rounded-md border border-gray-300 bg-white text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+  'min-h-[200px] w-full rounded-md border border-input bg-background text-foreground text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
   {
     variants: {
       variant: {
@@ -64,9 +64,9 @@ function ToolbarButton({
       disabled={disabled}
       title={title}
       className={cn(
-        'p-2 rounded hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-        isActive && 'bg-gray-300 text-gray-900',
-        !isActive && 'text-gray-700 hover:text-gray-900'
+        'p-2 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+        isActive && 'bg-muted text-primary',
+        !isActive && 'text-muted-foreground hover:text-foreground'
       )}
     >
       {children}
@@ -80,8 +80,8 @@ interface ToolbarProps {
 
 function Toolbar({ editor }: ToolbarProps) {
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-gray-300 bg-white">
-      <div className="flex gap-1 pr-2 border-r border-gray-300">
+    <div className="flex flex-wrap gap-1 p-2 border-b border-border bg-muted/30">
+      <div className="flex gap-1 pr-2 border-r border-border">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -112,7 +112,7 @@ function Toolbar({ editor }: ToolbarProps) {
         </ToolbarButton>
       </div>
 
-      <div className="flex gap-1 pr-2 border-r border-gray-300">
+      <div className="flex gap-1 pr-2 border-r border-border">
         <ToolbarButton
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -142,7 +142,7 @@ function Toolbar({ editor }: ToolbarProps) {
         </ToolbarButton>
       </div>
 
-      <div className="flex gap-1 pr-2 border-r border-gray-300">
+      <div className="flex gap-1 pr-2 border-r border-border">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editor.isActive('bulletList')}
