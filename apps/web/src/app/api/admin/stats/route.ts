@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     // Recent activity summary
     const recentActivityCounts = await db.execute(sql`
-      SELECT 
+      SELECT
         (SELECT COUNT(*) FROM ${posts} WHERE created_at >= NOW() - INTERVAL '7 days') as posts_this_week,
         (SELECT COUNT(*) FROM ${projects} WHERE created_at >= NOW() - INTERVAL '7 days') as projects_this_week,
         (SELECT COUNT(*) FROM ${posts}) as total_posts,
@@ -74,12 +74,18 @@ export async function GET(request: NextRequest) {
         (SELECT COUNT(*) FROM ${tags}) as total_tags
     `);
 
+    const activityData = recentActivityCounts.rows[0];
+
     return NextResponse.json({
       postsOverTime: postsOverTime.rows,
       topicsDistribution: topicsDistribution.rows,
       hashtagsDistribution: hashtagsDistribution.rows,
       projectsStats: projectsStats.rows,
-      recentActivity: recentActivityCounts.rows[0],
+      recentActivity: {
+        ...activityData,
+        total_topics: activityData.total_tags,
+        total_hashtags: activityData.total_tags,
+      },
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
