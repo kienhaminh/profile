@@ -5,8 +5,7 @@ import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
 import { TRPCReactProvider } from '@/trpc/Provider';
 import { ThemeProvider } from '@/components/theme-provider';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
+import { ConditionalLayout } from '@/components/ConditionalLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { WebsiteSchema, PersonSchema } from '@/components/seo/JsonLd';
 import {
@@ -90,9 +89,9 @@ export default function RootLayout({
           {/* Aurora Borealis Effect Layer */}
           <div className="aurora-layer" aria-hidden="true" />
           <div className="relative z-10">
-            <Navbar />
-            <TRPCReactProvider>{children}</TRPCReactProvider>
-            <Footer />
+            <TRPCReactProvider>
+              <ConditionalLayout>{children}</ConditionalLayout>
+            </TRPCReactProvider>
           </div>
           <Toaster />
         </ThemeProvider>
