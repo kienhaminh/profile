@@ -275,33 +275,6 @@ describe('ToolsPage', () => {
     });
   });
 
-  describe('Add New Tool Section', () => {
-    it('renders Add a New Tool placeholder card', () => {
-      render(<ToolsPage />);
-
-      expect(screen.getByText('Add a New Tool')).toBeInTheDocument();
-      expect(
-        screen.getByText('Create custom tools for your workflow')
-      ).toBeInTheDocument();
-    });
-
-    it('renders Get Started button in placeholder', () => {
-      render(<ToolsPage />);
-
-      const getStartedButton = screen.getByText('Get Started');
-      expect(getStartedButton).toBeInTheDocument();
-    });
-
-    it('applies dashed border to placeholder card', () => {
-      const { container } = render(<ToolsPage />);
-
-      const placeholderCard = screen
-        .getByText('Add a New Tool')
-        .closest('.border-2');
-      expect(placeholderCard?.className).toContain('border-dashed');
-    });
-  });
-
   describe('Icons', () => {
     it('renders icons for tool categories', () => {
       const { container } = render(<ToolsPage />);
@@ -389,9 +362,6 @@ describe('ToolsPage', () => {
       // Should have proper heading hierarchy
       const h1 = container.querySelector('h1');
       expect(h1).toHaveTextContent('Admin Tools');
-
-      const h3 = container.querySelector('h3');
-      expect(h3).toBeTruthy();
     });
 
     it('has accessible button elements', () => {

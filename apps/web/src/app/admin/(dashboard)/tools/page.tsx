@@ -233,24 +233,6 @@ export default function ToolsPage() {
             })
           )}
         </div>
-
-        {/* Add Tool Placeholder */}
-        <Card className="mt-6 border-2 border-dashed hover:border-primary transition-all cursor-pointer group">
-          <CardContent className="p-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <Plus className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                Add a New Tool
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Create custom tools for your workflow
-              </p>
-              <Button>Get Started</Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
