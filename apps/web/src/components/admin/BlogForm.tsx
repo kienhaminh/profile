@@ -265,19 +265,19 @@ export function BlogForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.submit && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{errors.submit}</p>
+        <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-md">
+          <p className="text-sm text-destructive">{errors.submit}</p>
         </div>
       )}
 
       {/* Mode Toggle */}
-      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
         <div className="flex items-center space-x-3">
           <FileText
-            className={`h-5 w-5 ${!isPromptMode ? 'text-blue-600' : 'text-gray-400'}`}
+            className={`h-5 w-5 ${!isPromptMode ? 'text-primary' : 'text-muted-foreground'}`}
           />
           <span
-            className={`font-medium ${!isPromptMode ? 'text-blue-600' : 'text-gray-400'}`}
+            className={`font-medium ${!isPromptMode ? 'text-primary' : 'text-muted-foreground'}`}
           >
             Manual Entry
           </span>
@@ -300,20 +300,20 @@ export function BlogForm({
           <div>
             <label
               htmlFor="prompt"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
-              Prompt <span className="text-red-500">*</span>
+              Prompt <span className="text-destructive">*</span>
             </label>
             <textarea
               id="prompt"
               value={promptData.prompt}
               onChange={(e) => handlePromptChange('prompt', e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Describe what you want the blog post to be about. Be specific about the topic, key points to cover, and the desired outcome."
             />
             {errors.prompt && (
-              <p className="mt-1 text-sm text-red-600">{errors.prompt}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.prompt}</p>
             )}
           </div>
 
@@ -321,7 +321,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="topic"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Topic (Optional)
               </label>
@@ -330,7 +330,7 @@ export function BlogForm({
                 id="topic"
                 value={promptData.topic}
                 onChange={(e) => handlePromptChange('topic', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="e.g., Web Development, Machine Learning"
               />
             </div>
@@ -338,7 +338,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="targetAudience"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Target Audience (Optional)
               </label>
@@ -349,7 +349,7 @@ export function BlogForm({
                 onChange={(e) =>
                   handlePromptChange('targetAudience', e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="e.g., Developers, Beginners, Business Owners"
               />
             </div>
@@ -359,7 +359,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="tone"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Tone
               </label>
@@ -372,7 +372,7 @@ export function BlogForm({
                     e.target.value as PromptData['tone']
                   )
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="professional">Professional</option>
                 <option value="casual">Casual</option>
@@ -384,7 +384,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="length"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Length
               </label>
@@ -397,7 +397,7 @@ export function BlogForm({
                     e.target.value as PromptData['length']
                   )
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="short">Short (800-1200 words)</option>
                 <option value="medium">Medium (1500-2500 words)</option>
@@ -436,9 +436,9 @@ export function BlogForm({
           <div>
             <label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
-              Title <span className="text-red-500">*</span>
+              Title <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
@@ -446,20 +446,20 @@ export function BlogForm({
               name="title"
               value={formData.title}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Enter blog title"
             />
             {errors.title && (
-              <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.title}</p>
             )}
           </div>
 
           <div>
             <label
               htmlFor="slug"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
-              Slug <span className="text-red-500">*</span>
+              Slug <span className="text-destructive">*</span>
             </label>
             <input
               type="text"
@@ -467,18 +467,18 @@ export function BlogForm({
               name="slug"
               value={formData.slug}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="blog-post-slug"
             />
             {errors.slug && (
-              <p className="mt-1 text-sm text-red-600">{errors.slug}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.slug}</p>
             )}
           </div>
 
           <div>
             <label
               htmlFor="excerpt"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
               Excerpt
             </label>
@@ -488,7 +488,7 @@ export function BlogForm({
               value={formData.excerpt}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Brief summary of the blog post"
             />
           </div>
@@ -496,9 +496,9 @@ export function BlogForm({
           <div>
             <label
               htmlFor="content"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
-              Content <span className="text-red-500">*</span>
+              Content <span className="text-destructive">*</span>
             </label>
             <RichTextEditor
               value={formData.content}
@@ -507,7 +507,7 @@ export function BlogForm({
               className="min-h-[400px]"
             />
             {errors.content && (
-              <p className="mt-1 text-sm text-red-600">{errors.content}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.content}</p>
             )}
           </div>
 
@@ -515,7 +515,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="status"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Status
               </label>
@@ -524,7 +524,7 @@ export function BlogForm({
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value={POST_STATUS.DRAFT}>Draft</option>
                 <option value={POST_STATUS.PUBLISHED}>Published</option>
@@ -535,7 +535,7 @@ export function BlogForm({
             <div>
               <label
                 htmlFor="readTime"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Read Time (minutes)
               </label>
@@ -546,11 +546,11 @@ export function BlogForm({
                 value={formData.readTime || ''}
                 onChange={handleChange}
                 min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="5"
               />
               {errors.readTime && (
-                <p className="mt-1 text-sm text-red-600">{errors.readTime}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.readTime}</p>
               )}
             </div>
           </div>
@@ -558,7 +558,7 @@ export function BlogForm({
           <div>
             <label
               htmlFor="coverImage"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
               Cover Image URL
             </label>
@@ -568,18 +568,18 @@ export function BlogForm({
               name="coverImage"
               value={formData.coverImage}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="https://example.com/image.jpg"
             />
             {errors.coverImage && (
-              <p className="mt-1 text-sm text-red-600">{errors.coverImage}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.coverImage}</p>
             )}
           </div>
 
           <div>
             <label
               htmlFor="publishDate"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-foreground mb-2"
             >
               Publish Date
             </label>
@@ -589,12 +589,12 @@ export function BlogForm({
               name="publishDate"
               value={formData.publishDate}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Tags
             </label>
             <TagSelect
