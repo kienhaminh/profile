@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Wrench,
+  Brain,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +44,11 @@ const menuItems = [
     name: 'Topic',
     href: '/admin/topics',
     icon: FolderTree,
+  },
+  {
+    name: 'Knowledge',
+    href: '/admin/knowledge',
+    icon: Brain,
   },
   {
     name: 'Tools',
