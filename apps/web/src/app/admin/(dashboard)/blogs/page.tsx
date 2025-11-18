@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -249,44 +249,34 @@ export default function BlogsListPage() {
         </Button>
       </div>
 
-      <Card className="mb-6 shadow-lg">
-        <CardHeader className="bg-muted/50">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Search className="w-5 h-5 text-primary" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="flex gap-4 flex-col sm:flex-row">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search blogs by title or slug..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-10 transition-all duration-200"
-                aria-label="Search blogs"
-              />
-            </div>
-            <Select
-              value={filter.status}
-              onValueChange={(value) =>
-                setFilter((prev) => ({ ...prev, status: value }))
-              }
-            >
-              <SelectTrigger className="w-full sm:w-[200px]" aria-label="Filter by status">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value={POST_STATUS.DRAFT}>Draft</SelectItem>
-                <SelectItem value={POST_STATUS.PUBLISHED}>Published</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex gap-4 flex-col sm:flex-row mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search blogs by title or slug..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-10 transition-all duration-200"
+            aria-label="Search blogs"
+          />
+        </div>
+        <Select
+          value={filter.status}
+          onValueChange={(value) =>
+            setFilter((prev) => ({ ...prev, status: value }))
+          }
+        >
+          <SelectTrigger className="w-full sm:w-[200px]" aria-label="Filter by status">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value={POST_STATUS.DRAFT}>Draft</SelectItem>
+            <SelectItem value={POST_STATUS.PUBLISHED}>Published</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {error && (
         <Alert className="mb-6 border-destructive/50 bg-destructive/10">
