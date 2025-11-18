@@ -247,3 +247,41 @@ export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
     references: [chatSessions.id],
   }),
 }));
+
+// Knowledge Extraction table
+export const knowledgeEntries = pgTable(
+  'knowledge_entries',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: text('title').notNull(),
+    sourceType: text('source_type').notNull(), // 'url' | 'document' | 'image'
+    sourceUrl: text('source_url'),
+    fileName: text('file_name'),
+    fileSize: integer('file_size'), // in bytes
+    mimeType: text('mime_type'),
+    extractedData: jsonb('extracted_data').$type<{
+      summary?: string;
+      keyPoints?: string[];
+      keywords?: string[];
+      entities?: { name: string; type: string }[];
+      rawText?: string;
+      metadata?: Record<string, string | number | boolean | string[]>;
+    }>().notNull(),
+    status: text('status').notNull().default('completed'), // 'processing' | 'completed' | 'failed'
+    errorMessage: text('error_message'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sourceTypeIdx: index('knowledge_entries_source_type_idx').on(table.sourceType),
+    statusIdx: index('knowledge_entries_status_idx').on(table.status),
+    createdAtIdx: index('knowledge_entries_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Knowledge entries relations
+export const knowledgeEntriesRelations = relations(knowledgeEntries, ({ }) => ({}));

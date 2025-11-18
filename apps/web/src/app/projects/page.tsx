@@ -11,6 +11,7 @@ import {
 } from '@/constants/projects';
 import { ExternalLink, Github, Rocket } from 'lucide-react';
 import { generateMetadata as generateSEOMetadata } from '@/config/seo';
+import type { Project } from '@/types/project';
 
 export const metadata: Metadata = generateSEOMetadata({
   title: 'Projects',
@@ -30,9 +31,14 @@ export const metadata: Metadata = generateSEOMetadata({
 });
 
 export default async function Projects() {
-  const { data: projects } = await getAllProjects(
-    PROJECT_STATUS_FILTERS.PUBLISHED
-  );
+  let projects: Project[] = [];
+  try {
+    const response = await getAllProjects(PROJECT_STATUS_FILTERS.PUBLISHED);
+    projects = response.data;
+  } catch (error) {
+    console.warn('Failed to fetch projects:', error);
+    // Return empty array if database is not available during build
+  }
 
   return (
     <div className="min-h-screen bg-background pt-20">

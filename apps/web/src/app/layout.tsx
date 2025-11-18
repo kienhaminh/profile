@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Roboto, Roboto_Mono } from 'next/font/google';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
@@ -14,16 +13,6 @@ import {
   SEO_CONFIG,
 } from '@/config/seo';
 import './globals.css';
-
-const robotoSans = Roboto({
-  variable: '--font-roboto-sans',
-  subsets: ['latin'],
-});
-
-const robotoMono = Roboto_Mono({
-  variable: '--font-roboto-mono',
-  subsets: ['latin'],
-});
 
 export const metadata: Metadata = {
   ...generateMetadata(),
@@ -73,9 +62,7 @@ export default function RootLayout({
         <WebsiteSchema data={websiteSchema} />
         <PersonSchema data={SEO_CONFIG.organization} />
       </head>
-      <body
-        className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
-      >
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

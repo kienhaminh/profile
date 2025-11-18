@@ -28,30 +28,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Get all published blog posts
-  const blogsResponse = await listBlogs(POST_STATUS.PUBLISHED, {
-    page: 1,
-    limit: 1000, // Get all posts
-  });
-  const blogs = blogsResponse.data;
+  // Get all published blog posts (with fallback if DB not available)
+  let blogPages: MetadataRoute.Sitemap = [];
+  try {
+    const blogsResponse = await listBlogs(POST_STATUS.PUBLISHED, {
+      page: 1,
+      limit: 1000, // Get all posts
+    });
+    const blogs = blogsResponse.data;
 
-  const blogPages: MetadataRoute.Sitemap = blogs.map((blog) => ({
-    url: `${SITE_URL}/blog/${blog.slug}`,
-    lastModified: blog.publishDate ? new Date(blog.publishDate) : new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  }));
+    blogPages = blogs.map((blog) => ({
+      url: `${SITE_URL}/blog/${blog.slug}`,
+      lastModified: blog.publishDate ? new Date(blog.publishDate) : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch blogs for sitemap:', error);
+    // Return empty array if database is not available
+  }
 
-  // Get all published projects
-  const projectsResponse = await getAllProjects(PROJECT_STATUS.PUBLISHED);
-  const projects = projectsResponse.data;
+  // Get all published projects (with fallback if DB not available)
+  let projectPages: MetadataRoute.Sitemap = [];
+  try {
+    const projectsResponse = await getAllProjects(PROJECT_STATUS.PUBLISHED);
+    const projects = projectsResponse.data;
 
-  const projectPages: MetadataRoute.Sitemap = projects.map((project) => ({
-    url: `${SITE_URL}/projects/${project.id}`,
-    lastModified: new Date(project.updatedAt),
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  }));
+    projectPages = projects.map((project) => ({
+      url: `${SITE_URL}/projects/${project.id}`,
+      lastModified: new Date(project.updatedAt),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    }));
+  } catch (error) {
+    console.warn('Failed to fetch projects for sitemap:', error);
+    // Return empty array if database is not available
+  }
 
   return [...staticPages, ...blogPages, ...projectPages];
 }
