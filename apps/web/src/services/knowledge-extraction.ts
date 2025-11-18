@@ -2,6 +2,16 @@ import { db } from '@/db/client';
 import { knowledgeEntries } from '@/db/schema';
 import { desc, eq } from 'drizzle-orm';
 
+// Type for extracted knowledge data
+export interface ExtractedData {
+  summary?: string;
+  keyPoints?: string[];
+  keywords?: string[];
+  entities?: { name: string; type: string }[];
+  rawText?: string;
+  metadata?: Record<string, string | number | boolean | string[]>;
+}
+
 // Mock extraction service - simulates AI-powered knowledge extraction
 export class KnowledgeExtractionService {
   /**
@@ -16,7 +26,7 @@ export class KnowledgeExtractionService {
       keywords: string[];
       entities: { name: string; type: string }[];
       rawText: string;
-      metadata: Record<string, any>;
+      metadata: Record<string, string | number | boolean | string[]>;
     };
   }> {
     // Simulate processing delay
@@ -69,7 +79,7 @@ export class KnowledgeExtractionService {
       keywords: string[];
       entities: { name: string; type: string }[];
       rawText: string;
-      metadata: Record<string, any>;
+      metadata: Record<string, string | number | boolean | string[]>;
     };
   }> {
     // Simulate processing delay
@@ -127,7 +137,7 @@ export class KnowledgeExtractionService {
       keywords: string[];
       entities: { name: string; type: string }[];
       rawText: string;
-      metadata: Record<string, any>;
+      metadata: Record<string, string | number | boolean | string[]>;
     };
   }> {
     // Simulate processing delay
@@ -178,7 +188,7 @@ export class KnowledgeExtractionService {
     fileName?: string;
     fileSize?: number;
     mimeType?: string;
-    extractedData: any;
+    extractedData: ExtractedData;
     status?: 'processing' | 'completed' | 'failed';
     errorMessage?: string;
   }) {

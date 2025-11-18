@@ -265,7 +265,7 @@ export const knowledgeEntries = pgTable(
       keywords?: string[];
       entities?: { name: string; type: string }[];
       rawText?: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, string | number | boolean | string[]>;
     }>().notNull(),
     status: text('status').notNull().default('completed'), // 'processing' | 'completed' | 'failed'
     errorMessage: text('error_message'),

@@ -46,7 +46,7 @@ interface KnowledgeEntry {
     keywords?: string[];
     entities?: { name: string; type: string }[];
     rawText?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, string | number | boolean | string[]>;
   };
   status: 'processing' | 'completed' | 'failed';
   createdAt: string;
@@ -138,8 +138,8 @@ export default function KnowledgeExtractionPage() {
       setSuccess('Knowledge extracted successfully from URL!');
       setUrl('');
       await fetchData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to extract knowledge from URL');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extract knowledge from URL');
     } finally {
       setProcessing(false);
     }
@@ -177,8 +177,8 @@ export default function KnowledgeExtractionPage() {
       const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
       await fetchData();
-    } catch (err: any) {
-      setError(err.message || 'Failed to extract knowledge from file');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to extract knowledge from file');
     } finally {
       setProcessing(false);
     }
