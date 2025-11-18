@@ -24,6 +24,8 @@ import {
 import { getAllProjects } from '@/services/projects';
 import { listBlogs } from '@/services/blog';
 import { POST_STATUS, PROJECT_STATUS } from '@/types/enums';
+import type { Project } from '@/types/project';
+import type { Blog } from '@/types/blog';
 import {
   ArrowRight,
   Github,
@@ -61,12 +63,20 @@ export const metadata: Metadata = generateSEOMetadata({
 });
 
 export default async function Home() {
-  const [{ data: featuredProjects }, { data: recentBlogs }] = await Promise.all(
-    [
+  let featuredProjects: Project[] = [];
+  let recentBlogs: Blog[] = [];
+
+  try {
+    const [projectsResult, blogsResult] = await Promise.all([
       getAllProjects(PROJECT_STATUS.PUBLISHED, { page: 1, limit: 3 }),
       listBlogs(POST_STATUS.PUBLISHED, { page: 1, limit: 3 }),
-    ]
-  );
+    ]);
+    featuredProjects = projectsResult.data;
+    recentBlogs = blogsResult.data;
+  } catch (error) {
+    console.warn('Failed to fetch homepage data:', error);
+    // Return empty arrays if database is not available during build
+  }
 
   const formatDate = (dateString: string | Date | null) => {
     if (!dateString) return '';
