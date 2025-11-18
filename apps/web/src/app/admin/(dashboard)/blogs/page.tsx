@@ -168,12 +168,12 @@ export default function BlogsListPage() {
   });
 
   const LoadingSkeleton = () => (
-    <Card className="border-0 shadow-lg">
+    <Card className="shadow-lg">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 border-b border-purple-200/50">
+              <TableRow className="bg-muted/50 border-b">
                 <TableHead className="font-semibold">Title</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="font-semibold">Topics</TableHead>
@@ -184,7 +184,7 @@ export default function BlogsListPage() {
             </TableHeader>
             <TableBody>
               {[...Array(5)].map((_, index) => (
-                <TableRow key={index} className="border-b border-purple-100/50">
+                <TableRow key={index} className="border-b">
                   <TableCell className="py-4">
                     <div className="flex items-start gap-3">
                       <Skeleton className="h-8 w-8 rounded-md" />
@@ -230,18 +230,18 @@ export default function BlogsListPage() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-foreground">
             Blog Posts
           </h1>
           <p className="text-muted-foreground mt-1">Manage and organize your content</p>
         </div>
         <Button
           asChild
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 text-white"
+          className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
         >
           <Link
             href="/admin/blogs/new"
-            className="flex items-center gap-2 text-white"
+            className="flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             Create New Blog
@@ -249,10 +249,10 @@ export default function BlogsListPage() {
         </Button>
       </div>
 
-      <Card className="mb-6 border-0 shadow-lg">
-        <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950">
+      <Card className="mb-6 shadow-lg">
+        <CardHeader className="bg-muted/50">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Search className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <Search className="w-5 h-5 text-primary" />
             Filters
           </CardTitle>
         </CardHeader>
@@ -297,11 +297,11 @@ export default function BlogsListPage() {
       {isLoading ? (
         <LoadingSkeleton />
       ) : sortedBlogs.length === 0 ? (
-        <Card className="border-0 shadow-lg">
+        <Card className="shadow-lg">
           <CardContent className="text-center py-16">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900 dark:to-indigo-900 rounded-2xl flex items-center justify-center">
-                <FileText className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
+                <FileText className="w-10 h-10 text-primary" />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-foreground mb-2">
@@ -316,11 +316,11 @@ export default function BlogsListPage() {
               <Button
                 variant="default"
                 asChild
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 text-white"
+                className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 <Link
                   href="/admin/blogs/new"
-                  className="flex items-center gap-2 text-white"
+                  className="flex items-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   Create your first blog post
@@ -330,12 +330,12 @@ export default function BlogsListPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-2 border-purple-100/50 dark:border-purple-900/50 shadow-lg hover:shadow-xl transition-all duration-200 bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-950 dark:to-purple-950/30">
+        <Card className="shadow-lg hover:shadow-xl transition-all duration-200 bg-card">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/50 dark:to-blue-950/50 border-b border-purple-200/50 dark:border-purple-800/50">
+                  <TableRow className="bg-muted/50 border-b">
                     <TableHead className="font-semibold">
                       <button
                         onClick={() => handleSort('title')}
@@ -381,15 +381,15 @@ export default function BlogsListPage() {
                   {sortedBlogs.map((blog) => (
                     <TableRow
                       key={blog.id}
-                      className="border-b border-purple-100/50 dark:border-purple-900/50 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-blue-50/30 dark:hover:from-purple-950/50 dark:hover:to-blue-950/30 transition-all duration-200 hover:shadow-md group"
+                      className="border-b hover:bg-muted/50 transition-all duration-200 group"
                     >
                       <TableCell className="py-4">
                         <div className="flex items-start gap-3">
-                          <div className="p-1.5 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-md group-hover:from-purple-200 group-hover:to-blue-200 dark:group-hover:from-purple-800 dark:group-hover:to-blue-800 transition-colors shadow-sm">
-                            <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                          <div className="p-1.5 bg-muted rounded-md group-hover:bg-accent transition-colors shadow-sm">
+                            <FileText className="h-4 w-4 text-primary" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-foreground group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors mb-1 truncate">
+                            <div className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1 truncate">
                               {blog.title}
                             </div>
                             <div className="text-sm text-muted-foreground font-mono truncate">
@@ -407,8 +407,8 @@ export default function BlogsListPage() {
                           }
                           className={
                             blog.status === POST_STATUS.PUBLISHED
-                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900 dark:text-green-300 dark:border-green-700 shadow-sm'
-                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700 shadow-sm'
+                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50 shadow-sm'
+                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50 shadow-sm'
                           }
                         >
                           {blog.status.charAt(0).toUpperCase() +
@@ -421,7 +421,7 @@ export default function BlogsListPage() {
                             <Badge
                               key={topic.id}
                               variant="outline"
-                              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 shadow-sm transition-colors"
+                              className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 shadow-sm transition-colors"
                             >
                               {topic.label}
                             </Badge>
@@ -434,7 +434,7 @@ export default function BlogsListPage() {
                             <Badge
                               key={hashtag.id}
                               variant="outline"
-                              className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 hover:border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800 shadow-sm transition-colors"
+                              className="bg-secondary/10 text-secondary border-secondary/30 hover:bg-secondary/20 shadow-sm transition-colors"
                             >
                               {hashtag.label}
                             </Badge>
@@ -450,7 +450,7 @@ export default function BlogsListPage() {
                             variant="outline"
                             size="sm"
                             asChild
-                            className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 dark:hover:bg-purple-950 dark:hover:border-purple-700 dark:hover:text-purple-300 shadow-sm transition-all"
+                            className="hover:bg-primary/10 hover:border-primary hover:text-primary shadow-sm transition-all"
                           >
                             <Link href={`/admin/blogs/${blog.id}`}>Edit</Link>
                           </Button>
@@ -458,7 +458,7 @@ export default function BlogsListPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDelete(blog.id, blog.title)}
-                            className="text-destructive hover:text-destructive hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-950 dark:hover:border-red-700 shadow-sm transition-all"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive shadow-sm transition-all"
                           >
                             Delete
                           </Button>
