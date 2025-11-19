@@ -285,3 +285,136 @@ export const knowledgeEntries = pgTable(
 
 // Knowledge entries relations
 export const knowledgeEntriesRelations = relations(knowledgeEntries, ({ }) => ({}));
+
+// Vocabularies table
+export const vocabularies = pgTable(
+  'vocabularies',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    word: text('word').notNull(),
+    language: text('language').notNull(), // e.g., 'en', 'es', 'fr', 'ja', etc.
+    meaning: text('meaning').notNull(),
+    translation: text('translation'), // Translation to another language
+    pronunciation: text('pronunciation'), // Phonetic pronunciation or IPA
+    example: text('example'), // Example sentence
+    partOfSpeech: text('part_of_speech'), // noun, verb, adjective, etc.
+    difficulty: text('difficulty').default('intermediate'), // beginner, intermediate, advanced
+    notes: text('notes'), // Additional notes
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    wordIdx: index('vocabularies_word_idx').on(table.word),
+    languageIdx: index('vocabularies_language_idx').on(table.language),
+    difficultyIdx: index('vocabularies_difficulty_idx').on(table.difficulty),
+    createdAtIdx: index('vocabularies_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Flashcards table (collections/sets of vocabularies)
+export const flashcards = pgTable(
+  'flashcards',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    description: text('description'),
+    language: text('language').notNull(), // Target language for this flashcard set
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    nameIdx: index('flashcards_name_idx').on(table.name),
+    languageIdx: index('flashcards_language_idx').on(table.language),
+    isActiveIdx: index('flashcards_is_active_idx').on(table.isActive),
+    createdAtIdx: index('flashcards_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Flashcard-Vocabulary junction table (many-to-many)
+export const flashcardVocabularies = pgTable(
+  'flashcard_vocabularies',
+  {
+    flashcardId: uuid('flashcard_id')
+      .notNull()
+      .references(() => flashcards.id, { onDelete: 'cascade' }),
+    vocabularyId: uuid('vocabulary_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    addedAt: timestamp('added_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.flashcardId, table.vocabularyId] }),
+    flashcardIdIdx: index('flashcard_vocabularies_flashcard_id_idx').on(table.flashcardId),
+    vocabularyIdIdx: index('flashcard_vocabularies_vocabulary_id_idx').on(table.vocabularyId),
+  })
+);
+
+// Practice sessions table (track user practice history)
+export const practiceSessions = pgTable(
+  'practice_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    flashcardId: uuid('flashcard_id')
+      .notNull()
+      .references(() => flashcards.id, { onDelete: 'cascade' }),
+    vocabularyId: uuid('vocabulary_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    wasCorrect: boolean('was_correct').notNull(),
+    practiceDate: timestamp('practice_date', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    flashcardIdIdx: index('practice_sessions_flashcard_id_idx').on(table.flashcardId),
+    vocabularyIdIdx: index('practice_sessions_vocabulary_id_idx').on(table.vocabularyId),
+    practiceDateIdx: index('practice_sessions_practice_date_idx').on(table.practiceDate),
+  })
+);
+
+// Vocabularies relations
+export const vocabulariesRelations = relations(vocabularies, ({ many }) => ({
+  flashcardVocabularies: many(flashcardVocabularies),
+  practiceSessions: many(practiceSessions),
+}));
+
+// Flashcards relations
+export const flashcardsRelations = relations(flashcards, ({ many }) => ({
+  flashcardVocabularies: many(flashcardVocabularies),
+  practiceSessions: many(practiceSessions),
+}));
+
+// Flashcard-Vocabulary junction relations
+export const flashcardVocabulariesRelations = relations(flashcardVocabularies, ({ one }) => ({
+  flashcard: one(flashcards, {
+    fields: [flashcardVocabularies.flashcardId],
+    references: [flashcards.id],
+  }),
+  vocabulary: one(vocabularies, {
+    fields: [flashcardVocabularies.vocabularyId],
+    references: [vocabularies.id],
+  }),
+}));
+
+// Practice sessions relations
+export const practiceSessionsRelations = relations(practiceSessions, ({ one }) => ({
+  flashcard: one(flashcards, {
+    fields: [practiceSessions.flashcardId],
+    references: [flashcards.id],
+  }),
+  vocabulary: one(vocabularies, {
+    fields: [practiceSessions.vocabularyId],
+    references: [vocabularies.id],
+  }),
+}));
