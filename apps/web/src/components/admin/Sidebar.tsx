@@ -12,6 +12,8 @@ import {
   Menu,
   Wrench,
   Brain,
+  BookOpen,
+  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +51,16 @@ const menuItems = [
     name: 'Knowledge',
     href: '/admin/knowledge',
     icon: Brain,
+  },
+  {
+    name: 'Vocabularies',
+    href: '/admin/vocabularies',
+    icon: BookOpen,
+  },
+  {
+    name: 'Flashcards',
+    href: '/admin/flashcards',
+    icon: Layers,
   },
   {
     name: 'Tools',
