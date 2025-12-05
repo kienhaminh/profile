@@ -123,21 +123,14 @@ export const EXPERIENCE: Experience[] = [
   {
     period: 'Sep 2019 - Jul 2025',
     company: 'NAPA GLOBAL',
-    position: 'Full-stack Developer',
+    position: 'Senior Full-stack Developer & Technical Lead',
     responsibilities: [
-      'Take part in product development by teams, using some popular technologies such as ReactJS, NextJS, NodeJS, NestJS, AWS, React Native, Python',
-      'Key of some projects, focusing on system management built on AWS.',
-      'Research to improve source code quality, and system maintenance.',
-      'Technical leader; research to apply new technologies, new trends; solving technical problems; improving products performance.',
-      'Research to integrate third-party tools or services like Slack, LinkedIn, Telegram, …',
-      'Research to apply and improve CI/CD flows using Gitlab, Github, AWS',
-      'Make some ideas and join in organizing all events in the company like happy birthday, football tournaments, year-end parties,...',
-      'Research and build the AI integrated software. Implement AI into development processes.',
+      'Led development of scalable web/mobile apps using Next.js, React Native, and Node.js microservices.',
+      'Architected secure, high-availability cloud infrastructure on AWS.',
+      'Modernized engineering with CI/CD (GitLab/GitHub) and AI-driven workflows.',
+      'Mentored developers and fostered a collaborative, high-performance team culture.',
     ],
-    recognition: [
-      'Outstanding Staff 2019',
-      'The staff has various contributions to cultural activities in the company in 2021',
-    ],
+    recognition: ['Outstanding Staff Award (2019)', 'Culture Champion (2021)'],
   },
 ];
 

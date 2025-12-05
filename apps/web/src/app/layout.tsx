@@ -12,6 +12,7 @@ import {
   generateWebsiteSchema,
   SEO_CONFIG,
 } from '@/config/seo';
+import { inter, jetbrainsMono, spaceGrotesk } from './fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,7 +21,6 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,
@@ -62,7 +62,9 @@ export default function RootLayout({
         <WebsiteSchema data={websiteSchema} />
         <PersonSchema data={SEO_CONFIG.organization} />
       </head>
-      <body className="font-sans antialiased">
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

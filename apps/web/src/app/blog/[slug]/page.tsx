@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -49,7 +50,9 @@ function formatDate(dateString: string | null): string {
   });
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.Element {
+export default function BlogPostPage({
+  params,
+}: BlogPostPageProps): React.JSX.Element {
   const [post, setPost] = useState<Blog | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
 
         const { slug } = await params;
         const data = await fetchPostBySlug(slug, { signal });
-        
+
         const sanitizedContent = DOMPurify.sanitize(data.content);
         setPost({ ...data, content: sanitizedContent });
 
@@ -90,7 +93,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
     [params]
   );
 
-  const loadRelatedPosts = async (postId: string, signal: AbortSignal): Promise<void> => {
+  const loadRelatedPosts = async (
+    postId: string,
+    signal: AbortSignal
+  ): Promise<void> => {
     try {
       const related = await fetchRelatedPosts(
         postId,
@@ -210,9 +216,12 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
               <Calendar className="w-12 h-12 text-destructive" />
             </div>
             <div className="space-y-3">
-              <h1 className="text-4xl font-bold text-foreground">Post Not Found</h1>
+              <h1 className="text-4xl font-bold text-foreground">
+                Post Not Found
+              </h1>
               <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                {error || "The post you're looking for doesn't exist or has been removed."}
+                {error ||
+                  "The post you're looking for doesn't exist or has been removed."}
               </p>
             </div>
             <Link href="/blog">
@@ -260,11 +269,13 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
           {/* Cover Image */}
           {post.coverImage && (
             <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-border animate-fade-in cosmic-card">
-              <img
+              <Image
                 src={post.coverImage}
                 alt={post.title}
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                loading="eager"
+                fill
+                className="object-cover transition-transform duration-700 hover:scale-105"
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent"></div>
             </div>
@@ -302,7 +313,9 @@ export default function BlogPostPage({ params }: BlogPostPageProps): React.JSX.E
             {post.publishDate && (
               <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-full">
                 <Calendar className="w-4 h-4 text-primary" />
-                <span className="font-medium">{formatDate(post.publishDate)}</span>
+                <span className="font-medium">
+                  {formatDate(post.publishDate)}
+                </span>
               </div>
             )}
             {post.readTime && (

@@ -67,7 +67,7 @@ export default function AdminDashboard() {
       const response = await authFetch('/api/admin/posts');
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
-      setPosts(data);
+      setPosts(data.items);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'An error occurred';
@@ -132,25 +132,29 @@ export default function AdminDashboard() {
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your blog posts and content</p>
+          <h1 className="text-3xl font-bold text-foreground">
+            Admin Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Manage your blog posts and content
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Posts
                 </CardTitle>
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
+              <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
                 {stats?.recentActivity.total_posts || posts.length}
               </div>
               <div className="flex items-center gap-1 mt-2">
@@ -162,19 +166,19 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Projects
                 </CardTitle>
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-secondary dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-secondary dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FolderKanban className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-secondary dark:to-primary bg-clip-text text-transparent">
+              <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 dark:from-secondary dark:to-primary bg-clip-text text-transparent">
                 {stats?.recentActivity.total_projects || 0}
               </div>
               <div className="flex items-center gap-1 mt-2">
@@ -186,19 +190,19 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Topics
                 </CardTitle>
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 dark:from-accent dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-accent dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FolderTree className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-accent dark:to-primary bg-clip-text text-transparent">
+              <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-accent dark:to-primary bg-clip-text text-transparent">
                 {stats?.recentActivity.total_topics || 0}
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
@@ -207,19 +211,19 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
           <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full -mr-10 -mt-10"></div>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-sky-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Hashtags
                 </CardTitle>
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Hash className="w-5 h-5 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
+              <div className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
                 {stats?.recentActivity.total_hashtags || 0}
               </div>
               <p className="text-xs text-muted-foreground mt-2 font-medium">
@@ -243,7 +247,7 @@ export default function AdminDashboard() {
             <CardHeader className="border-b bg-accent/30 dark:bg-accent/10">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 dark:from-primary dark:to-secondary rounded-lg shadow-sm">
+                  <div className="p-2 bg-gradient-to-br from-indigo-500 to-blue-500 dark:from-primary dark:to-secondary rounded-lg shadow-sm">
                     <FileText className="h-5 w-5 text-white" />
                   </div>
                   <div>

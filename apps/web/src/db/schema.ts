@@ -259,14 +259,16 @@ export const knowledgeEntries = pgTable(
     fileName: text('file_name'),
     fileSize: integer('file_size'), // in bytes
     mimeType: text('mime_type'),
-    extractedData: jsonb('extracted_data').$type<{
-      summary?: string;
-      keyPoints?: string[];
-      keywords?: string[];
-      entities?: { name: string; type: string }[];
-      rawText?: string;
-      metadata?: Record<string, string | number | boolean | string[]>;
-    }>().notNull(),
+    extractedData: jsonb('extracted_data')
+      .$type<{
+        summary?: string;
+        keyPoints?: string[];
+        keywords?: string[];
+        entities?: { name: string; type: string }[];
+        rawText?: string;
+        metadata?: Record<string, string | number | boolean | string[]>;
+      }>()
+      .notNull(),
     status: text('status').notNull().default('completed'), // 'processing' | 'completed' | 'failed'
     errorMessage: text('error_message'),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -277,11 +279,84 @@ export const knowledgeEntries = pgTable(
       .notNull(),
   },
   (table) => ({
-    sourceTypeIdx: index('knowledge_entries_source_type_idx').on(table.sourceType),
+    sourceTypeIdx: index('knowledge_entries_source_type_idx').on(
+      table.sourceType
+    ),
     statusIdx: index('knowledge_entries_status_idx').on(table.status),
     createdAtIdx: index('knowledge_entries_created_at_idx').on(table.createdAt),
   })
 );
 
 // Knowledge entries relations
-export const knowledgeEntriesRelations = relations(knowledgeEntries, ({ }) => ({}));
+export const knowledgeEntriesRelations = relations(
+  knowledgeEntries,
+  ({}) => ({})
+);
+
+// Vocabularies table
+export const vocabularies = pgTable(
+  'vocabularies',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    word: text('word').notNull(),
+    meaning: text('meaning').notNull(),
+    partOfSpeech: text('part_of_speech'),
+    language: text('language').notNull().default('en'), // 'en' | 'ko' | 'zh'
+    example: text('example'),
+    pronunciation: text('pronunciation'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    wordIdx: index('vocabularies_word_idx').on(table.word),
+    languageIdx: index('vocabularies_language_idx').on(table.language),
+  })
+);
+
+// Vocabulary Relations table
+export const vocabularyRelations = pgTable(
+  'vocabulary_relations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sourceId: uuid('source_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    targetId: uuid('target_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    type: text('type').notNull(), // 'derivative' | 'synonym' | 'antonym' | 'root'
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    sourceIdIdx: index('vocabulary_relations_source_id_idx').on(table.sourceId),
+    targetIdIdx: index('vocabulary_relations_target_id_idx').on(table.targetId),
+  })
+);
+
+// Vocabulary Relations
+export const vocabulariesRelations = relations(vocabularies, ({ many }) => ({
+  outgoingRelations: many(vocabularyRelations, { relationName: 'source' }),
+  incomingRelations: many(vocabularyRelations, { relationName: 'target' }),
+}));
+
+export const vocabularyRelationsRelations = relations(
+  vocabularyRelations,
+  ({ one }) => ({
+    source: one(vocabularies, {
+      fields: [vocabularyRelations.sourceId],
+      references: [vocabularies.id],
+      relationName: 'source',
+    }),
+    target: one(vocabularies, {
+      fields: [vocabularyRelations.targetId],
+      references: [vocabularies.id],
+      relationName: 'target',
+    }),
+  })
+);

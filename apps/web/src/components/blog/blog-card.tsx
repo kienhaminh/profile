@@ -23,7 +23,10 @@ export function BlogCard({
   className,
 }: BlogCardProps): React.JSX.Element {
   return (
-    <Link href={`/blog/${post.slug}`} className={cn('group block h-full', className)}>
+    <Link
+      href={`/blog/${post.slug}`}
+      className={cn('group block h-full', className)}
+    >
       <Card className="cosmic-card h-full relative overflow-hidden border-2 border-border/50 dark:border-border/30 bg-card/80 backdrop-blur-sm hover:border-primary dark:hover:border-primary hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1 animate-fade-in">
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -52,7 +55,7 @@ export function BlogCard({
           )}
 
           {/* Title */}
-          <CardTitle className="text-lg md:text-xl font-bold line-clamp-2 leading-tight group-hover:text-primary dark:group-hover:text-primary transition-colors duration-300">
+          <CardTitle className="text-lg md:text-xl font-bold line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300">
             {post.title}
           </CardTitle>
         </CardHeader>
@@ -60,7 +63,8 @@ export function BlogCard({
         <CardContent className="relative space-y-4">
           {/* Excerpt */}
           <p className="text-sm md:text-base text-muted-foreground line-clamp-3 leading-relaxed">
-            {post.excerpt || 'Discover insights and in-depth analysis on this topic...'}
+            {post.excerpt ||
+              'Discover insights and in-depth analysis on this topic...'}
           </p>
 
           {/* Footer with metadata */}
@@ -81,7 +85,7 @@ export function BlogCard({
             </div>
 
             {/* Read more arrow */}
-            <div className="flex items-center gap-1 text-sm font-semibold text-primary group-hover:text-secondary dark:group-hover:text-secondary transition-colors duration-300">
+            <div className="relative z-20 flex items-center gap-1 text-sm font-bold text-primary transition-colors duration-300">
               <span className="hidden sm:inline">Read</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
             </div>

@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureAdminOrThrow } from '@/lib/auth';
 import { UnauthorizedError } from '@/lib/errors';
 
-export const runtime = 'nodejs';
-
 // Protected API routes that require authentication for mutations
 const PROTECTED_ROUTES = ['/api/blog', '/api/projects', '/api/tags'] as const;
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const method = request.method;
   const hostname = request.headers.get('host') || '';

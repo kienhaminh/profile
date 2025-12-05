@@ -51,6 +51,11 @@ const menuItems = [
     icon: Brain,
   },
   {
+    name: 'Vocabulary',
+    href: '/admin/vocabulary',
+    icon: Brain,
+  },
+  {
     name: 'Tools',
     href: '/admin/tools',
     icon: Wrench,

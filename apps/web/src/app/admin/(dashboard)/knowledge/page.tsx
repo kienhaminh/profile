@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -139,7 +145,11 @@ export default function KnowledgeExtractionPage() {
       setUrl('');
       await fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to extract knowledge from URL');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to extract knowledge from URL'
+      );
     } finally {
       setProcessing(false);
     }
@@ -174,11 +184,17 @@ export default function KnowledgeExtractionPage() {
       setSuccess(`Knowledge extracted successfully from ${file.name}!`);
       setFile(null);
       // Reset file input
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
       if (fileInput) fileInput.value = '';
       await fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to extract knowledge from file');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to extract knowledge from file'
+      );
     } finally {
       setProcessing(false);
     }
@@ -199,7 +215,7 @@ export default function KnowledgeExtractionPage() {
 
       setSuccess('Knowledge entry deleted successfully');
       await fetchData();
-    } catch (err) {
+    } catch {
       setError('Failed to delete knowledge entry');
     } finally {
       setDeleteId(null);
@@ -237,10 +253,12 @@ export default function KnowledgeExtractionPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Knowledge Extraction</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Knowledge Extraction
+        </h1>
         <p className="text-muted-foreground mt-2">
           Extract and store knowledge from URLs, documents, and images using AI
         </p>
@@ -251,7 +269,9 @@ export default function KnowledgeExtractionPage() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Entries</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Entries
+              </CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -269,11 +289,15 @@ export default function KnowledgeExtractionPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">From Documents</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                From Documents
+              </CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.bySourceType.document}</div>
+              <div className="text-2xl font-bold">
+                {stats.bySourceType.document}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -282,7 +306,9 @@ export default function KnowledgeExtractionPage() {
               <ImageIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.bySourceType.image}</div>
+              <div className="text-2xl font-bold">
+                {stats.bySourceType.image}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -309,7 +335,8 @@ export default function KnowledgeExtractionPage() {
         <CardHeader>
           <CardTitle>Extract Knowledge</CardTitle>
           <CardDescription>
-            Choose a source type and provide the content to extract knowledge from
+            Choose a source type and provide the content to extract knowledge
+            from
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -342,11 +369,14 @@ export default function KnowledgeExtractionPage() {
                     disabled={processing}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Enter a URL to extract content, summarize, and identify key information
+                    Enter a URL to extract content, summarize, and identify key
+                    information
                   </p>
                 </div>
                 <Button type="submit" disabled={processing}>
-                  {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {processing && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Extract from URL
                 </Button>
               </form>
@@ -368,7 +398,9 @@ export default function KnowledgeExtractionPage() {
                   </p>
                 </div>
                 <Button type="submit" disabled={processing || !file}>
-                  {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {processing && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Extract from Document
                 </Button>
               </form>
@@ -386,11 +418,14 @@ export default function KnowledgeExtractionPage() {
                     disabled={processing}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Supported formats: JPG, PNG, GIF, WebP (OCR and object detection)
+                    Supported formats: JPG, PNG, GIF, WebP (OCR and object
+                    detection)
                   </p>
                 </div>
                 <Button type="submit" disabled={processing || !file}>
-                  {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {processing && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Extract from Image
                 </Button>
               </form>
@@ -418,7 +453,8 @@ export default function KnowledgeExtractionPage() {
             <div className="text-center py-12">
               <Database className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No knowledge entries yet. Start by extracting content from a URL or file above.
+                No knowledge entries yet. Start by extracting content from a URL
+                or file above.
               </p>
             </div>
           ) : (
@@ -432,7 +468,9 @@ export default function KnowledgeExtractionPage() {
                           {getSourceIcon(entry.sourceType)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg mb-1">{entry.title}</CardTitle>
+                          <CardTitle className="text-lg mb-1">
+                            {entry.title}
+                          </CardTitle>
                           <div className="flex flex-wrap gap-2 mb-2">
                             <Badge variant="secondary">
                               {entry.sourceType}
@@ -483,46 +521,60 @@ export default function KnowledgeExtractionPage() {
                     )}
 
                     {/* Key Points */}
-                    {entry.extractedData.keyPoints && entry.extractedData.keyPoints.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2">Key Points</h4>
-                        <ul className="list-disc list-inside space-y-1">
-                          {entry.extractedData.keyPoints.map((point, idx) => (
-                            <li key={idx} className="text-sm text-muted-foreground">
-                              {point}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                    {entry.extractedData.keyPoints &&
+                      entry.extractedData.keyPoints.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">
+                            Key Points
+                          </h4>
+                          <ul className="list-disc list-inside space-y-1">
+                            {entry.extractedData.keyPoints.map((point, idx) => (
+                              <li
+                                key={idx}
+                                className="text-sm text-muted-foreground"
+                              >
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
 
                     {/* Keywords */}
-                    {entry.extractedData.keywords && entry.extractedData.keywords.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2">Keywords</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {entry.extractedData.keywords.map((keyword, idx) => (
-                            <Badge key={idx} variant="outline">
-                              {keyword}
-                            </Badge>
-                          ))}
+                    {entry.extractedData.keywords &&
+                      entry.extractedData.keywords.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">
+                            Keywords
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {entry.extractedData.keywords.map(
+                              (keyword, idx) => (
+                                <Badge key={idx} variant="outline">
+                                  {keyword}
+                                </Badge>
+                              )
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Entities */}
-                    {entry.extractedData.entities && entry.extractedData.entities.length > 0 && (
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2">Entities</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {entry.extractedData.entities.map((entity, idx) => (
-                            <Badge key={idx} variant="secondary">
-                              {entity.name} ({entity.type})
-                            </Badge>
-                          ))}
+                    {entry.extractedData.entities &&
+                      entry.extractedData.entities.length > 0 && (
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2">
+                            Entities
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {entry.extractedData.entities.map((entity, idx) => (
+                              <Badge key={idx} variant="secondary">
+                                {entity.name} ({entity.type})
+                              </Badge>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Metadata */}
                     <div className="flex items-center text-xs text-muted-foreground pt-2 border-t">
@@ -543,13 +595,16 @@ export default function KnowledgeExtractionPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Knowledge Entry?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the knowledge entry
-              and all associated data.
+              This action cannot be undone. This will permanently delete the
+              knowledge entry and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

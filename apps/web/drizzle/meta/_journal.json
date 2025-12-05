@@ -15,6 +15,13 @@
       "when": 1763463250311,
       "tag": "0001_clammy_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764856979576,
+      "tag": "0002_fair_wraith",
+      "breakpoints": true
     }
   ]
 }

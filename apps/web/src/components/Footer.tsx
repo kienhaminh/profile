@@ -26,8 +26,8 @@ export function Footer(): JSX.Element {
                 href={`mailto:${CONTACT.email}`}
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-accent transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-primary" />
+                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
+                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   {CONTACT.email}
@@ -37,18 +37,20 @@ export function Footer(): JSX.Element {
                 href={`tel:${CONTACT.mobile}`}
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-accent transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-secondary" />
+                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
+                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   {CONTACT.mobile}
                 </span>
               </Link>
-              <div className="flex items-start group">
-                <div className="p-2 rounded-lg bg-muted mr-3 mt-0.5">
-                  <Mail className="w-5 h-5 text-accent-foreground" />
+              <div className="flex items-center group hover:translate-x-1 transition-transform duration-200">
+                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
+                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <span className="text-muted-foreground">{CONTACT.address}</span>
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
+                  {CONTACT.address}
+                </span>
               </div>
             </div>
           </div>
@@ -65,9 +67,9 @@ export function Footer(): JSX.Element {
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
                 <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Linkedin className="w-5 h-5" />
+                  <Linkedin className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <span className="text-muted-foreground group-hover:text-primary-foreground transition-colors">
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   LinkedIn
                 </span>
               </Link>
@@ -77,10 +79,10 @@ export function Footer(): JSX.Element {
                 rel="noopener noreferrer"
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-secondary transition-colors mr-3">
-                  <Github className="w-5 h-5" />
+                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
+                  <Github className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <span className="text-muted-foreground group-hover:text-secondary-foreground transition-colors">
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   GitHub
                 </span>
               </Link>
@@ -91,9 +93,9 @@ export function Footer(): JSX.Element {
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
                 <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Mail className="w-5 h-5" />
+                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <span className="text-muted-foreground group-hover:text-primary-foreground transition-colors">
+                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   Facebook
                 </span>
               </Link>
@@ -101,9 +103,7 @@ export function Footer(): JSX.Element {
           </div>
 
           <div className="footer-section">
-            <h3 className="text-xl font-bold mb-6 text-primary">
-              Quick Links
-            </h3>
+            <h3 className="text-xl font-bold mb-6 text-primary">Quick Links</h3>
             <div className="space-y-4">
               <Link
                 href="/projects"
