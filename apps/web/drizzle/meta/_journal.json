@@ -22,6 +22,27 @@
       "when": 1764856979576,
       "tag": "0002_fair_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764982805633,
+      "tag": "0003_quick_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1765328443457,
+      "tag": "0004_eager_vanisher",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1766134057760,
+      "tag": "0005_fantastic_shen",
+      "breakpoints": true
     }
   ]
 }

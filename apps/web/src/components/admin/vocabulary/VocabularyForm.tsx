@@ -17,11 +17,21 @@ import { Input } from '@/components/ui/input';
 import {
   generateVocabularyPreview,
   saveVocabularyFamily,
+  checkVocabulary,
 } from '@/actions/vocabulary-ai';
 import { toast } from 'sonner';
-import { Loader2, Sparkles, Check, Save } from 'lucide-react';
+import {
+  Loader2,
+  Sparkles,
+  Check,
+  Save,
+  Search,
+  AlertCircle,
+  XCircle,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   word: z.string().min(1, 'Word is required'),
@@ -41,16 +51,29 @@ interface PreviewData {
     meaning: string;
     partOfSpeech?: string;
     type?: string;
+    language?: string;
   }[];
 }
 
 export function VocabularyForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [checkStatus, setCheckStatus] = useState<
+    'idle' | 'valid' | 'invalid' | 'exists'
+  >('idle');
+  const [validationMessage, setValidationMessage] = useState<string>('');
+  const [existingWord, setExistingWord] = useState<any>(null);
+
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [selectedFamilyIndices, setSelectedFamilyIndices] = useState<number[]>(
     []
   );
+  const [generationOptions, setGenerationOptions] = useState({
+    includeFamily: true,
+    includeSynonyms: true,
+    includeAntonyms: true,
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,11 +82,56 @@ export function VocabularyForm() {
     },
   });
 
+  const resetState = () => {
+    setCheckStatus('idle');
+    setValidationMessage('');
+    setExistingWord(null);
+    setPreviewData(null);
+    setSelectedFamilyIndices([]);
+  };
+
+  async function onCheck(e: React.MouseEvent) {
+    e.preventDefault();
+    const word = form.getValues('word');
+    if (!word) {
+      toast.error('Please enter a word first');
+      return;
+    }
+
+    setIsChecking(true);
+    resetState();
+
+    try {
+      const result = await checkVocabulary(word);
+
+      if (result.exists) {
+        setCheckStatus('exists');
+        setExistingWord(result.data?.rootWord);
+        toast.info(`"${word}" already exists in the database.`);
+      } else if (result.valid) {
+        setCheckStatus('valid');
+        setValidationMessage(result.reason || 'Word is valid.');
+        toast.success(`"${word}" is valid! You can now generate the preview.`);
+      } else {
+        setCheckStatus('invalid');
+        setValidationMessage(result.reason || 'Word seems invalid.');
+        toast.error(`"${word}" does not seem to be a valid word.`);
+      }
+    } catch (error) {
+      toast.error('Failed to check vocabulary');
+    } finally {
+      setIsChecking(false);
+    }
+  }
+
   async function onGenerate(values: z.infer<typeof formSchema>) {
     setIsGenerating(true);
     setPreviewData(null);
     try {
-      const result = await generateVocabularyPreview(values.word);
+      const result = await generateVocabularyPreview(
+        values.word,
+        generationOptions
+      );
       if (result.success && result.data) {
         setPreviewData(result.data);
         // Select all by default
@@ -84,20 +152,22 @@ export function VocabularyForm() {
 
     setIsSaving(true);
     try {
-      // Filter family based on selection
+      // Filter family based on selection and ensure language is present
       const dataToSave = {
         ...previewData,
-        family: previewData.family.filter((_, idx) =>
-          selectedFamilyIndices.includes(idx)
-        ),
+        family: previewData.family
+          .filter((_, idx) => selectedFamilyIndices.includes(idx))
+          .map((item) => ({
+            ...item,
+            language: item.language || previewData.rootWord.language,
+          })),
       };
 
       const result = await saveVocabularyFamily(dataToSave);
       if (result.success) {
         toast.success(`Saved "${result.rootWord}" and selected relations!`);
         form.reset();
-        setPreviewData(null);
-        setSelectedFamilyIndices([]);
+        resetState();
       } else {
         toast.error('Failed to save vocabulary');
       }
@@ -140,18 +210,116 @@ export function VocabularyForm() {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full gap-2"
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                onClick={onCheck}
+                disabled={isChecking || isGenerating}
+                variant="secondary"
+                className="flex-1 gap-2"
+              >
+                {isChecking ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+                Check Word
+              </Button>
+
+              {checkStatus === 'valid' && (
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex gap-2 text-xs">
+                    <div className="flex items-center space-x-1">
+                      <Checkbox
+                        id="opt-family"
+                        checked={generationOptions.includeFamily}
+                        onCheckedChange={(c) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeFamily: !!c,
+                          }))
+                        }
+                      />
+                      <label htmlFor="opt-family">Family</label>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Checkbox
+                        id="opt-syn"
+                        checked={generationOptions.includeSynonyms}
+                        onCheckedChange={(c) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeSynonyms: !!c,
+                          }))
+                        }
+                      />
+                      <label htmlFor="opt-syn">Synonyms</label>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Checkbox
+                        id="opt-ant"
+                        checked={generationOptions.includeAntonyms}
+                        onCheckedChange={(c) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeAntonyms: !!c,
+                          }))
+                        }
+                      />
+                      <label htmlFor="opt-ant">Antonyms</label>
+                    </div>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full gap-2"
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Generate Preview
+                  </Button>
+                </div>
               )}
-              Generate Preview (AI)
-            </Button>
+            </div>
+
+            {/* Status Messages */}
+            {checkStatus === 'exists' && existingWord && (
+              <Alert
+                variant="default"
+                className="bg-blue-50 border-blue-200 text-blue-800"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Word Exists</AlertTitle>
+                <AlertDescription>
+                  "{existingWord.word}" is already in the database.
+                  <div className="mt-2 text-sm">
+                    <strong>Meaning:</strong> {existingWord.meaning}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {checkStatus === 'invalid' && (
+              <Alert variant="destructive">
+                <XCircle className="h-4 w-4" />
+                <AlertTitle>Invalid Word</AlertTitle>
+                <AlertDescription>
+                  {validationMessage ||
+                    'This word does not appear to be valid.'}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {checkStatus === 'valid' && (
+              <Alert className="bg-green-50 border-green-200 text-green-800">
+                <Check className="h-4 w-4 text-green-600" />
+                <AlertTitle>Valid Word</AlertTitle>
+                <AlertDescription>{validationMessage}</AlertDescription>
+              </Alert>
+            )}
           </form>
         </Form>
       </div>

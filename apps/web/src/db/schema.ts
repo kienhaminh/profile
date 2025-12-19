@@ -360,3 +360,190 @@ export const vocabularyRelationsRelations = relations(
     }),
   })
 );
+
+// Flashcards table
+export const flashcards = pgTable(
+  'flashcards',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    description: text('description'),
+    language: text('language').notNull(), // 'en' | 'ko' | 'zh'
+    isActive: boolean('is_active').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    languageIdx: index('flashcards_language_idx').on(table.language),
+    isActiveIdx: index('flashcards_is_active_idx').on(table.isActive),
+    createdAtIdx: index('flashcards_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Flashcard-Vocabulary junction table
+export const flashcardVocabularies = pgTable(
+  'flashcard_vocabularies',
+  {
+    flashcardId: uuid('flashcard_id')
+      .notNull()
+      .references(() => flashcards.id, { onDelete: 'cascade' }),
+    vocabularyId: uuid('vocabulary_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    addedAt: timestamp('added_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.flashcardId, table.vocabularyId] }),
+    flashcardIdIdx: index('flashcard_vocabularies_flashcard_id_idx').on(
+      table.flashcardId
+    ),
+    vocabularyIdIdx: index('flashcard_vocabularies_vocabulary_id_idx').on(
+      table.vocabularyId
+    ),
+  })
+);
+
+// Practice Sessions table
+export const practiceSessions = pgTable(
+  'practice_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    flashcardId: uuid('flashcard_id')
+      .notNull()
+      .references(() => flashcards.id, { onDelete: 'cascade' }),
+    vocabularyId: uuid('vocabulary_id')
+      .notNull()
+      .references(() => vocabularies.id, { onDelete: 'cascade' }),
+    wasCorrect: boolean('was_correct').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    flashcardIdIdx: index('practice_sessions_flashcard_id_idx').on(
+      table.flashcardId
+    ),
+    vocabularyIdIdx: index('practice_sessions_vocabulary_id_idx').on(
+      table.vocabularyId
+    ),
+    createdAtIdx: index('practice_sessions_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Flashcard Relations
+export const flashcardsRelations = relations(flashcards, ({ many }) => ({
+  vocabularies: many(flashcardVocabularies),
+  practiceSessions: many(practiceSessions),
+}));
+
+export const flashcardVocabulariesRelations = relations(
+  flashcardVocabularies,
+  ({ one }) => ({
+    flashcard: one(flashcards, {
+      fields: [flashcardVocabularies.flashcardId],
+      references: [flashcards.id],
+    }),
+    vocabulary: one(vocabularies, {
+      fields: [flashcardVocabularies.vocabularyId],
+      references: [vocabularies.id],
+    }),
+  })
+);
+
+export const practiceSessionsRelations = relations(
+  practiceSessions,
+  ({ one }) => ({
+    flashcard: one(flashcards, {
+      fields: [practiceSessions.flashcardId],
+      references: [flashcards.id],
+    }),
+    vocabulary: one(vocabularies, {
+      fields: [practiceSessions.vocabularyId],
+      references: [vocabularies.id],
+    }),
+  })
+);
+
+// History Events table
+export const historyEvents = pgTable(
+  'history_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: text('title').notNull(),
+    description: text('description'),
+    occurredAt: text('occurred_at'), // Text to allow flexible dates like "Spring 2024" or "Circa 1000"
+    year: integer('year'), // For sorting/filtering
+    sourceUrl: text('source_url'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    yearIdx: index('history_events_year_idx').on(table.year),
+    createdAtIdx: index('history_events_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Folktales table (Vietnamese fairy tales, fables, and legends)
+export const folktales = pgTable(
+  'folktales',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: text('title').notNull(),
+    content: text('content'), // Full story content
+    summary: text('summary'), // Short summary/excerpt
+    category: text('category'), // e.g., 'fairy_tale', 'fable', 'legend', 'myth'
+    characters: jsonb('characters').$type<string[]>().default([]), // Key characters
+    moral: text('moral'), // Moral of the story (for fables)
+    sourceUrl: text('source_url'),
+    crawledAt: timestamp('crawled_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    titleIdx: index('folktales_title_idx').on(table.title),
+    categoryIdx: index('folktales_category_idx').on(table.category),
+    createdAtIdx: index('folktales_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Shortlinks table (URL shortener)
+export const shortlinks = pgTable(
+  'shortlinks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(), // Short code (e.g., "abc123")
+    destinationUrl: text('destination_url').notNull(),
+    title: text('title'), // Optional friendly name
+    isActive: boolean('is_active').notNull().default(true),
+    clickCount: integer('click_count').notNull().default(0),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    password: text('password'), // Optional password protection (hashed)
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    slugIdx: index('shortlinks_slug_idx').on(table.slug),
+    isActiveIdx: index('shortlinks_is_active_idx').on(table.isActive),
+    createdAtIdx: index('shortlinks_created_at_idx').on(table.createdAt),
+  })
+);

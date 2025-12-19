@@ -160,7 +160,8 @@ export default function BlogsListPage() {
         comparison = a.status.localeCompare(b.status);
         break;
       case 'createdAt':
-        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        comparison =
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         break;
     }
 
@@ -179,7 +180,9 @@ export default function BlogsListPage() {
                 <TableHead className="font-semibold">Topics</TableHead>
                 <TableHead className="font-semibold">Hashtags</TableHead>
                 <TableHead className="font-semibold">Created</TableHead>
-                <TableHead className="text-right font-semibold">Actions</TableHead>
+                <TableHead className="text-right font-semibold">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,22 +230,19 @@ export default function BlogsListPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            Blog Posts
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage and organize your content</p>
+          <h1 className="text-3xl font-bold text-foreground">Blog Posts</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage and organize your content
+          </p>
         </div>
         <Button
           asChild
           className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
         >
-          <Link
-            href="/admin/blogs/new"
-            className="flex items-center gap-2"
-          >
+          <Link href="/admin/blogs/new" className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Create New Blog
           </Link>
@@ -267,7 +267,10 @@ export default function BlogsListPage() {
             setFilter((prev) => ({ ...prev, status: value }))
           }
         >
-          <SelectTrigger className="w-full sm:w-[200px]" aria-label="Filter by status">
+          <SelectTrigger
+            className="w-full sm:w-[200px]"
+            aria-label="Filter by status"
+          >
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
           <SelectContent>
@@ -280,7 +283,9 @@ export default function BlogsListPage() {
 
       {error && (
         <Alert className="mb-6 border-destructive/50 bg-destructive/10">
-          <AlertDescription className="text-destructive">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">
+            {error}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -346,12 +351,8 @@ export default function BlogsListPage() {
                         <ArrowUpDown className="w-3 h-3" />
                       </button>
                     </TableHead>
-                    <TableHead className="font-semibold">
-                      Topics
-                    </TableHead>
-                    <TableHead className="font-semibold">
-                      Hashtags
-                    </TableHead>
+                    <TableHead className="font-semibold">Topics</TableHead>
+                    <TableHead className="font-semibold">Hashtags</TableHead>
                     <TableHead className="font-semibold">
                       <button
                         onClick={() => handleSort('createdAt')}

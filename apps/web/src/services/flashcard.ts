@@ -1,5 +1,10 @@
 import { db } from '@/db/client';
-import { flashcards, vocabularies, flashcardVocabularies, practiceSessions } from '@/db/schema';
+import {
+  flashcards,
+  vocabularies,
+  flashcardVocabularies,
+  practiceSessions,
+} from '@/db/schema';
 import { desc, eq, and, inArray, sql } from 'drizzle-orm';
 
 export interface CreateFlashcardInput {
@@ -29,12 +34,12 @@ export interface FlashcardWithVocabularies {
     word: string;
     language: string;
     meaning: string;
-    translation: string | null;
+    translation?: string | null;
     pronunciation: string | null;
     example: string | null;
     partOfSpeech: string | null;
-    difficulty: string | null;
-    notes: string | null;
+    difficulty?: string | null;
+    notes?: string | null;
     addedAt: Date;
   }>;
 }
@@ -91,7 +96,9 @@ export class FlashcardService {
   /**
    * Get flashcard with its vocabularies
    */
-  static async getByIdWithVocabularies(id: string): Promise<FlashcardWithVocabularies | null> {
+  static async getByIdWithVocabularies(
+    id: string
+  ): Promise<FlashcardWithVocabularies | null> {
     const flashcard = await this.getById(id);
     if (!flashcard) return null;
 
@@ -102,7 +109,10 @@ export class FlashcardService {
         addedAt: flashcardVocabularies.addedAt,
       })
       .from(flashcardVocabularies)
-      .innerJoin(vocabularies, eq(flashcardVocabularies.vocabularyId, vocabularies.id))
+      .innerJoin(
+        vocabularies,
+        eq(flashcardVocabularies.vocabularyId, vocabularies.id)
+      )
       .where(eq(flashcardVocabularies.flashcardId, id))
       .orderBy(desc(flashcardVocabularies.addedAt));
 
@@ -166,7 +176,10 @@ export class FlashcardService {
   /**
    * Remove vocabularies from flashcard
    */
-  static async removeVocabularies(flashcardId: string, vocabularyIds: string[]) {
+  static async removeVocabularies(
+    flashcardId: string,
+    vocabularyIds: string[]
+  ) {
     if (vocabularyIds.length === 0) return [];
 
     const results = await db
@@ -185,7 +198,10 @@ export class FlashcardService {
   /**
    * Record practice session results
    */
-  static async recordPracticeSession(flashcardId: string, results: PracticeResult[]) {
+  static async recordPracticeSession(
+    flashcardId: string,
+    results: PracticeResult[]
+  ) {
     if (results.length === 0) return [];
 
     const sessions = await db
@@ -213,7 +229,8 @@ export class FlashcardService {
 
     const totalPractices = sessions.length;
     const correctPractices = sessions.filter((s) => s.wasCorrect).length;
-    const accuracy = totalPractices > 0 ? (correctPractices / totalPractices) * 100 : 0;
+    const accuracy =
+      totalPractices > 0 ? (correctPractices / totalPractices) * 100 : 0;
 
     // Get vocabulary-specific stats
     const vocabularyStats: Record<
@@ -256,7 +273,8 @@ export class FlashcardService {
     let activeCount = 0;
 
     allFlashcards.forEach((flashcard) => {
-      byLanguage[flashcard.language] = (byLanguage[flashcard.language] || 0) + 1;
+      byLanguage[flashcard.language] =
+        (byLanguage[flashcard.language] || 0) + 1;
       if (flashcard.isActive) activeCount++;
     });
 

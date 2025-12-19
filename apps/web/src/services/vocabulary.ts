@@ -1,6 +1,6 @@
 import { db } from '@/db/client';
-import { vocabularies, flashcards, flashcardVocabularies, practiceSessions } from '@/db/schema';
-import { desc, eq, and, sql, inArray } from 'drizzle-orm';
+import { vocabularies } from '@/db/schema';
+import { desc, eq, and, sql } from 'drizzle-orm';
 
 export interface CreateVocabularyInput {
   word: string;
@@ -37,11 +37,17 @@ export class VocabularyService {
    * Create a new vocabulary entry
    */
   static async create(input: CreateVocabularyInput) {
+    const { word, language, meaning, pronunciation, example, partOfSpeech } =
+      input;
     const [vocabulary] = await db
       .insert(vocabularies)
       .values({
-        ...input,
-        difficulty: input.difficulty || 'intermediate',
+        word,
+        language,
+        meaning,
+        pronunciation,
+        example,
+        partOfSpeech,
         updatedAt: new Date(),
       })
       .returning();
@@ -59,9 +65,6 @@ export class VocabularyService {
     const conditions = [];
     if (filters?.language) {
       conditions.push(eq(vocabularies.language, filters.language));
-    }
-    if (filters?.difficulty) {
-      conditions.push(eq(vocabularies.difficulty, filters.difficulty));
     }
     if (filters?.search) {
       conditions.push(
@@ -98,10 +101,17 @@ export class VocabularyService {
    * Update vocabulary
    */
   static async update(id: string, input: UpdateVocabularyInput) {
+    const { word, language, meaning, pronunciation, example, partOfSpeech } =
+      input;
     const [vocabulary] = await db
       .update(vocabularies)
       .set({
-        ...input,
+        word,
+        language,
+        meaning,
+        pronunciation,
+        example,
+        partOfSpeech,
         updatedAt: new Date(),
       })
       .where(eq(vocabularies.id, id))
@@ -129,25 +139,15 @@ export class VocabularyService {
     const allVocabs = await db.select().from(vocabularies);
 
     const byLanguage: Record<string, number> = {};
-    const byDifficulty: Record<string, number> = {
-      beginner: 0,
-      intermediate: 0,
-      advanced: 0,
-    };
 
     allVocabs.forEach((vocab) => {
       // Count by language
       byLanguage[vocab.language] = (byLanguage[vocab.language] || 0) + 1;
-
-      // Count by difficulty
-      const difficulty = vocab.difficulty || 'intermediate';
-      byDifficulty[difficulty] = (byDifficulty[difficulty] || 0) + 1;
     });
 
     return {
       total: allVocabs.length,
       byLanguage,
-      byDifficulty,
     };
   }
 
@@ -174,8 +174,12 @@ export class VocabularyService {
       .insert(vocabularies)
       .values(
         inputs.map((input) => ({
-          ...input,
-          difficulty: input.difficulty || 'intermediate',
+          word: input.word,
+          language: input.language,
+          meaning: input.meaning,
+          pronunciation: input.pronunciation,
+          example: input.example,
+          partOfSpeech: input.partOfSpeech,
           updatedAt: new Date(),
         }))
       )

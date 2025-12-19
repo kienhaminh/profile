@@ -1,7 +1,16 @@
 'use client';
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useState, useEffect } from 'react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProjectsStatsData {
   status: string;
@@ -19,11 +28,49 @@ const COLORS = {
 };
 
 export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chartData = data.map((item) => ({
-    name: item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
+    name:
+      item.status.charAt(0).toUpperCase() + item.status.slice(1).toLowerCase(),
     value: parseInt(item.count),
     status: item.status.toLowerCase(),
   }));
+
+  // Filter out items with 0 value for better pie chart display
+  const filteredChartData = chartData.filter((item) => item.value > 0);
+
+  if (!isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Projects by Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="w-full h-[300px]" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data || data.length === 0 || filteredChartData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Projects by Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">
+            No projects data available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -34,7 +81,7 @@ export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
-              data={chartData}
+              data={filteredChartData}
               cx="50%"
               cy="50%"
               labelLine={false}
@@ -46,14 +93,22 @@ export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
               fill="#8884d8"
               dataKey="value"
             >
-              {chartData.map((entry) => (
+              {filteredChartData.map((entry) => (
                 <Cell
                   key={`cell-${entry.name}`}
-                  fill={COLORS[entry.status as keyof typeof COLORS] || '#3b82f6'}
+                  fill={
+                    COLORS[entry.status as keyof typeof COLORS] || '#3b82f6'
+                  }
                 />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px',
+              }}
+            />
             <Legend />
           </PieChart>
         </ResponsiveContainer>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -11,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PostsOverTimeData {
   month: string;
@@ -23,6 +25,12 @@ interface PostsOverTimeChartProps {
 }
 
 export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const chartData = data.reduce(
     (acc, item) => {
       const monthStr = new Date(item.month).toLocaleDateString('en-US', {
@@ -34,7 +42,8 @@ export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
       const statusKey = item.status.toLowerCase();
       if (existing) {
         const currentValue = existing[statusKey];
-        existing[statusKey] = (typeof currentValue === 'number' ? currentValue : 0) + count;
+        existing[statusKey] =
+          (typeof currentValue === 'number' ? currentValue : 0) + count;
       } else {
         acc.push({
           month: monthStr,
@@ -46,6 +55,34 @@ export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
     [] as Array<{ month: string; [key: string]: string | number }>
   );
 
+  if (!isMounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Posts Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="w-full h-[300px]" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Posts Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">
+            No posts data available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -54,22 +91,30 @@ export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis dataKey="month" className="text-muted-foreground" />
+            <YAxis className="text-muted-foreground" />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: '8px',
+              }}
+            />
             <Legend />
             <Line
               type="monotone"
               dataKey="published"
               stroke="#10b981"
               name="Published"
+              strokeWidth={2}
             />
             <Line
               type="monotone"
               dataKey="draft"
               stroke="#f59e0b"
               name="Draft"
+              strokeWidth={2}
             />
           </LineChart>
         </ResponsiveContainer>
