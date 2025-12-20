@@ -2,10 +2,14 @@
 
 import type { JSX } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import logoDark from '@/assets/logo-dark.png';
+import logoLight from '@/assets/logo-light.png';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Code2 } from 'lucide-react';
 
 interface NavLinkConfig {
   href: string;
@@ -24,6 +28,10 @@ function getNavLinks(): NavLinkConfig[] {
       href: '/projects',
       label: 'Projects',
       scrollTo: 'projects',
+    },
+    {
+      href: '/utilities',
+      label: 'Utilities',
     },
     {
       href: '/#about',
@@ -56,6 +64,13 @@ function getLinkClasses(isActive: boolean): string {
 
 export function Navbar(): JSX.Element {
   const pathname = usePathname() ?? '/';
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const links = getNavLinks();
   const isHomePage = pathname === '/';
 
@@ -90,12 +105,20 @@ export function Navbar(): JSX.Element {
               className="flex items-center space-x-2 group"
               aria-label="Home"
             >
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-md group-hover:shadow-xl dark:group-hover:shadow-primary/50 transition-all duration-300 group-hover:scale-110">
-                <Code2 className="w-6 h-6 text-primary-foreground transition-transform group-hover:rotate-12" />
+              <div className="w-[72px] h-10 rounded-lg overflow-hidden transition-all duration-300 group-hover:scale-105">
+                {mounted ? (
+                  <Image
+                    src={resolvedTheme === 'dark' ? logoDark : logoLight}
+                    alt="Kien Ha Logo"
+                    width={72}
+                    height={40}
+                    className="w-full h-full object-contain"
+                    priority
+                  />
+                ) : (
+                  <div className="w-[72px] h-10 bg-primary/10 animate-pulse" />
+                )}
               </div>
-              <span className="text-xl font-bold text-primary hidden sm:block group-hover:text-glow transition-all">
-                Kien Ha
-              </span>
             </Link>
           </div>
 

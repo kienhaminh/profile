@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics';
 import { GoogleAdsScript } from '@/components/ads/GoogleAds';
 import { WebVitalsReporter } from '@/components/analytics/WebVitalsReporter';
+import { VisitorTracker } from '@/components/analytics/VisitorTracker';
 import { TRPCReactProvider } from '@/trpc/Provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ConditionalLayout } from '@/components/ConditionalLayout';
@@ -15,11 +16,19 @@ import {
 import { inter, jetbrainsMono, spaceGrotesk } from './fonts';
 import './globals.css';
 
+import icon16 from '@/assets/favicon/favicon-16x16.png';
+import icon32 from '@/assets/favicon/favicon-32x32.png';
+import appleIcon from '@/assets/favicon/apple-touch-icon.png';
+
 export const metadata: Metadata = {
   ...generateMetadata(),
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: icon16.src, sizes: '16x16', type: 'image/png' },
+      { url: icon32.src, sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [{ url: appleIcon.src, sizes: '180x180', type: 'image/png' }],
   },
   robots: {
     index: true,
@@ -73,6 +82,7 @@ export default function RootLayout({
         >
           {measurementId && <GoogleAnalytics measurementId={measurementId} />}
           <WebVitalsReporter />
+          <VisitorTracker />
           {/* Cosmic Starfield Background for Dark Matter Theme */}
           <div className="starfield" aria-hidden="true" />
           {/* Aurora Borealis Effect Layer */}

@@ -9,6 +9,7 @@ import { Terminal } from '@/components/Terminal';
 import { BlogCard } from '@/components/blog/blog-card';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 import { ContactForm } from '@/components/ContactForm';
+import { UtilitiesSection } from '@/components/utilities';
 import {
   Card,
   CardContent,
@@ -498,6 +499,9 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      {/* Utilities Section */}
+      <UtilitiesSection />
 
       {/* Contact Form Section */}
       <section id="contact" className="py-16 md:py-24 bg-muted">

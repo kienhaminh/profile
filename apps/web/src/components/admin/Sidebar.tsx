@@ -15,6 +15,7 @@ import {
   BookOpen,
   Layers,
   Link2,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,6 +33,11 @@ const menuItems = [
     name: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
+  },
+  {
+    name: 'Analytics',
+    href: '/admin/analytics',
+    icon: BarChart3,
   },
   {
     name: 'Post',

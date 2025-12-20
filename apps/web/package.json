@@ -61,6 +61,7 @@
     "html-to-image": "^1.11.13",
     "isomorphic-dompurify": "^2.29.0",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.544.0",
     "nanoid": "^5.1.6",
     "neo4j-driver": "^5.28.2",

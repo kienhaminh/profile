@@ -158,7 +158,11 @@ export default function EditBlogPage({
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="mb-8 animate-fade-in">
             <Link href="/admin/blogs">
-              <Button variant="ghost" size="sm" className="mb-4 hover:bg-primary/10">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mb-4 hover:bg-primary/10"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blogs
               </Button>
@@ -175,7 +179,8 @@ export default function EditBlogPage({
                   {error ? 'Error Loading Blog' : 'Blog Not Found'}
                 </h3>
                 <p className="text-muted-foreground">
-                  {error || 'The blog post you\'re looking for could not be found.'}
+                  {error ||
+                    "The blog post you're looking for could not be found."}
                 </p>
                 <div className="mt-4">
                   <Link href="/admin/blogs">
@@ -230,7 +235,7 @@ export default function EditBlogPage({
               <FileEdit className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold text-primary">
                 Edit Blog Post
               </h1>
               <p className="text-muted-foreground mt-1">
@@ -258,8 +263,12 @@ export default function EditBlogPage({
                   <div className="relative animate-spin rounded-full h-12 w-12 border-4 border-muted border-t-primary"></div>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-semibold text-foreground">Saving your changes...</p>
-                  <p className="text-sm text-muted-foreground mt-1">This will only take a moment</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    Saving your changes...
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    This will only take a moment
+                  </p>
                 </div>
               </div>
             </div>

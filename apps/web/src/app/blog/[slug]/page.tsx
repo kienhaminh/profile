@@ -252,7 +252,7 @@ export default function BlogPostPage({
       </div>
 
       {/* Article */}
-      <article className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <article className="max-w-4xl mx-auto pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <header className="mb-12 space-y-6 animate-fade-in">
           {/* Back to Blog Button */}
           <Link href="/blog">

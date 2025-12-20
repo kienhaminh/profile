@@ -547,3 +547,69 @@ export const shortlinks = pgTable(
     createdAtIdx: index('shortlinks_created_at_idx').on(table.createdAt),
   })
 );
+
+// Visitor Sessions - tracks overall visits to the site
+export const visitorSessions = pgTable(
+  'visitor_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    visitorId: text('visitor_id').notNull(), // UUID stored in localStorage
+    userAgent: text('user_agent'),
+    referrer: text('referrer'),
+    device: text('device'), // 'desktop' | 'tablet' | 'mobile'
+    country: text('country'),
+    startedAt: timestamp('started_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    totalDuration: integer('total_duration'), // seconds
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    visitorIdIdx: index('visitor_sessions_visitor_id_idx').on(table.visitorId),
+    startedAtIdx: index('visitor_sessions_started_at_idx').on(table.startedAt),
+    createdAtIdx: index('visitor_sessions_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Page Visits - tracks time spent on each page
+export const pageVisits = pgTable(
+  'page_visits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => visitorSessions.id, { onDelete: 'cascade' }),
+    pagePath: text('page_path').notNull(),
+    pageTitle: text('page_title'),
+    enteredAt: timestamp('entered_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    exitedAt: timestamp('exited_at', { withTimezone: true }),
+    duration: integer('duration'), // seconds
+    scrollDepth: integer('scroll_depth'), // percentage 0-100
+  },
+  (table) => ({
+    sessionIdIdx: index('page_visits_session_id_idx').on(table.sessionId),
+    pagePathIdx: index('page_visits_page_path_idx').on(table.pagePath),
+    enteredAtIdx: index('page_visits_entered_at_idx').on(table.enteredAt),
+  })
+);
+
+// Visitor Sessions relations
+export const visitorSessionsRelations = relations(
+  visitorSessions,
+  ({ many }) => ({
+    pageVisits: many(pageVisits),
+  })
+);
+
+// Page Visits relations
+export const pageVisitsRelations = relations(pageVisits, ({ one }) => ({
+  session: one(visitorSessions, {
+    fields: [pageVisits.sessionId],
+    references: [visitorSessions.id],
+  }),
+}));
