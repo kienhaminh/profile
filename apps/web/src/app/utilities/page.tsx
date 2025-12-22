@@ -1,14 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Users, Hash, Dices, Wrench, ArrowLeft, ImageIcon } from 'lucide-react';
+import { UtilityCard, type Utility } from '@/components/utilities';
+import { Wrench, ArrowLeft, Users, Hash, Dices, ImageIcon } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Utilities - Free Mini Tools',
@@ -16,7 +9,7 @@ export const metadata: Metadata = {
     'A collection of free, fun mini tools including Spinner Wheel, Counter, and Lucky Number.',
 };
 
-const tools = [
+const tools: Utility[] = [
   {
     id: 'wheel-of-names',
     title: 'Spinner Wheel',
@@ -82,31 +75,7 @@ export default function UtilitiesPage() {
         {/* Tools Grid */}
         <div className="grid md:grid-cols-3 gap-8">
           {tools.map((tool) => (
-            <Link key={tool.id} href={`/utilities/${tool.id}`}>
-              <Card className="h-full group cursor-pointer border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-2">
-                <CardHeader>
-                  <div
-                    className={`w-16 h-16 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
-                  >
-                    {tool.icon}
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors text-xl">
-                    {tool.title}
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    {tool.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                  >
-                    Open Tool
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
+            <UtilityCard key={tool.id} tool={tool} />
           ))}
         </div>
       </div>

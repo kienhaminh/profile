@@ -122,13 +122,13 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Visitors
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Users className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               {stats?.overview.totalVisitors || 0}
             </div>
             <div className="flex items-center gap-1 mt-2">
@@ -147,13 +147,13 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Avg Session Duration
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-secondary dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-cyan-400 dark:to-teal-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Clock className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 dark:from-secondary dark:to-primary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-teal-500 dark:from-cyan-400 dark:to-teal-400 bg-clip-text text-transparent">
               {formatDuration(stats?.overview.avgSessionDuration || 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-2 font-medium">
@@ -169,13 +169,13 @@ export default function AnalyticsPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Page Views
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-accent dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-400 dark:to-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Eye className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 dark:from-accent dark:to-primary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-violet-500 to-purple-500 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
               {stats?.overview.totalPageViews || 0}
             </div>
             <div className="flex items-center gap-1 mt-2">

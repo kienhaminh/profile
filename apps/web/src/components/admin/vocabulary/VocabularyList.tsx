@@ -12,8 +12,22 @@ import {
 } from '@/components/ui/table';
 import { deleteVocabulary } from '@/actions/vocabulary';
 import { toast } from 'sonner';
-import { Trash2, Volume2 } from 'lucide-react';
+import { Trash2, Volume2, Sparkles, Loader2, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import {
+  generateVocabularyPreview,
+  saveVocabularyFamily,
+} from '@/actions/vocabulary-ai';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from '@/components/ui/sheet';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Vocabulary {
   id: string;
@@ -53,20 +67,40 @@ export function VocabularyList({ initialData }: VocabularyListProps) {
         )
     )
   );
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  async function handleDelete(id: string) {
-    if (!confirm('Are you sure you want to delete this word?')) return;
+  // AI Expansion state
+  const [selectedVocab, setSelectedVocab] = useState<Vocabulary | null>(null);
+  const [isExpanding, setIsExpanding] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [selectedPreviewIndices, setSelectedPreviewIndices] = useState<
+    number[]
+  >([]);
+  const [isSavingExpanded, setIsSavingExpanded] = useState(false);
+  const [generationOptions, setGenerationOptions] = useState({
+    includeFamily: true,
+    includeSynonyms: true,
+    includeAntonyms: true,
+  });
+
+  async function handleDelete() {
+    if (!deleteId) return;
+    setIsDeleting(true);
 
     try {
-      const result = await deleteVocabulary(id);
+      const result = await deleteVocabulary(deleteId);
       if (result.success) {
         toast.success('Vocabulary deleted');
-        setVocabularies(vocabularies.filter((v) => v.id !== id));
+        setVocabularies(vocabularies.filter((v) => v.id !== deleteId));
       } else {
         toast.error('Failed to delete vocabulary');
       }
     } catch (error) {
       toast.error('An error occurred');
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
     }
   }
 
@@ -76,6 +110,76 @@ export function VocabularyList({ initialData }: VocabularyListProps) {
       lang === 'en' ? 'en-US' : lang === 'ko' ? 'ko-KR' : 'zh-CN';
     window.speechSynthesis.speak(utterance);
   }
+
+  async function handleExpand() {
+    if (!selectedVocab) return;
+
+    setIsExpanding(true);
+    setPreviewData(null);
+    try {
+      toast.info(`Generating related words for "${selectedVocab.word}"...`);
+      const result = await generateVocabularyPreview(
+        selectedVocab.word,
+        generationOptions
+      );
+
+      if (result.success && result.data) {
+        setPreviewData(result.data);
+        // Select all by default
+        setSelectedPreviewIndices(
+          result.data.family.map((_: any, idx: number) => idx)
+        );
+        toast.success('Preview generated! Select words to save.');
+      } else {
+        toast.error(result.error || 'Failed to generate preview.');
+      }
+    } catch (error) {
+      toast.error('An error occurred during expansion.');
+      console.error(error);
+    } finally {
+      setIsExpanding(false);
+    }
+  }
+
+  async function handleSaveExpanded() {
+    if (!previewData || !selectedVocab) return;
+
+    setIsSavingExpanded(true);
+    try {
+      const dataToSave = {
+        ...previewData,
+        family: previewData.family
+          .filter((_: any, idx: number) => selectedPreviewIndices.includes(idx))
+          .map((item: any) => ({
+            ...item,
+            language: item.language || previewData.rootWord.language,
+          })),
+      };
+
+      const saveResult = await saveVocabularyFamily(
+        dataToSave,
+        selectedVocab.word
+      );
+
+      if (saveResult.success) {
+        toast.success('Successfully expanded vocabulary!');
+        window.location.reload();
+      } else {
+        toast.error('Failed to save expanded vocabulary.');
+      }
+    } catch (error) {
+      toast.error('An error occurred during save.');
+      console.error(error);
+    } finally {
+      setIsSavingExpanded(false);
+    }
+  }
+
+  const togglePreviewSelection = (index: number) => {
+    setSelectedPreviewIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -304,11 +408,19 @@ export function VocabularyList({ initialData }: VocabularyListProps) {
             </div>
 
             {/* Actions */}
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleDelete(vocab.id)}
+                onClick={() => setSelectedVocab(vocab)}
+                className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
+                <Sparkles className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setDeleteId(vocab.id)}
                 className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4" />
@@ -317,6 +429,185 @@ export function VocabularyList({ initialData }: VocabularyListProps) {
           </div>
         ))
       )}
+
+      <ConfirmDeleteDialog
+        isOpen={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Delete Word"
+        description={`Are you sure you want to delete "${vocabularies.find((v) => v.id === deleteId)?.word}"? This action cannot be undone.`}
+      />
+
+      <Sheet
+        open={!!selectedVocab}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedVocab(null);
+            setPreviewData(null);
+          }
+        }}
+      >
+        <SheetContent className="p-6 overflow-y-auto w-full sm:max-w-[500px]">
+          <SheetHeader className="p-0 mb-6">
+            <SheetTitle className="text-2xl font-bold flex items-center gap-2 pr-8">
+              {selectedVocab?.word}
+            </SheetTitle>
+            <SheetDescription>
+              Expand vocabulary using AI by generating related words, synonyms,
+              and antonyms.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-6">
+            {!previewData ? (
+              <>
+                <div className="space-y-3 mb-4">
+                  <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    Generation Options
+                  </h4>
+                  <div className="flex flex-col gap-3 p-4 border rounded-lg bg-muted/30">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="includeFamily"
+                        checked={generationOptions.includeFamily}
+                        onCheckedChange={(checked) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeFamily: checked as boolean,
+                          }))
+                        }
+                      />
+                      <label
+                        htmlFor="includeFamily"
+                        className="text-sm font-medium leading-none cursor-pointer"
+                      >
+                        Include Word Family (Derivatives)
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="includeSynonyms"
+                        checked={generationOptions.includeSynonyms}
+                        onCheckedChange={(checked) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeSynonyms: checked as boolean,
+                          }))
+                        }
+                      />
+                      <label
+                        htmlFor="includeSynonyms"
+                        className="text-sm font-medium leading-none cursor-pointer"
+                      >
+                        Include Synonyms
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id="includeAntonyms"
+                        checked={generationOptions.includeAntonyms}
+                        onCheckedChange={(checked) =>
+                          setGenerationOptions((prev) => ({
+                            ...prev,
+                            includeAntonyms: checked as boolean,
+                          }))
+                        }
+                      />
+                      <label
+                        htmlFor="includeAntonyms"
+                        className="text-sm font-medium leading-none cursor-pointer"
+                      >
+                        Include Antonyms
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleExpand}
+                  disabled={isExpanding}
+                  className="w-full gap-2 shadow-sm"
+                  size="lg"
+                >
+                  {isExpanding ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-5 w-5" />
+                  )}
+                  Expand with AI
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    Select Words to Add
+                  </h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewData(null)}
+                    className="h-8 w-8 p-0 rounded-full"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2 max-h-[450px] overflow-y-auto pr-2">
+                  {previewData.family.map((item: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                        selectedPreviewIndices.includes(idx)
+                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                          : 'border-border hover:border-primary/50 bg-card'
+                      }`}
+                      onClick={() => togglePreviewSelection(idx)}
+                    >
+                      <Checkbox
+                        checked={selectedPreviewIndices.includes(idx)}
+                        onCheckedChange={() => togglePreviewSelection(idx)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-bold truncate">
+                            {item.word}
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] h-5 px-1.5 font-bold uppercase"
+                          >
+                            {item.type}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {item.meaning}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={handleSaveExpanded}
+                  disabled={isSavingExpanded}
+                  className="w-full gap-2 shadow-md"
+                  size="lg"
+                >
+                  {isSavingExpanded ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Save className="h-5 w-5" />
+                  )}
+                  Save Selected ({selectedPreviewIndices.length})
+                </Button>
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

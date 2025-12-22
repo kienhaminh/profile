@@ -8,8 +8,23 @@ import {
   jsonb,
   primaryKey,
   index,
+  pgEnum,
+  decimal,
+  date,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+
+// Enums
+export const financeTransactionTypeEnum = pgEnum('finance_transaction_type', [
+  'income',
+  'expense',
+]);
+export const financePriorityEnum = pgEnum('finance_priority', [
+  'must_have',
+  'nice_to_have',
+  'waste',
+]);
+export const currencyEnum = pgEnum('currency', ['KRW', 'VND']);
 
 // Users table (single admin account)
 export const users = pgTable(
@@ -613,3 +628,107 @@ export const pageVisitsRelations = relations(pageVisits, ({ one }) => ({
     references: [visitorSessions.id],
   }),
 }));
+
+// Finance Categories table
+export const financeCategories = pgTable('finance_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// Finance Transactions table
+export const financeTransactions = pgTable(
+  'finance_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    type: financeTransactionTypeEnum('type').notNull(),
+    amount: decimal('amount').notNull(),
+    currency: currencyEnum('currency').notNull().default('KRW'),
+    categoryId: uuid('category_id').references(() => financeCategories.id),
+    priority: financePriorityEnum('priority'),
+    description: text('description'),
+    date: date('date').notNull(),
+  },
+  (table) => ({
+    dateIdx: index('finance_transactions_date_idx').on(table.date),
+    typeIdx: index('finance_transactions_type_idx').on(table.type),
+  })
+);
+
+// Finance Relations
+export const financeCategoriesRelations = relations(
+  financeCategories,
+  ({ many }) => ({
+    transactions: many(financeTransactions),
+    budgets: many(financeBudgets),
+  })
+);
+
+export const financeTransactionsRelations = relations(
+  financeTransactions,
+  ({ one }) => ({
+    category: one(financeCategories, {
+      fields: [financeTransactions.categoryId],
+      references: [financeCategories.id],
+    }),
+  })
+);
+
+// Finance Budgets table
+export const financeBudgets = pgTable(
+  'finance_budgets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    categoryId: uuid('category_id')
+      .references(() => financeCategories.id)
+      .notNull(),
+    amount: decimal('amount').notNull(),
+    currency: currencyEnum('currency').notNull().default('KRW'),
+    month: date('month').notNull(), // First day of the month (YYYY-MM-01)
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    categoryMonthIdx: index('finance_budgets_category_month_idx').on(
+      table.categoryId,
+      table.month
+    ),
+  })
+);
+
+export const financeBudgetsRelations = relations(financeBudgets, ({ one }) => ({
+  category: one(financeCategories, {
+    fields: [financeBudgets.categoryId],
+    references: [financeCategories.id],
+  }),
+}));
+
+// Finance Exchange transactions table
+export const financeExchanges = pgTable(
+  'finance_exchanges',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    fromCurrency: currencyEnum('from_currency').notNull(),
+    toCurrency: currencyEnum('to_currency').notNull(),
+    fromAmount: decimal('from_amount').notNull(),
+    toAmount: decimal('to_amount').notNull(),
+    rate: decimal('rate').notNull(),
+    date: date('date').notNull(),
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    dateIdx: index('finance_exchanges_date_idx').on(table.date),
+  })
+);

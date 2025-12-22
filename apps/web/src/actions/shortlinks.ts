@@ -14,6 +14,7 @@ import { shortlinks } from '@/db/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { nanoid } from 'nanoid';
+import { requireAdminAuth } from '@/lib/server-auth';
 
 // Types
 export type Shortlink = typeof shortlinks.$inferSelect;
@@ -46,6 +47,7 @@ export async function getShortlink(id: string): Promise<Shortlink | null> {
 export async function createShortlink(
   data: NewShortlink
 ): Promise<{ success: boolean; shortlink?: Shortlink; error?: string }> {
+  await requireAdminAuth();
   try {
     // Generate slug if not provided
     const slug = data.slug || (await generateSlug());
@@ -83,6 +85,7 @@ export async function updateShortlink(
   id: string,
   data: Partial<NewShortlink>
 ): Promise<{ success: boolean; shortlink?: Shortlink; error?: string }> {
+  await requireAdminAuth();
   try {
     // If updating slug, check for conflicts
     if (data.slug) {
@@ -122,6 +125,7 @@ export async function updateShortlink(
 export async function deleteShortlink(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireAdminAuth();
   try {
     const result = await db
       .delete(shortlinks)
@@ -195,6 +199,7 @@ export async function incrementClickCount(slug: string): Promise<void> {
 export async function toggleShortlinkStatus(
   id: string
 ): Promise<{ success: boolean; isActive?: boolean; error?: string }> {
+  await requireAdminAuth();
   try {
     const [link] = await db
       .select()

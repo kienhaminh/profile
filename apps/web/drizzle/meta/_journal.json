@@ -50,6 +50,27 @@
       "when": 1766248479555,
       "tag": "0006_blue_the_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1766335981407,
+      "tag": "0007_smooth_kate_bishop",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766341450112,
+      "tag": "0008_wild_kid_colt",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1766371545022,
+      "tag": "0009_moaning_strong_guy",
+      "breakpoints": true
     }
   ]
 }

@@ -13,16 +13,7 @@ import {
   Hash,
   TrendingUp,
 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { authFetch, authDelete } from '@/lib/auth';
 import type { Blog } from '@/types/blog';
@@ -145,13 +136,13 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Posts
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 dark:from-indigo-400 dark:to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <FileText className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-500 to-blue-500 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
               {stats?.recentActivity.total_posts || posts.length}
             </div>
             <div className="flex items-center gap-1 mt-2">
@@ -169,13 +160,13 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Total Projects
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-secondary dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-cyan-400 dark:to-teal-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <FolderKanban className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 dark:from-secondary dark:to-primary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-teal-500 dark:from-cyan-400 dark:to-teal-400 bg-clip-text text-transparent">
               {stats?.recentActivity.total_projects || 0}
             </div>
             <div className="flex items-center gap-1 mt-2">
@@ -193,13 +184,13 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Topics
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-accent dark:to-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-violet-400 dark:to-indigo-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <FolderTree className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-accent dark:to-primary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
               {stats?.recentActivity.total_topics || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-2 font-medium">
@@ -214,13 +205,13 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Hashtags
               </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 dark:from-primary dark:to-secondary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 dark:from-sky-400 dark:to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Hash className="w-5 h-5 text-white" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-blue-600 dark:from-primary dark:to-secondary bg-clip-text text-transparent">
+            <div className="text-3xl font-bold bg-gradient-to-r from-sky-500 to-blue-500 dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent">
               {stats?.recentActivity.total_hashtags || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-2 font-medium">
@@ -381,27 +372,14 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete &ldquo;
-              {postToDelete?.title}&rdquo; and remove it from the server.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deletingPostId === postToDelete?.id}
-            >
-              {deletingPostId === postToDelete?.id ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Are you absolutely sure?"
+        description={`This action cannot be undone. This will permanently delete "${postToDelete?.title}" and remove it from the server.`}
+        isLoading={deletingPostId === postToDelete?.id}
+      />
     </div>
   );
 }

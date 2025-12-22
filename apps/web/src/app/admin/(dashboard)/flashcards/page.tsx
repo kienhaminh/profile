@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,16 +31,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Plus,
   Trash2,
@@ -118,16 +115,22 @@ export default function FlashcardsPage() {
 
   // Build Sets state
   const [selectedSetId, setSelectedSetId] = useState<string>('');
-  const [selectedSet, setSelectedSet] = useState<FlashcardSetWithVocabularies | null>(null);
-  const [availableVocabularies, setAvailableVocabularies] = useState<Vocabulary[]>([]);
+  const [selectedSet, setSelectedSet] =
+    useState<FlashcardSetWithVocabularies | null>(null);
+  const [availableVocabularies, setAvailableVocabularies] = useState<
+    Vocabulary[]
+  >([]);
   const [loadingVocabs, setLoadingVocabs] = useState(false);
   const [addingVocabs, setAddingVocabs] = useState<string[]>([]);
   const [removingVocabs, setRemovingVocabs] = useState<string[]>([]);
 
   // Practice state
   const [practiceSetId, setPracticeSetId] = useState<string>('');
-  const [practiceStats, setPracticeStats] = useState<PracticeStats | null>(null);
-  const [practiceSession, setPracticeSession] = useState<PracticeSession | null>(null);
+  const [practiceStats, setPracticeStats] = useState<PracticeStats | null>(
+    null
+  );
+  const [practiceSession, setPracticeSession] =
+    useState<PracticeSession | null>(null);
   const [loadingPractice, setLoadingPractice] = useState(false);
   const [submittingPractice, setSubmittingPractice] = useState(false);
 
@@ -203,7 +206,9 @@ export default function FlashcardsPage() {
       const set = flashcardSets.find((s) => s.id === setId);
       if (!set) return;
 
-      const response = await authFetch(`/api/admin/vocabularies?language=${set.language}`);
+      const response = await authFetch(
+        `/api/admin/vocabularies?language=${set.language}`
+      );
       if (!response.ok) throw new Error('Failed to fetch vocabularies');
       const data = await response.json();
       setAvailableVocabularies(data.items || []);
@@ -215,7 +220,9 @@ export default function FlashcardsPage() {
 
   const fetchPracticeStats = async (setId: string) => {
     try {
-      const response = await authFetch(`/api/admin/flashcards/${setId}/practice`);
+      const response = await authFetch(
+        `/api/admin/flashcards/${setId}/practice`
+      );
       if (!response.ok) throw new Error('Failed to fetch practice stats');
       const data = await response.json();
       setPracticeStats(data);
@@ -253,13 +260,17 @@ export default function FlashcardsPage() {
         throw new Error(data.error || 'Failed to save flashcard set');
       }
 
-      setSuccess(editingSet ? 'Flashcard set updated!' : 'Flashcard set created!');
+      setSuccess(
+        editingSet ? 'Flashcard set updated!' : 'Flashcard set created!'
+      );
       setShowDialog(false);
       resetForm();
       await fetchFlashcardSets();
       await fetchStats();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save flashcard set');
+      setError(
+        err instanceof Error ? err.message : 'Failed to save flashcard set'
+      );
     } finally {
       setSaving(false);
     }
@@ -319,12 +330,15 @@ export default function FlashcardsPage() {
 
     try {
       setAddingVocabs([...addingVocabs, vocabularyId]);
-      const response = await fetch(`/api/admin/flashcards/${selectedSetId}/vocabularies`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ vocabularyIds: [vocabularyId] }),
-      });
+      const response = await fetch(
+        `/api/admin/flashcards/${selectedSetId}/vocabularies`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ vocabularyIds: [vocabularyId] }),
+        }
+      );
 
       if (!response.ok) throw new Error('Failed to add vocabulary');
 
@@ -343,12 +357,15 @@ export default function FlashcardsPage() {
 
     try {
       setRemovingVocabs([...removingVocabs, vocabularyId]);
-      const response = await fetch(`/api/admin/flashcards/${selectedSetId}/vocabularies`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ vocabularyIds: [vocabularyId] }),
-      });
+      const response = await fetch(
+        `/api/admin/flashcards/${selectedSetId}/vocabularies`,
+        {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ vocabularyIds: [vocabularyId] }),
+        }
+      );
 
       if (!response.ok) throw new Error('Failed to remove vocabulary');
 
@@ -367,7 +384,9 @@ export default function FlashcardsPage() {
 
     try {
       setLoadingPractice(true);
-      const response = await authFetch(`/api/admin/flashcards/${practiceSetId}`);
+      const response = await authFetch(
+        `/api/admin/flashcards/${practiceSetId}`
+      );
       if (!response.ok) throw new Error('Failed to load flashcard set');
       const data = await response.json();
 
@@ -403,7 +422,8 @@ export default function FlashcardsPage() {
 
   const handleMarkCorrect = () => {
     if (!practiceSession) return;
-    const currentVocab = practiceSession.vocabularies[practiceSession.currentIndex];
+    const currentVocab =
+      practiceSession.vocabularies[practiceSession.currentIndex];
 
     setPracticeSession({
       ...practiceSession,
@@ -418,7 +438,8 @@ export default function FlashcardsPage() {
 
   const handleMarkIncorrect = () => {
     if (!practiceSession) return;
-    const currentVocab = practiceSession.vocabularies[practiceSession.currentIndex];
+    const currentVocab =
+      practiceSession.vocabularies[practiceSession.currentIndex];
 
     setPracticeSession({
       ...practiceSession,
@@ -436,12 +457,15 @@ export default function FlashcardsPage() {
 
     try {
       setSubmittingPractice(true);
-      const response = await fetch(`/api/admin/flashcards/${practiceSetId}/practice`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ results: practiceSession.results }),
-      });
+      const response = await fetch(
+        `/api/admin/flashcards/${practiceSetId}/practice`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ results: practiceSession.results }),
+        }
+      );
 
       if (!response.ok) throw new Error('Failed to submit practice results');
 
@@ -480,7 +504,9 @@ export default function FlashcardsPage() {
   const getSessionResults = () => {
     if (!practiceSession) return { correct: 0, incorrect: 0, accuracy: 0 };
     const correct = practiceSession.results.filter((r) => r.isCorrect).length;
-    const incorrect = practiceSession.results.filter((r) => !r.isCorrect).length;
+    const incorrect = practiceSession.results.filter(
+      (r) => !r.isCorrect
+    ).length;
     const total = correct + incorrect;
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
     return { correct, incorrect, accuracy };
@@ -519,11 +545,15 @@ export default function FlashcardsPage() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Vocabularies</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Vocabularies
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalVocabularies}</div>
+              <div className="text-2xl font-bold">
+                {stats.totalVocabularies}
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -583,7 +613,9 @@ export default function FlashcardsPage() {
           <Card>
             <CardHeader>
               <CardTitle>All Flashcard Sets ({flashcardSets.length})</CardTitle>
-              <CardDescription>Manage your flashcard collections</CardDescription>
+              <CardDescription>
+                Manage your flashcard collections
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -596,7 +628,8 @@ export default function FlashcardsPage() {
                 <div className="text-center py-12">
                   <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    No flashcard sets found. Click &quot;Create Flashcard Set&quot; to create one.
+                    No flashcard sets found. Click &quot;Create Flashcard
+                    Set&quot; to create one.
                   </p>
                 </div>
               ) : (
@@ -607,8 +640,12 @@ export default function FlashcardsPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <CardTitle className="text-lg">{set.name}</CardTitle>
-                              <Badge variant="outline">{set.language.toUpperCase()}</Badge>
+                              <CardTitle className="text-lg">
+                                {set.name}
+                              </CardTitle>
+                              <Badge variant="outline">
+                                {set.language.toUpperCase()}
+                              </Badge>
                               {set.isActive ? (
                                 <Badge className="bg-green-500">Active</Badge>
                               ) : (
@@ -616,14 +653,20 @@ export default function FlashcardsPage() {
                               )}
                             </div>
                             {set.description && (
-                              <CardDescription>{set.description}</CardDescription>
+                              <CardDescription>
+                                {set.description}
+                              </CardDescription>
                             )}
                             <div className="mt-2 text-sm text-muted-foreground">
                               {set.vocabularyCount || 0} vocabularies
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(set)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(set)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
@@ -650,7 +693,9 @@ export default function FlashcardsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Select Flashcard Set</CardTitle>
-              <CardDescription>Choose a flashcard set to manage its vocabularies</CardDescription>
+              <CardDescription>
+                Choose a flashcard set to manage its vocabularies
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Select value={selectedSetId} onValueChange={setSelectedSetId}>
@@ -660,7 +705,8 @@ export default function FlashcardsPage() {
                 <SelectContent>
                   {flashcardSets.map((set) => (
                     <SelectItem key={set.id} value={set.id}>
-                      {set.name} ({set.language.toUpperCase()}) - {set.vocabularyCount || 0} words
+                      {set.name} ({set.language.toUpperCase()}) -{' '}
+                      {set.vocabularyCount || 0} words
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -690,7 +736,8 @@ export default function FlashcardsPage() {
                   ) : selectedSet.vocabularies.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-muted-foreground">
-                        No vocabularies in this set. Add some from the available list below.
+                        No vocabularies in this set. Add some from the available
+                        list below.
                       </p>
                     </div>
                   ) : (
@@ -702,12 +749,18 @@ export default function FlashcardsPage() {
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">{vocab.word}</span>
+                              <span className="font-semibold">
+                                {vocab.word}
+                              </span>
                               {vocab.difficulty && (
-                                <Badge variant="secondary">{vocab.difficulty}</Badge>
+                                <Badge variant="secondary">
+                                  {vocab.difficulty}
+                                </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">{vocab.meaning}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {vocab.meaning}
+                            </p>
                           </div>
                           <Button
                             variant="ghost"
@@ -732,10 +785,12 @@ export default function FlashcardsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>
-                    Available Vocabularies ({getAvailableVocabsNotInSet().length})
+                    Available Vocabularies (
+                    {getAvailableVocabsNotInSet().length})
                   </CardTitle>
                   <CardDescription>
-                    Add vocabularies from {selectedSet.language.toUpperCase()} to this set
+                    Add vocabularies from {selectedSet.language.toUpperCase()}{' '}
+                    to this set
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -760,12 +815,18 @@ export default function FlashcardsPage() {
                         >
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">{vocab.word}</span>
+                              <span className="font-semibold">
+                                {vocab.word}
+                              </span>
                               {vocab.difficulty && (
-                                <Badge variant="secondary">{vocab.difficulty}</Badge>
+                                <Badge variant="secondary">
+                                  {vocab.difficulty}
+                                </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">{vocab.meaning}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {vocab.meaning}
+                            </p>
                           </div>
                           <Button
                             variant="outline"
@@ -797,7 +858,9 @@ export default function FlashcardsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Select Flashcard Set</CardTitle>
-              <CardDescription>Choose a flashcard set to practice</CardDescription>
+              <CardDescription>
+                Choose a flashcard set to practice
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Select value={practiceSetId} onValueChange={setPracticeSetId}>
@@ -806,10 +869,13 @@ export default function FlashcardsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {flashcardSets
-                    .filter((set) => set.isActive && (set.vocabularyCount || 0) > 0)
+                    .filter(
+                      (set) => set.isActive && (set.vocabularyCount || 0) > 0
+                    )
                     .map((set) => (
                       <SelectItem key={set.id} value={set.id}>
-                        {set.name} ({set.language.toUpperCase()}) - {set.vocabularyCount || 0} words
+                        {set.name} ({set.language.toUpperCase()}) -{' '}
+                        {set.vocabularyCount || 0} words
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -821,27 +887,41 @@ export default function FlashcardsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Practice Statistics</CardTitle>
-                <CardDescription>Your practice history for this set</CardDescription>
+                <CardDescription>
+                  Your practice history for this set
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Practices</p>
-                    <p className="text-2xl font-bold">{practiceStats.totalPractices}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total Practices
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {practiceStats.totalPractices}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Accuracy</p>
-                    <p className="text-2xl font-bold">{practiceStats.accuracy}%</p>
+                    <p className="text-2xl font-bold">
+                      {practiceStats.accuracy}%
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Correct / Incorrect</p>
+                    <p className="text-sm text-muted-foreground">
+                      Correct / Incorrect
+                    </p>
                     <p className="text-2xl font-bold">
-                      {practiceStats.totalCorrect} / {practiceStats.totalIncorrect}
+                      {practiceStats.totalCorrect} /{' '}
+                      {practiceStats.totalIncorrect}
                     </p>
                   </div>
                 </div>
                 <div className="mt-6">
-                  <Button onClick={handleStartPractice} disabled={loadingPractice}>
+                  <Button
+                    onClick={handleStartPractice}
+                    disabled={loadingPractice}
+                  >
                     {loadingPractice ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
@@ -859,32 +939,52 @@ export default function FlashcardsPage() {
               <CardHeader>
                 <CardTitle>Practice Session</CardTitle>
                 <CardDescription>
-                  Progress: {getPracticeProgress().completed} / {getPracticeProgress().total} (
+                  Progress: {getPracticeProgress().completed} /{' '}
+                  {getPracticeProgress().total} (
                   {getPracticeProgress().percentage}%)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-center space-y-4 py-8">
                   <div className="text-4xl font-bold">
-                    {practiceSession.vocabularies[practiceSession.currentIndex].word}
+                    {
+                      practiceSession.vocabularies[practiceSession.currentIndex]
+                        .word
+                    }
                   </div>
 
                   {practiceSession.showAnswer ? (
                     <div className="space-y-4">
                       <div className="p-6 bg-muted rounded-lg">
                         <p className="text-xl mb-2">
-                          {practiceSession.vocabularies[practiceSession.currentIndex].meaning}
+                          {
+                            practiceSession.vocabularies[
+                              practiceSession.currentIndex
+                            ].meaning
+                          }
                         </p>
-                        {practiceSession.vocabularies[practiceSession.currentIndex].translation && (
+                        {practiceSession.vocabularies[
+                          practiceSession.currentIndex
+                        ].translation && (
                           <p className="text-muted-foreground">
                             Translation:{' '}
-                            {practiceSession.vocabularies[practiceSession.currentIndex].translation}
+                            {
+                              practiceSession.vocabularies[
+                                practiceSession.currentIndex
+                              ].translation
+                            }
                           </p>
                         )}
-                        {practiceSession.vocabularies[practiceSession.currentIndex].example && (
+                        {practiceSession.vocabularies[
+                          practiceSession.currentIndex
+                        ].example && (
                           <p className="text-sm italic mt-2">
                             Example:{' '}
-                            {practiceSession.vocabularies[practiceSession.currentIndex].example}
+                            {
+                              practiceSession.vocabularies[
+                                practiceSession.currentIndex
+                              ].example
+                            }
                           </p>
                         )}
                       </div>
@@ -898,7 +998,10 @@ export default function FlashcardsPage() {
                           <X className="mr-2 h-4 w-4" />
                           Incorrect
                         </Button>
-                        <Button onClick={handleMarkCorrect} className="bg-green-500 hover:bg-green-600">
+                        <Button
+                          onClick={handleMarkCorrect}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
                           <Check className="mr-2 h-4 w-4" />
                           Correct
                         </Button>
@@ -914,10 +1017,12 @@ export default function FlashcardsPage() {
 
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>
-                    Correct: {practiceSession.results.filter((r) => r.isCorrect).length}
+                    Correct:{' '}
+                    {practiceSession.results.filter((r) => r.isCorrect).length}
                   </span>
                   <span>
-                    Incorrect: {practiceSession.results.filter((r) => !r.isCorrect).length}
+                    Incorrect:{' '}
+                    {practiceSession.results.filter((r) => !r.isCorrect).length}
                   </span>
                 </div>
               </CardContent>
@@ -934,7 +1039,9 @@ export default function FlashcardsPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Correct</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        Correct
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-green-600">
@@ -944,7 +1051,9 @@ export default function FlashcardsPage() {
                   </Card>
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Incorrect</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        Incorrect
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold text-red-600">
@@ -954,10 +1063,14 @@ export default function FlashcardsPage() {
                   </Card>
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Accuracy</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        Accuracy
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{getSessionResults().accuracy}%</div>
+                      <div className="text-2xl font-bold">
+                        {getSessionResults().accuracy}%
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -970,8 +1083,13 @@ export default function FlashcardsPage() {
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back to Practice
                   </Button>
-                  <Button onClick={handleSubmitPractice} disabled={submittingPractice}>
-                    {submittingPractice && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <Button
+                    onClick={handleSubmitPractice}
+                    disabled={submittingPractice}
+                  >
+                    {submittingPractice && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
                     Submit Results
                   </Button>
                 </div>
@@ -985,9 +1103,12 @@ export default function FlashcardsPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingSet ? 'Edit' : 'Create'} Flashcard Set</DialogTitle>
+            <DialogTitle>
+              {editingSet ? 'Edit' : 'Create'} Flashcard Set
+            </DialogTitle>
             <DialogDescription>
-              {editingSet ? 'Update' : 'Create a new'} flashcard set for organizing vocabularies
+              {editingSet ? 'Update' : 'Create a new'} flashcard set for
+              organizing vocabularies
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -996,7 +1117,9 @@ export default function FlashcardsPage() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 required
                 placeholder="e.g., Business English, JLPT N5 Vocabulary"
               />
@@ -1005,7 +1128,9 @@ export default function FlashcardsPage() {
               <Label htmlFor="language">Language *</Label>
               <Select
                 value={formData.language}
-                onValueChange={(value) => setFormData({ ...formData, language: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, language: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -1027,7 +1152,9 @@ export default function FlashcardsPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder="Describe the purpose of this flashcard set"
               />
             </div>
@@ -1036,7 +1163,9 @@ export default function FlashcardsPage() {
                 type="checkbox"
                 id="isActive"
                 checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, isActive: e.target.checked })
+                }
                 className="h-4 w-4"
               />
               <Label htmlFor="isActive" className="cursor-pointer">
@@ -1062,26 +1191,13 @@ export default function FlashcardsPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Flashcard Set?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the flashcard set and
-              remove all vocabulary associations.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        isOpen={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Flashcard Set?"
+        description="This action cannot be undone. This will permanently delete the flashcard set and remove all vocabulary associations."
+      />
     </div>
   );
 }

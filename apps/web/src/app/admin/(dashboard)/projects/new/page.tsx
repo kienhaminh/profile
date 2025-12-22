@@ -3,6 +3,16 @@
 import { useRouter } from 'next/navigation';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 import type { ProjectStatus } from '@/types/enums';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface ProjectFormData {
   title: string;
@@ -48,27 +58,37 @@ export default function NewProjectPage() {
       router.push('/admin/projects');
     } catch (error) {
       console.error('Failed to create project:', error);
-      // Consider adding user-facing error notification here
       throw error;
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create New Project</h1>
-        <p className="text-gray-600">
-          Fill in the details below to create a new project
-        </p>
+    <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/admin/projects">
+            <ChevronLeft className="h-5 w-5" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Create New Project
+          </h1>
+          <p className="text-muted-foreground">
+            Fill in the details below to create a new project
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <ProjectForm
-          mode="create"
-          onSubmit={handleSubmit}
-          onCancel={() => router.push('/admin/projects')}
-        />
-      </div>
+      <Card className="border-border shadow-md bg-card">
+        <CardContent className="pt-6">
+          <ProjectForm
+            mode="create"
+            onSubmit={handleSubmit}
+            onCancel={() => router.push('/admin/projects')}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

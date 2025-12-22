@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,16 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
   Plus,
   Trash2,
@@ -162,7 +159,9 @@ export default function VocabulariesPage() {
       resetForm();
       await fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save vocabulary');
+      setError(
+        err instanceof Error ? err.message : 'Failed to save vocabulary'
+      );
     } finally {
       setSaving(false);
     }
@@ -258,7 +257,9 @@ export default function VocabulariesPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Vocabularies</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Vocabularies
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -271,16 +272,22 @@ export default function VocabulariesPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{Object.keys(stats.byLanguage).length}</div>
+              <div className="text-2xl font-bold">
+                {Object.keys(stats.byLanguage).length}
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Beginner Level</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Beginner Level
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.byDifficulty.beginner || 0}</div>
+              <div className="text-2xl font-bold">
+                {stats.byDifficulty.beginner || 0}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -340,7 +347,10 @@ export default function VocabulariesPage() {
             </div>
             <div className="space-y-2">
               <Label>Difficulty</Label>
-              <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+              <Select
+                value={filterDifficulty}
+                onValueChange={setFilterDifficulty}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All levels" />
                 </SelectTrigger>
@@ -360,7 +370,9 @@ export default function VocabulariesPage() {
       <Card>
         <CardHeader>
           <CardTitle>All Vocabularies ({vocabularies.length})</CardTitle>
-          <CardDescription>Browse and manage your vocabulary collection</CardDescription>
+          <CardDescription>
+            Browse and manage your vocabulary collection
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -373,7 +385,8 @@ export default function VocabulariesPage() {
             <div className="text-center py-12">
               <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No vocabularies found. Click &quot;Add Vocabulary&quot; to create one.
+                No vocabularies found. Click &quot;Add Vocabulary&quot; to
+                create one.
               </p>
             </div>
           ) : (
@@ -384,39 +397,57 @@ export default function VocabulariesPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-xl font-semibold">{vocab.word}</h3>
-                          <Badge variant="outline">{vocab.language.toUpperCase()}</Badge>
-                          <Badge className={getDifficultyColor(vocab.difficulty || 'intermediate')}>
+                          <h3 className="text-xl font-semibold">
+                            {vocab.word}
+                          </h3>
+                          <Badge variant="outline">
+                            {vocab.language.toUpperCase()}
+                          </Badge>
+                          <Badge
+                            className={getDifficultyColor(
+                              vocab.difficulty || 'intermediate'
+                            )}
+                          >
                             {vocab.difficulty}
                           </Badge>
                           {vocab.partOfSpeech && (
-                            <Badge variant="secondary">{vocab.partOfSpeech}</Badge>
+                            <Badge variant="secondary">
+                              {vocab.partOfSpeech}
+                            </Badge>
                           )}
                         </div>
                         <p className="text-muted-foreground">{vocab.meaning}</p>
                         {vocab.translation && (
                           <p className="text-sm">
-                            <span className="font-medium">Translation:</span> {vocab.translation}
+                            <span className="font-medium">Translation:</span>{' '}
+                            {vocab.translation}
                           </p>
                         )}
                         {vocab.pronunciation && (
                           <p className="text-sm">
-                            <span className="font-medium">Pronunciation:</span> {vocab.pronunciation}
+                            <span className="font-medium">Pronunciation:</span>{' '}
+                            {vocab.pronunciation}
                           </p>
                         )}
                         {vocab.example && (
                           <p className="text-sm italic">
-                            <span className="font-medium">Example:</span> {vocab.example}
+                            <span className="font-medium">Example:</span>{' '}
+                            {vocab.example}
                           </p>
                         )}
                         {vocab.notes && (
                           <p className="text-sm text-muted-foreground">
-                            <span className="font-medium">Notes:</span> {vocab.notes}
+                            <span className="font-medium">Notes:</span>{' '}
+                            {vocab.notes}
                           </p>
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(vocab)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(vocab)}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -441,7 +472,9 @@ export default function VocabulariesPage() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingVocab ? 'Edit' : 'Add'} Vocabulary</DialogTitle>
+            <DialogTitle>
+              {editingVocab ? 'Edit' : 'Add'} Vocabulary
+            </DialogTitle>
             <DialogDescription>
               {editingVocab ? 'Update' : 'Create a new'} vocabulary entry
             </DialogDescription>
@@ -453,7 +486,9 @@ export default function VocabulariesPage() {
                 <Input
                   id="word"
                   value={formData.word}
-                  onChange={(e) => setFormData({ ...formData, word: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, word: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -461,7 +496,9 @@ export default function VocabulariesPage() {
                 <Label htmlFor="language">Language *</Label>
                 <Select
                   value={formData.language}
-                  onValueChange={(value) => setFormData({ ...formData, language: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, language: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -484,7 +521,9 @@ export default function VocabulariesPage() {
               <Textarea
                 id="meaning"
                 value={formData.meaning}
-                onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, meaning: e.target.value })
+                }
                 required
               />
             </div>
@@ -493,7 +532,9 @@ export default function VocabulariesPage() {
               <Input
                 id="translation"
                 value={formData.translation}
-                onChange={(e) => setFormData({ ...formData, translation: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, translation: e.target.value })
+                }
               />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -502,14 +543,18 @@ export default function VocabulariesPage() {
                 <Input
                   id="pronunciation"
                   value={formData.pronunciation}
-                  onChange={(e) => setFormData({ ...formData, pronunciation: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, pronunciation: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="partOfSpeech">Part of Speech</Label>
                 <Select
                   value={formData.partOfSpeech}
-                  onValueChange={(value) => setFormData({ ...formData, partOfSpeech: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, partOfSpeech: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -532,7 +577,9 @@ export default function VocabulariesPage() {
               <Textarea
                 id="example"
                 value={formData.example}
-                onChange={(e) => setFormData({ ...formData, example: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, example: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
@@ -542,7 +589,10 @@ export default function VocabulariesPage() {
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    difficulty: value as 'beginner' | 'intermediate' | 'advanced',
+                    difficulty: value as
+                      | 'beginner'
+                      | 'intermediate'
+                      | 'advanced',
                   })
                 }
               >
@@ -561,7 +611,9 @@ export default function VocabulariesPage() {
               <Textarea
                 id="notes"
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
               />
             </div>
             <DialogFooter>
@@ -582,26 +634,13 @@ export default function VocabulariesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Vocabulary?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the vocabulary entry.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        isOpen={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Delete Vocabulary?"
+        description="This action cannot be undone. This will permanently delete the vocabulary entry."
+      />
     </div>
   );
 }

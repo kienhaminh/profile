@@ -53,3 +53,28 @@ export async function getServerAuth(): Promise<ServerAuthResult> {
     };
   }
 }
+
+/**
+ * Require admin authentication for server actions.
+ * Throws UnauthorizedError if not authenticated or not admin.
+ * Use this in server actions that modify data.
+ */
+export async function requireAdminAuth(): Promise<{
+  id: string;
+  role: string;
+}> {
+  // Import here to avoid circular dependencies
+  const { UnauthorizedError } = await import('@/lib/errors');
+
+  const { isAuthenticated, user } = await getServerAuth();
+
+  if (!isAuthenticated || !user) {
+    throw new UnauthorizedError('Authentication required');
+  }
+
+  if (user.role !== 'admin') {
+    throw new UnauthorizedError('Admin access required');
+  }
+
+  return user;
+}

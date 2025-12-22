@@ -1,15 +1,9 @@
 import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { UtilityCard, type Utility } from './utility-card';
 import { Button } from '@/components/ui/button';
 import { Users, Hash, Dices, Wrench, ArrowRight } from 'lucide-react';
 
-const tools = [
+const tools: Utility[] = [
   {
     id: 'wheel-of-names',
     title: 'Spinner Wheel',
@@ -55,29 +49,7 @@ export function UtilitiesSection() {
         {/* Tools Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           {tools.map((tool) => (
-            <Link key={tool.id} href={`/utilities/${tool.id}`}>
-              <Card className="h-full group cursor-pointer border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <CardHeader>
-                  <div
-                    className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tool.color} flex items-center justify-center mb-4 text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}
-                  >
-                    {tool.icon}
-                  </div>
-                  <CardTitle className="group-hover:text-primary transition-colors">
-                    {tool.title}
-                  </CardTitle>
-                  <CardDescription>{tool.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    variant="outline"
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                  >
-                    Try it now
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
+            <UtilityCard key={tool.id} tool={tool} />
           ))}
         </div>
 

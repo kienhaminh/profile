@@ -24,11 +24,13 @@ function getNavLinks(): NavLinkConfig[] {
       label: 'Blog',
       scrollTo: 'blog',
     },
+    /*
     {
       href: '/projects',
       label: 'Projects',
       scrollTo: 'projects',
     },
+*/
     {
       href: '/utilities',
       label: 'Utilities',

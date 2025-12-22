@@ -1,7 +1,7 @@
 import { getVocabularies } from '@/actions/vocabulary';
 import { VocabularyForm } from '@/components/admin/vocabulary/VocabularyForm';
 
-import { VocabularyGraph } from '@/components/admin/vocabulary/VocabularyGraph';
+import { VocabularyList } from '@/components/admin/vocabulary/VocabularyList';
 import { FlashcardView } from '@/components/admin/vocabulary/FlashcardView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -21,11 +21,11 @@ export default async function VocabularyPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="graph" className="space-y-4">
+      <Tabs defaultValue="list" className="space-y-4">
         <TabsList>
           <TabsTrigger value="add">Add New</TabsTrigger>
 
-          <TabsTrigger value="graph">Graph</TabsTrigger>
+          <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
         </TabsList>
 
@@ -33,8 +33,8 @@ export default async function VocabularyPage() {
           <VocabularyForm />
         </TabsContent>
 
-        <TabsContent value="graph" className="space-y-4">
-          <VocabularyGraph data={vocabularies || []} />
+        <TabsContent value="list" className="space-y-4">
+          <VocabularyList initialData={vocabularies || []} />
         </TabsContent>
 
         <TabsContent value="flashcards">

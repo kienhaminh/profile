@@ -16,6 +16,7 @@ import {
   Layers,
   Link2,
   BarChart3,
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -73,6 +74,18 @@ const menuItems = [
     name: 'Shortlinks',
     href: '/admin/shortlinks',
     icon: Link2,
+  },
+  /*
+  {
+    name: 'Projects',
+    href: '/admin/projects',
+    icon: Layers,
+  },
+*/
+  {
+    name: 'Finance',
+    href: '/admin/finance',
+    icon: DollarSign,
   },
   {
     name: 'Tools',

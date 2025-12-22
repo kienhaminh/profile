@@ -49,7 +49,7 @@ export function ChatWidget() {
       <Button
         size="lg"
         className={cn(
-          'h-14 w-14 rounded-full shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-110',
+          'h-14 w-14 p-0 aspect-square shrink-0 rounded-full shadow-lg shadow-primary/25 transition-all duration-300 hover:scale-110',
           isOpen
             ? 'rotate-90 bg-muted text-muted-foreground hover:bg-muted/90'
             : 'bg-primary text-primary-foreground hover:bg-primary/90'

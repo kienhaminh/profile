@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { INFORMATION, CONTACT } from '@/constants/information';
-import { Github, Linkedin, Mail } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone, MapPin, Facebook } from 'lucide-react';
 
 export function Footer(): JSX.Element {
   return (
@@ -38,7 +38,7 @@ export function Footer(): JSX.Element {
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
                 <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                  <Phone className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   {CONTACT.mobile}
@@ -46,7 +46,7 @@ export function Footer(): JSX.Element {
               </Link>
               <div className="flex items-center group hover:translate-x-1 transition-transform duration-200">
                 <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                  <MapPin className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   {CONTACT.address}
@@ -93,7 +93,7 @@ export function Footer(): JSX.Element {
                 className="flex items-center group hover:translate-x-1 transition-transform duration-200"
               >
                 <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                  <Facebook className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                   Facebook
@@ -105,12 +105,14 @@ export function Footer(): JSX.Element {
           <div className="footer-section">
             <h3 className="text-xl font-bold mb-6 text-primary">Quick Links</h3>
             <div className="space-y-4">
+              {/* 
               <Link
                 href="/projects"
                 className="block text-muted-foreground hover:text-foreground hover:translate-x-1 transition-all duration-200"
               >
                 View My Projects
               </Link>
+*/}
               <Link
                 href="/blog"
                 className="block text-muted-foreground hover:text-foreground hover:translate-x-1 transition-all duration-200"

@@ -43,6 +43,9 @@ import {
   ExternalLink,
   CheckCircle2,
   Trophy,
+  MapPin,
+  GraduationCap,
+  Briefcase,
 } from 'lucide-react';
 import {
   generateMetadata as generateSEOMetadata,
@@ -136,10 +139,26 @@ export default async function Home() {
                 {INFORMATION.bio}
               </p>
 
+              {/* Current Status Badges */}
+              <div className="flex flex-wrap gap-3 pt-2">
+                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
+                  <MapPin className="w-4 h-4 mr-2 text-primary" />
+                  <span>Gwangju, South Korea</span>
+                </div>
+                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
+                  <GraduationCap className="w-4 h-4 mr-2 text-primary" />
+                  <span>Master&apos;s @ CNU - AI Convergence</span>
+                </div>
+                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
+                  <Briefcase className="w-4 h-4 mr-2 text-primary" />
+                  <span>AI Researcher</span>
+                </div>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <ContactButton />
 
-                <ViewWorkButton />
+                {/* <ViewWorkButton /> */}
               </div>
 
               {/* Social Links */}
@@ -367,96 +386,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Projects Section */}
+      {/* 
       <section id="projects" className="py-16 md:py-24 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Featured <span className="text-primary">Projects</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A selection of my recent work showcasing creativity and technical
-              expertise
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProjects.map((project) => (
-              <Card
-                key={project.id}
-                className="cosmic-card h-full border-2 border-border hover:border-primary hover:shadow-2xl transition-all duration-300 group flex flex-col"
-              >
-                <Link href={`/projects/${project.id}`} className="flex-grow">
-                  <CardHeader>
-                    <CardTitle className="group-hover:text-primary transition-colors">
-                      {project.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground line-clamp-3">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="px-3 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full"
-                        >
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Link>
-                <div className="p-6 pt-0 mt-auto border-t border-border/50 flex items-center justify-between gap-2">
-                  <Link
-                    href={`/projects/${project.id}`}
-                    className="text-sm font-semibold text-primary hover:text-secondary transition-colors flex items-center"
-                  >
-                    Details <ArrowRight className="ml-1 w-4 h-4" />
-                  </Link>
-                  <div className="flex gap-2">
-                    {project.githubUrl && (
-                      <Link
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-colors"
-                        aria-label="GitHub"
-                      >
-                        <Github className="w-4 h-4" />
-                      </Link>
-                    )}
-                    {project.liveUrl && (
-                      <Link
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-colors"
-                        aria-label="Live Demo"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <Link href="/projects">
-              <Button
-                size="lg"
-                className="stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
-              >
-                View All Projects
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-        </div>
+        ... (projects section content)
       </section>
+*/}
 
       {/* Blog Section */}
       <section id="blog" className="py-16 md:py-24 bg-background">

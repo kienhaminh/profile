@@ -3,6 +3,30 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import type { ProjectStatus } from '@/types/enums';
+import { toast } from 'sonner';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Search, Plus, Layers, Sparkles, ArrowUpDown } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -15,15 +39,20 @@ interface Project {
   tags: Array<{ id: string; label: string }>;
 }
 
+type SortField = 'title' | 'status' | 'createdAt';
+type SortOrder = 'asc' | 'desc';
+
 export default function ProjectsListPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState({
-    status: '',
+    status: 'all',
     search: '',
   });
   const [searchInput, setSearchInput] = useState(filter.search);
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const fetchProjects = useCallback(async () => {
@@ -31,7 +60,8 @@ export default function ProjectsListPage() {
       setIsLoading(true);
       setError(null);
       const params = new URLSearchParams();
-      if (filter.status) params.append('status', filter.status);
+      if (filter.status && filter.status !== 'all')
+        params.append('status', filter.status);
       if (filter.search) params.append('search', filter.search);
 
       const response = await fetch(`/api/projects?${params.toString()}`);
@@ -52,17 +82,14 @@ export default function ProjectsListPage() {
 
   // Debounce search input changes
   useEffect(() => {
-    // Clear existing timer
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    // Set new timer to update filter after 300ms
     debounceTimer.current = setTimeout(() => {
       setFilter((prev) => ({ ...prev, search: searchInput }));
     }, 300);
 
-    // Cleanup function to clear timer on unmount or dependency change
     return () => {
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
@@ -75,167 +102,357 @@ export default function ProjectsListPage() {
     setSearchInput(filter.search);
   }, [filter.search]);
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
-      return;
-    }
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteTitle, setDeleteTitle] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
 
     try {
-      const response = await fetch(`/api/projects/${id}`, {
+      const response = await fetch(`/api/projects/${deleteId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to delete project');
 
-      setProjects((prev) => prev.filter((project) => project.id !== id));
+      setProjects((prev) => prev.filter((project) => project.id !== deleteId));
+      toast.success('Project deleted successfully');
     } catch (err) {
-      alert(
-        `Error: ${err instanceof Error ? err.message : 'An error occurred'}`
-      );
+      toast.error(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
     }
   };
 
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedProjects = [...projects].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortField) {
+      case 'title':
+        comparison = a.title.localeCompare(b.title);
+        break;
+      case 'status':
+        comparison = a.status.localeCompare(b.status);
+        break;
+      case 'createdAt':
+        comparison =
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        break;
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+
+  const LoadingSkeleton = () => (
+    <Card className="shadow-lg">
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50 border-b">
+                <TableHead className="font-semibold">Title</TableHead>
+                <TableHead className="font-semibold">Status</TableHead>
+                <TableHead className="font-semibold">Tags</TableHead>
+                <TableHead className="font-semibold">Created</TableHead>
+                <TableHead className="text-right font-semibold">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, index) => (
+                <TableRow key={index} className="border-b">
+                  <TableCell className="py-4">
+                    <div className="flex items-start gap-3">
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex gap-1.5">
+                      <Skeleton className="h-6 w-16 rounded-md" />
+                      <Skeleton className="h-6 w-16 rounded-md" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-4">
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell className="text-right py-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Skeleton className="h-8 w-16" />
+                      <Skeleton className="h-8 w-16" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Projects</h1>
-        <Link
-          href="/admin/projects/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Projects</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage and showcase your portfolio projects
+          </p>
+        </div>
+        <Button
+          asChild
+          className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
         >
-          Create New Project
-        </Link>
+          <Link href="/admin/projects/new" className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Create New Project
+          </Link>
+        </Button>
       </div>
 
-      <div className="mb-6 flex gap-4">
-        <div className="flex-1">
-          <input
+      <div className="flex gap-4 flex-col sm:flex-row mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
             type="text"
-            placeholder="Search projects..."
+            placeholder="Search projects by title or slug..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="pl-10 transition-all duration-200"
+            aria-label="Search projects"
           />
         </div>
-        <select
+        <Select
           value={filter.status}
-          onChange={(e) =>
-            setFilter((prev) => ({ ...prev, status: e.target.value }))
+          onValueChange={(value) =>
+            setFilter((prev) => ({ ...prev, status: value }))
           }
-          className="px-3 py-2 border border-gray-300 rounded-md"
         >
-          <option value="">All Status</option>
-          <option value="DRAFT">Draft</option>
-          <option value="PUBLISHED">Published</option>
-        </select>
+          <SelectTrigger
+            className="w-full sm:w-[200px]"
+            aria-label="Filter by status"
+          >
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="DRAFT">Draft</SelectItem>
+            <SelectItem value="PUBLISHED">Published</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (
-        <div className="p-4 mb-6 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-red-600">{error}</p>
-        </div>
+        <Alert className="mb-6 border-destructive/50 bg-destructive/10">
+          <AlertDescription className="text-destructive">
+            {error}
+          </AlertDescription>
+        </Alert>
       )}
 
       {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Loading projects...</p>
-        </div>
-      ) : projects.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No projects found</p>
-          <Link
-            href="/admin/projects/new"
-            className="text-blue-600 hover:underline"
-          >
-            Create your first project
-          </Link>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  colSpan={2}
+        <LoadingSkeleton />
+      ) : sortedProjects.length === 0 ? (
+        <Card className="shadow-lg">
+          <CardContent className="text-center py-16">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
+                <Layers className="w-10 h-10 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  No projects found
+                </h3>
+                <p className="text-muted-foreground mb-6 max-w-md">
+                  {filter.search || filter.status !== 'all'
+                    ? "Try adjusting your filters to find what you're looking for"
+                    : 'Get started by creating your first project'}
+                </p>
+              </div>
+              <Button
+                variant="default"
+                asChild
+                className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Link
+                  href="/admin/projects/new"
+                  className="flex items-center gap-2"
                 >
-                  Tags
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {project.title}
-                      {project.isOngoing && (
-                        <span className="ml-2 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">
-                          Ongoing
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-500">{project.slug}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        project.status === 'PUBLISHED'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                  <Sparkles className="w-4 h-4" />
+                  Create your first project
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="shadow-lg hover:shadow-xl transition-all duration-200 bg-card">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50 border-b">
+                    <TableHead className="font-semibold">
+                      <button
+                        onClick={() => handleSort('title')}
+                        className="flex items-center gap-1 hover:text-primary transition-colors"
+                        aria-label="Sort by title"
+                      >
+                        Title
+                        <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </TableHead>
+                    <TableHead className="font-semibold">
+                      <button
+                        onClick={() => handleSort('status')}
+                        className="flex items-center gap-1 hover:text-primary transition-colors"
+                        aria-label="Sort by status"
+                      >
+                        Status
+                        <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </TableHead>
+                    <TableHead className="font-semibold">Tags</TableHead>
+                    <TableHead className="font-semibold">
+                      <button
+                        onClick={() => handleSort('createdAt')}
+                        className="flex items-center gap-1 hover:text-primary transition-colors"
+                        aria-label="Sort by created date"
+                      >
+                        Created
+                        <ArrowUpDown className="w-3 h-3" />
+                      </button>
+                    </TableHead>
+                    <TableHead className="text-right font-semibold">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedProjects.map((project) => (
+                    <TableRow
+                      key={project.id}
+                      className="border-b hover:bg-muted/50 transition-all duration-200 group"
                     >
-                      {project.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4" colSpan={2}>
-                    <div className="flex flex-wrap gap-1">
-                      {project.tags?.map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                      <TableCell className="py-4">
+                        <div className="flex items-start gap-3">
+                          <div className="p-1.5 bg-muted rounded-md group-hover:bg-accent transition-colors shadow-sm">
+                            <Layers className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1 truncate">
+                              {project.title}
+                              {project.isOngoing && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700/50"
+                                >
+                                  Ongoing
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground font-mono truncate">
+                              /{project.slug}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <Badge
+                          variant={
+                            project.status === 'PUBLISHED'
+                              ? 'default'
+                              : 'secondary'
+                          }
+                          className={
+                            project.status === 'PUBLISHED'
+                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50 shadow-sm'
+                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50 shadow-sm'
+                          }
                         >
-                          {tag.label}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      href={`/admin/projects/${project.id}`}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(project.id, project.title)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                          {project.status.charAt(0).toUpperCase() +
+                            project.status.slice(1).toLowerCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {project.tags?.map((tag) => (
+                            <Badge
+                              key={tag.id}
+                              variant="outline"
+                              className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 shadow-sm transition-colors"
+                            >
+                              {tag.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 text-muted-foreground">
+                        {new Date(project.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="hover:bg-primary/10 hover:border-primary hover:text-primary shadow-sm transition-all"
+                          >
+                            <Link href={`/admin/projects/${project.id}`}>
+                              Edit
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setDeleteId(project.id);
+                              setDeleteTitle(project.title);
+                            }}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 hover:border-destructive shadow-sm transition-all"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       )}
+
+      <ConfirmDeleteDialog
+        isOpen={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Delete Project"
+        description={`Are you sure you want to delete "${deleteTitle}"? This action cannot be undone.`}
+      />
     </div>
   );
 }

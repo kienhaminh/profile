@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { users, configs, tags } from '../src/db/schema';
+import { users, configs, tags, financeCategories } from '../src/db/schema';
 import { logger } from '../src/lib/logger';
 import * as bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
@@ -107,6 +107,38 @@ async function seed(): Promise<void> {
         logger.info('Tag created', { slug: tag.slug });
       } else {
         logger.info('Tag already exists', { slug: tag.slug });
+      }
+    }
+
+    // 4. Seed finance categories
+    const starterFinanceCategories = [
+      { name: 'Food & Drink' },
+      { name: 'Transport' },
+      { name: 'Shopping' },
+      { name: 'Housing' },
+      { name: 'Utilities' },
+      { name: 'Entertainment' },
+      { name: 'Income' },
+      { name: 'Salary' },
+      { name: 'Freelance' },
+      { name: 'Business' },
+      { name: 'Investment' },
+      { name: 'Bonus' },
+      { name: 'Other' },
+    ];
+
+    for (const category of starterFinanceCategories) {
+      const existing = await db
+        .select()
+        .from(financeCategories)
+        .where(eq(financeCategories.name, category.name))
+        .limit(1);
+
+      if (existing.length === 0) {
+        await db.insert(financeCategories).values(category);
+        logger.info('Finance category created', { name: category.name });
+      } else {
+        logger.info('Finance category already exists', { name: category.name });
       }
     }
 
