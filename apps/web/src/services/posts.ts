@@ -1,6 +1,6 @@
 import { db } from '@/db/client';
-import { posts, postTags, tags, users } from '@/db/schema';
-import { eq, desc, count } from 'drizzle-orm';
+import { posts, postTags, tags, users, blogSeries } from '@/db/schema';
+import { eq, desc, count, ilike, or, and } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { NotFoundError } from '@/lib/errors';
 import type { Blog, CreatePostInput, UpdatePostInput } from '@/types/blog';
@@ -13,7 +13,8 @@ import type { PaginatedResult, PaginationParams } from '@/types/pagination';
 function normalizePost(
   dbPost: typeof posts.$inferSelect,
   author: Author,
-  postTagsList: Tag[]
+  postTagsList: Tag[],
+  series?: { id: string; title: string; slug: string } | null
 ): Blog {
   return {
     id: dbPost.id,
@@ -25,6 +26,8 @@ function normalizePost(
     excerpt: dbPost.excerpt,
     readTime: dbPost.readTime,
     coverImage: dbPost.coverImage,
+    series: series || null,
+    seriesOrder: dbPost.seriesOrder,
     createdAt: dbPost.createdAt.toISOString(),
     updatedAt: dbPost.updatedAt.toISOString(),
     author,
@@ -34,7 +37,8 @@ function normalizePost(
 
 export async function getAllPosts(
   statusFilter?: PostStatus,
-  pagination?: PaginationParams
+  pagination?: PaginationParams,
+  search?: string
 ): Promise<PaginatedResult<Blog>> {
   try {
     const hasPagination =
@@ -47,12 +51,21 @@ export async function getAllPosts(
     let totalPages = 0;
 
     if (hasPagination && limit) {
-      const totalResult = await (statusFilter
-        ? db
-            .select({ value: count() })
-            .from(posts)
-            .where(eq(posts.status, statusFilter))
-        : db.select({ value: count() }).from(posts));
+      const whereConditions = [];
+      if (statusFilter) whereConditions.push(eq(posts.status, statusFilter));
+      if (search) {
+        whereConditions.push(
+          or(
+            ilike(posts.title, `%${search}%`),
+            ilike(posts.slug, `%${search}%`)
+          )
+        );
+      }
+
+      const totalResult = await db
+        .select({ value: count() })
+        .from(posts)
+        .where(and(...whereConditions));
 
       total = Number(totalResult[0]?.value ?? 0);
       totalPages = total === 0 ? 0 : Math.ceil(total / limit);
@@ -67,8 +80,16 @@ export async function getAllPosts(
     }
 
     let query = db.select().from(posts).$dynamic();
-    if (statusFilter) {
-      query = query.where(eq(posts.status, statusFilter));
+    const whereConditions = [];
+    if (statusFilter) whereConditions.push(eq(posts.status, statusFilter));
+    if (search) {
+      whereConditions.push(
+        or(ilike(posts.title, `%${search}%`), ilike(posts.slug, `%${search}%`))
+      );
+    }
+
+    if (whereConditions.length > 0) {
+      query = query.where(and(...whereConditions));
     }
     query = query.orderBy(desc(posts.createdAt));
 
@@ -106,6 +127,23 @@ export async function getAllPosts(
           updatedAt: pt.tag.updatedAt.toISOString(),
         }));
 
+        // Get series information if post belongs to one
+        let seriesInfo = null;
+        if (post.seriesId) {
+          const seriesResult = await db
+            .select({
+              id: blogSeries.id,
+              title: blogSeries.title,
+              slug: blogSeries.slug,
+            })
+            .from(blogSeries)
+            .where(eq(blogSeries.id, post.seriesId))
+            .limit(1);
+          if (seriesResult.length > 0) {
+            seriesInfo = seriesResult[0];
+          }
+        }
+
         const authorData: Author = {
           id: author[0].id,
           name: author[0].username,
@@ -115,7 +153,7 @@ export async function getAllPosts(
           email: null,
         };
 
-        return normalizePost(post, authorData, tagsList);
+        return normalizePost(post, authorData, tagsList, seriesInfo);
       })
     );
 
@@ -169,6 +207,23 @@ export async function getPostById(id: string): Promise<Blog> {
       updatedAt: pt.tag.updatedAt.toISOString(),
     }));
 
+    // Get series information if post belongs to one
+    let seriesInfo = null;
+    if (post.seriesId) {
+      const seriesResult = await db
+        .select({
+          id: blogSeries.id,
+          title: blogSeries.title,
+          slug: blogSeries.slug,
+        })
+        .from(blogSeries)
+        .where(eq(blogSeries.id, post.seriesId))
+        .limit(1);
+      if (seriesResult.length > 0) {
+        seriesInfo = seriesResult[0];
+      }
+    }
+
     const authorData: Author = {
       id: author[0].id,
       name: author[0].username,
@@ -178,7 +233,7 @@ export async function getPostById(id: string): Promise<Blog> {
       email: null,
     };
 
-    return normalizePost(post, authorData, tagsList);
+    return normalizePost(post, authorData, tagsList, seriesInfo);
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
@@ -223,6 +278,23 @@ export async function getPostBySlug(slug: string): Promise<Blog> {
       updatedAt: pt.tag.updatedAt.toISOString(),
     }));
 
+    // Get series information if post belongs to one
+    let seriesInfo = null;
+    if (post.seriesId) {
+      const seriesResult = await db
+        .select({
+          id: blogSeries.id,
+          title: blogSeries.title,
+          slug: blogSeries.slug,
+        })
+        .from(blogSeries)
+        .where(eq(blogSeries.id, post.seriesId))
+        .limit(1);
+      if (seriesResult.length > 0) {
+        seriesInfo = seriesResult[0];
+      }
+    }
+
     const authorData: Author = {
       id: author[0].id,
       name: author[0].username,
@@ -232,7 +304,7 @@ export async function getPostBySlug(slug: string): Promise<Blog> {
       email: null,
     };
 
-    return normalizePost(post, authorData, tagsList);
+    return normalizePost(post, authorData, tagsList, seriesInfo);
   } catch (error) {
     if (error instanceof NotFoundError) {
       throw error;
@@ -259,6 +331,8 @@ export async function createPost(input: CreatePostInput): Promise<Blog> {
         excerpt: validated.excerpt || null,
         readTime: validated.readTime || null,
         coverImage: validated.coverImage || null,
+        seriesId: validated.seriesId || null,
+        seriesOrder: validated.seriesOrder || null,
         authorId: validated.authorId,
       })
       .returning();
@@ -312,6 +386,10 @@ export async function updatePost(
       updateData.readTime = validated.readTime;
     if (validated.coverImage !== undefined)
       updateData.coverImage = validated.coverImage;
+    if (validated.seriesId !== undefined)
+      updateData.seriesId = validated.seriesId;
+    if (validated.seriesOrder !== undefined)
+      updateData.seriesOrder = validated.seriesOrder;
 
     await db.update(posts).set(updateData).where(eq(posts.id, id));
 

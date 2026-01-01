@@ -1,13 +1,26 @@
 'use server';
 
 import { db } from '@/db/client';
-import { financeCategories, financeTransactions } from '@/db/schema';
+import {
+  financeCategories,
+  financeTransactions,
+  financeLoans,
+  financeInvestments,
+} from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import {
   CreateTransactionDTO,
   UpdateTransactionDTO,
   FinanceStats,
   FinanceFilter,
+  FinanceLoan,
+  CreateLoanDTO,
+  UpdateLoanDTO,
+  LoanStatus,
+  FinanceInvestment,
+  CreateInvestmentDTO,
+  UpdateInvestmentDTO,
+  InvestmentStatus,
 } from '@/types/finance';
 import { eq, desc, sql, and, gte, lte, SQL } from 'drizzle-orm';
 import { requireAdminAuth } from '@/lib/server-auth';
@@ -563,4 +576,140 @@ export async function getWalletBalances(month?: string) {
   }
 
   return wallets;
+}
+
+// ==================== LOAN ACTIONS ====================
+
+export async function getLoans(status?: LoanStatus): Promise<FinanceLoan[]> {
+  await requireAdminAuth();
+
+  let query = db.select().from(financeLoans);
+
+  if (status) {
+    query = query.where(eq(financeLoans.status, status)) as any;
+  }
+
+  const loans = await (query.orderBy(desc(financeLoans.date)) as any);
+
+  return loans.map((l: any) => ({
+    ...l,
+    amount: l.amount.toString(),
+  }));
+}
+
+export async function createLoan(dto: CreateLoanDTO) {
+  await requireAdminAuth();
+
+  await db.insert(financeLoans).values({
+    type: dto.type,
+    counterparty: dto.counterparty,
+    amount: dto.amount.toString(),
+    currency: dto.currency,
+    date: formatDate(dto.date),
+    dueDate: dto.dueDate ? formatDate(dto.dueDate) : null,
+    description: dto.description || null,
+  });
+
+  revalidatePath('/admin/finance');
+}
+
+export async function updateLoan(dto: UpdateLoanDTO) {
+  await requireAdminAuth();
+
+  const { id, ...rest } = dto;
+  const updateData: any = {};
+
+  if (rest.type) updateData.type = rest.type;
+  if (rest.counterparty) updateData.counterparty = rest.counterparty;
+  if (rest.amount) updateData.amount = rest.amount.toString();
+  if (rest.currency) updateData.currency = rest.currency;
+  if (rest.date) updateData.date = formatDate(rest.date);
+  if (rest.dueDate) updateData.dueDate = formatDate(rest.dueDate);
+  if (rest.description !== undefined)
+    updateData.description = rest.description || null;
+  if (rest.status) updateData.status = rest.status;
+  if (rest.settledDate) updateData.settledDate = formatDate(rest.settledDate);
+
+  await db.update(financeLoans).set(updateData).where(eq(financeLoans.id, id));
+
+  revalidatePath('/admin/finance');
+}
+
+export async function deleteLoan(id: string) {
+  await requireAdminAuth();
+  await db.delete(financeLoans).where(eq(financeLoans.id, id));
+  revalidatePath('/admin/finance');
+}
+
+// ==================== INVESTMENT ACTIONS ====================
+
+export async function getInvestments(
+  status?: InvestmentStatus
+): Promise<FinanceInvestment[]> {
+  await requireAdminAuth();
+
+  let query = db.select().from(financeInvestments);
+
+  if (status) {
+    query = query.where(eq(financeInvestments.status, status)) as any;
+  }
+
+  const investments = await (query.orderBy(
+    desc(financeInvestments.date)
+  ) as any);
+
+  return investments.map((i: any) => ({
+    ...i,
+    amount: i.amount.toString(),
+    currentValue: i.currentValue?.toString() || null,
+    soldAmount: i.soldAmount?.toString() || null,
+  }));
+}
+
+export async function createInvestment(dto: CreateInvestmentDTO) {
+  await requireAdminAuth();
+
+  await db.insert(financeInvestments).values({
+    name: dto.name,
+    type: dto.type || null,
+    amount: dto.amount.toString(),
+    currentValue: dto.currentValue?.toString() || dto.amount.toString(),
+    currency: dto.currency,
+    date: formatDate(dto.date),
+    description: dto.description || null,
+  });
+
+  revalidatePath('/admin/finance');
+}
+
+export async function updateInvestment(dto: UpdateInvestmentDTO) {
+  await requireAdminAuth();
+
+  const { id, ...rest } = dto;
+  const updateData: any = {};
+
+  if (rest.name) updateData.name = rest.name;
+  if (rest.type !== undefined) updateData.type = rest.type || null;
+  if (rest.amount) updateData.amount = rest.amount.toString();
+  if (rest.currentValue) updateData.currentValue = rest.currentValue.toString();
+  if (rest.currency) updateData.currency = rest.currency;
+  if (rest.date) updateData.date = formatDate(rest.date);
+  if (rest.description !== undefined)
+    updateData.description = rest.description || null;
+  if (rest.status) updateData.status = rest.status;
+  if (rest.soldDate) updateData.soldDate = formatDate(rest.soldDate);
+  if (rest.soldAmount) updateData.soldAmount = rest.soldAmount.toString();
+
+  await db
+    .update(financeInvestments)
+    .set(updateData)
+    .where(eq(financeInvestments.id, id));
+
+  revalidatePath('/admin/finance');
+}
+
+export async function deleteInvestment(id: string) {
+  await requireAdminAuth();
+  await db.delete(financeInvestments).where(eq(financeInvestments.id, id));
+  revalidatePath('/admin/finance');
 }

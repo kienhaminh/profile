@@ -2,11 +2,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import type { Project } from '@/types/project';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { filterProjectsByTag } from './portfolio-helpers';
+import { cn } from '@/lib/utils';
 
 interface PortfolioSectionProps {
   projects: Project[];
@@ -120,14 +121,15 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
         </Tabs>
 
         <div className="mt-12 text-center">
-          <Link href="/projects">
-            <Button
-              size="lg"
-              className="animated-button bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group"
-            >
-              Explore All Projects
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+          <Link
+            href="/projects"
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'animated-button bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 group'
+            )}
+          >
+            Explore All Projects
+            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
@@ -136,8 +138,3 @@ export function PortfolioSection({ projects }: PortfolioSectionProps) {
 }
 
 export default PortfolioSection;
-
-
-
-
-

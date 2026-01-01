@@ -129,7 +129,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-sky-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
       )}
 
       <div className="grid gap-6">
-        <Card className="cosmic-card border-2 hover:border-primary transition-all duration-300">
+        <Card className="professional-card border-2 hover:border-primary transition-all duration-300">
           <CardHeader className="border-b bg-accent/30 dark:bg-accent/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

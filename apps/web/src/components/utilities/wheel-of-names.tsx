@@ -71,9 +71,7 @@ export function WheelOfNames({ className }: WheelOfNamesProps) {
       // The pointer is at the top, so we need to calculate which segment is there
       const normalizedRotation = newRotation % 360;
       const winnerIndex =
-        Math.floor(
-          (360 - normalizedRotation + segmentAngle / 2) / segmentAngle
-        ) % names.length;
+        Math.floor((360 - normalizedRotation) / segmentAngle) % names.length;
       setWinner(names[winnerIndex]);
       setIsSpinning(false);
       toast.success(`🎉 Winner: ${names[winnerIndex]}!`);

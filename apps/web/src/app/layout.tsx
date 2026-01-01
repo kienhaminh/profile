@@ -7,6 +7,7 @@ import { TRPCReactProvider } from '@/trpc/Provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ConditionalLayout } from '@/components/ConditionalLayout';
 import { Toaster } from '@/components/ui/sonner';
+import { AmbientBackground } from '@/components/ui/ambient-background';
 import { WebsiteSchema, PersonSchema } from '@/components/seo/JsonLd';
 import {
   generateMetadata,
@@ -16,36 +17,46 @@ import {
 import { inter, jetbrainsMono, spaceGrotesk } from './fonts';
 import './globals.css';
 
-import icon16 from '@/assets/favicon/favicon-16x16.png';
-import icon32 from '@/assets/favicon/favicon-32x32.png';
-import appleIcon from '@/assets/favicon/apple-touch-icon.png';
-
 export const metadata: Metadata = {
   ...generateMetadata(),
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: icon16.src, sizes: '16x16', type: 'image/png' },
-      { url: icon32.src, sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [{ url: appleIcon.src, sizes: '180x180', type: 'image/png' }],
-  },
+  manifest: '/site.webmanifest',
+  // Icons auto-detected from app/ directory via Next.js file-based metadata:
+  // - app/icon.svg (32x32) → Modern browsers, auto-scaled
+  // - app/favicon.ico → Legacy browser fallback
+  // - app/apple-icon.png (180x180) → iOS home screen
+  // No manual icon config needed - Next.js handles it automatically!
   robots: {
     index: true,
     follow: true,
     'max-image-preview': 'large',
     'max-video-preview': -1,
     'max-snippet': -1,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+      'max-snippet': -1,
+    },
   },
   category: 'technology',
   formatDetection: {
     telephone: false,
+    email: false,
+    address: false,
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
+  appleWebApp: {
+    capable: true,
+    title: 'Kien Ha',
+    statusBarStyle: 'black-translucent',
+  },
+  applicationName: 'Kien Ha Portfolio',
   other: {
-    'theme-color': '#000000',
+    'msapplication-TileColor': '#5b4fce',
+    'msapplication-config': '/browserconfig.xml',
   },
 };
 
@@ -53,6 +64,12 @@ export function generateViewport(): Viewport {
   return {
     width: 'device-width',
     initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    themeColor: [
+      { media: '(prefers-color-scheme: light)', color: '#f8f9fb' },
+      { media: '(prefers-color-scheme: dark)', color: '#0d0e1a' },
+    ],
   };
 }
 
@@ -72,7 +89,7 @@ export default function RootLayout({
         <PersonSchema data={SEO_CONFIG.organization} />
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} font-sans antialiased selection:bg-primary/20 selection:text-foreground`}
       >
         <ThemeProvider
           attribute="class"
@@ -80,14 +97,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AmbientBackground />
           {measurementId && <GoogleAnalytics measurementId={measurementId} />}
           <WebVitalsReporter />
           <VisitorTracker />
-          {/* Cosmic Starfield Background for Dark Matter Theme */}
-          <div className="starfield" aria-hidden="true" />
-          {/* Aurora Borealis Effect Layer */}
-          <div className="aurora-layer" aria-hidden="true" />
-          <div className="relative z-10">
+          <div className="relative">
             <TRPCReactProvider>
               <ConditionalLayout>{children}</ConditionalLayout>
             </TRPCReactProvider>

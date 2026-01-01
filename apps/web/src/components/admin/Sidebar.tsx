@@ -17,6 +17,7 @@ import {
   Link2,
   BarChart3,
   DollarSign,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,14 +47,9 @@ const menuItems = [
     icon: FileText,
   },
   {
-    name: 'Hashtag',
-    href: '/admin/hashtags',
-    icon: Hash,
-  },
-  {
-    name: 'Topic',
-    href: '/admin/topics',
-    icon: FolderTree,
+    name: 'Favorites',
+    href: '/admin/favorites',
+    icon: Heart,
   },
   {
     name: 'Knowledge',

@@ -27,11 +27,12 @@ export async function GET(request: NextRequest) {
 
     const pageParam = searchParams.get('page');
     const limitParam = searchParams.get('limit');
+    const search = searchParams.get('search') || undefined;
     const page = pageParam ? Math.max(1, Number(pageParam) || 1) : undefined;
     const limit =
       limitParam && Number(limitParam) > 0 ? Number(limitParam) : undefined;
 
-    const posts = await getAllPosts(validatedStatus, { page, limit });
+    const posts = await getAllPosts(validatedStatus, { page, limit }, search);
 
     return NextResponse.json({
       items: posts.data,

@@ -122,7 +122,7 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full mt-6 h-11 stellar-button bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full mt-6 h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               aria-label="Submit login"
               disabled={loading}
             >

@@ -118,7 +118,7 @@ export function ContactForm() {
             type="submit"
             size="lg"
             disabled={isPending}
-            className="stellar-button w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all group"
           >
             {isPending ? (
               <>

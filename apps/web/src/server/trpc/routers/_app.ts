@@ -49,10 +49,14 @@ export const appRouter = router({
         try {
           const { input } = opts;
           // Always filter to show only published posts on the public blog page
-          const blogsPage = await listBlogs(POST_STATUS.PUBLISHED, {
-            page: 1,
-            limit: input?.limit,
-          });
+          const blogsPage = await listBlogs(
+            POST_STATUS.PUBLISHED,
+            {
+              page: 1,
+              limit: input?.limit,
+            },
+            input?.search
+          );
           const blogs = blogsPage.data;
 
           // Transform blogs to match expected return type

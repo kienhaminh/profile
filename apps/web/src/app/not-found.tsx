@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 
 export default function NotFound() {
   return (
@@ -14,12 +14,12 @@ export default function NotFound() {
           moved.
         </p>
         <div className="flex gap-4 justify-center">
-          <Button asChild>
-            <Link href="/">Go Home</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/blog">View Blog</Link>
-          </Button>
+          <Link href="/" className={buttonVariants()}>
+            Go Home
+          </Link>
+          <Link href="/blog" className={buttonVariants({ variant: 'outline' })}>
+            View Blog
+          </Link>
         </div>
       </div>
     </div>

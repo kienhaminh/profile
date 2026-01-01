@@ -225,7 +225,7 @@ export default function BlogPostPage({
               </p>
             </div>
             <Link href="/blog">
-              <Button className="stellar-button shadow-lg hover:shadow-xl transition-all hover:scale-105">
+              <Button className="shadow-md hover:shadow-lg transition-all hover:scale-105">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Blog
               </Button>
@@ -268,7 +268,7 @@ export default function BlogPostPage({
 
           {/* Cover Image */}
           {post.coverImage && (
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl border-2 border-border animate-fade-in cosmic-card">
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-lg border border-border animate-fade-in">
               <Image
                 src={post.coverImage}
                 alt={post.title}
@@ -392,7 +392,7 @@ export default function BlogPostPage({
                   href={`/blog/${relatedPost.slug}`}
                   className="group block"
                 >
-                  <Card className="h-full border-2 border-border hover:border-primary/50 hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] bg-card/80 backdrop-blur-sm overflow-hidden cosmic-card-border">
+                  <Card className="h-full border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-card overflow-hidden">
                     <CardHeader>
                       <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2 mb-2">
                         {relatedPost.title}

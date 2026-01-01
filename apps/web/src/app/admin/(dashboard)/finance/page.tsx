@@ -6,6 +6,8 @@ import {
   getBudgetProgress,
   getExchanges,
   getWalletBalances,
+  getLoans,
+  getInvestments,
 } from '@/app/actions/finance';
 import { FinanceHeader } from '@/components/finance/FinanceHeader';
 import {
@@ -19,6 +21,8 @@ import { BudgetManager } from '@/components/finance/BudgetManager';
 import { CategoryManager } from '@/components/finance/CategoryManager';
 import { WalletCards } from '@/components/finance/WalletCards';
 import { ExchangeManager } from '@/components/finance/ExchangeManager';
+import { LoanManager } from '@/components/finance/LoanManager';
+import { InvestmentManager } from '@/components/finance/InvestmentManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceFilter } from '@/types/finance';
 
@@ -42,12 +46,21 @@ interface PageProps {
 
 export default async function FinancePage({ searchParams }: PageProps) {
   const params = await searchParams;
+
+  // Set default to current week if no dates specified
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay());
+
+  const defaultStartDate = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
+  const defaultEndDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
   const filter: FinanceFilter = {
     categoryId: params.categoryId,
     priority: params.priority as any,
     currency: params.currency as any,
-    startDate: params.startDate,
-    endDate: params.endDate,
+    startDate: params.startDate || defaultStartDate,
+    endDate: params.endDate || defaultEndDate,
   };
 
   const currentMonth = getCurrentMonth();
@@ -60,6 +73,8 @@ export default async function FinancePage({ searchParams }: PageProps) {
     budgetProgress,
     exchanges,
     wallets,
+    loans,
+    investments,
   ] = await Promise.all([
     getFinanceStats(filter),
     getTransactions(filter),
@@ -68,6 +83,8 @@ export default async function FinancePage({ searchParams }: PageProps) {
     getBudgetProgress(currentMonth),
     getExchanges(currentMonth),
     getWalletBalances(currentMonth),
+    getLoans(),
+    getInvestments(),
   ]);
 
   return (
@@ -82,6 +99,8 @@ export default async function FinancePage({ searchParams }: PageProps) {
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="budgets">Budgets</TabsTrigger>
           <TabsTrigger value="exchange">Exchange</TabsTrigger>
+          <TabsTrigger value="loans">Loans</TabsTrigger>
+          <TabsTrigger value="investments">Investments</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-6">
@@ -101,6 +120,12 @@ export default async function FinancePage({ searchParams }: PageProps) {
         </TabsContent>
         <TabsContent value="exchange" className="space-y-6">
           <ExchangeManager exchanges={exchanges} />
+        </TabsContent>
+        <TabsContent value="loans" className="space-y-6">
+          <LoanManager loans={loans} />
+        </TabsContent>
+        <TabsContent value="investments" className="space-y-6">
+          <InvestmentManager investments={investments} />
         </TabsContent>
         <TabsContent value="categories" className="space-y-6">
           <CategoryManager categories={categories} />

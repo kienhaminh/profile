@@ -4,22 +4,26 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { TransactionDialog } from './TransactionDialog';
+import { NLTransactionInput } from './NLTransactionInput';
 
 export function FinanceHeader() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center relative">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Personal Finance</h1>
         <p className="text-muted-foreground">
           Manage your expenses and incomes.
         </p>
       </div>
-      <Button onClick={() => setIsDialogOpen(true)}>
-        <Plus className="mr-2 h-4 w-4" />
-        Add Transaction
-      </Button>
+      <div className="flex gap-2">
+        <NLTransactionInput />
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Transaction
+        </Button>
+      </div>
 
       <TransactionDialog
         open={isDialogOpen}

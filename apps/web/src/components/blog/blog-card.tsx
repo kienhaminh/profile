@@ -27,7 +27,7 @@ export function BlogCard({
       href={`/blog/${post.slug}`}
       className={cn('group block h-full', className)}
     >
-      <Card className="cosmic-card h-full relative overflow-hidden border-2 border-border/50 dark:border-border/30 bg-card/80 backdrop-blur-sm hover:border-primary dark:hover:border-primary hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-1 animate-fade-in">
+      <Card className="h-full relative overflow-hidden border border-border/50 bg-card hover:border-primary hover:shadow-lg transition-all duration-300 group-hover:scale-[1.02] group-hover:-translate-y-1 animate-fade-in">
         {/* Gradient overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 

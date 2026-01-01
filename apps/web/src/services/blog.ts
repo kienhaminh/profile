@@ -16,9 +16,10 @@ export { NotFoundError, ConflictError };
 
 export async function listBlogs(
   statusFilter?: PostStatus,
-  pagination?: PaginationParams
+  pagination?: PaginationParams,
+  search?: string
 ): Promise<PaginatedResult<Blog>> {
-  return getAllPosts(statusFilter, pagination);
+  return getAllPosts(statusFilter, pagination, search);
 }
 
 export async function getBlogById(id: string): Promise<Blog> {

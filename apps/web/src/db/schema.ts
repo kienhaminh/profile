@@ -25,6 +25,13 @@ export const financePriorityEnum = pgEnum('finance_priority', [
   'waste',
 ]);
 export const currencyEnum = pgEnum('currency', ['KRW', 'VND']);
+export const loanTypeEnum = pgEnum('loan_type', ['borrow', 'lend']);
+export const loanStatusEnum = pgEnum('loan_status', ['active', 'settled']);
+export const investmentStatusEnum = pgEnum('investment_status', [
+  'active',
+  'sold',
+  'matured',
+]);
 
 // Users table (single admin account)
 export const users = pgTable(
@@ -42,6 +49,28 @@ export const users = pgTable(
   })
 );
 
+// Blog Series table (for organizing posts into series)
+export const blogSeries = pgTable(
+  'blog_series',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    title: text('title').notNull(),
+    description: text('description'),
+    status: text('status').notNull().default('DRAFT'), // DRAFT | PUBLISHED | ARCHIVED
+    coverImage: text('cover_image'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    slugIdx: index('blog_series_slug_idx').on(table.slug),
+  })
+);
+
 // Posts table (blog posts/articles)
 export const posts = pgTable(
   'posts',
@@ -55,6 +84,10 @@ export const posts = pgTable(
     excerpt: text('excerpt'),
     readTime: integer('read_time'),
     coverImage: text('cover_image'),
+    seriesId: uuid('series_id').references(() => blogSeries.id, {
+      onDelete: 'set null',
+    }),
+    seriesOrder: integer('series_order'),
     authorId: uuid('author_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -70,6 +103,11 @@ export const posts = pgTable(
     statusIdx: index('posts_status_idx').on(table.status),
     createdAtIdx: index('posts_created_at_idx').on(table.createdAt),
     publishDateIdx: index('posts_publish_date_idx').on(table.publishDate),
+    seriesIdIdx: index('posts_series_id_idx').on(table.seriesId),
+    seriesIdOrderIdx: index('posts_series_id_series_order_idx').on(
+      table.seriesId,
+      table.seriesOrder
+    ),
   })
 );
 
@@ -172,10 +210,18 @@ export const usersRelations = relations(users, ({ many }) => ({
   posts: many(posts),
 }));
 
+export const blogSeriesRelations = relations(blogSeries, ({ many }) => ({
+  posts: many(posts),
+}));
+
 export const postsRelations = relations(posts, ({ one, many }) => ({
   author: one(users, {
     fields: [posts.authorId],
     references: [users.id],
+  }),
+  series: one(blogSeries, {
+    fields: [posts.seriesId],
+    references: [blogSeries.id],
   }),
   postTags: many(postTags),
 }));
@@ -183,6 +229,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
 export const tagsRelations = relations(tags, ({ many }) => ({
   postTags: many(postTags),
   projectTags: many(projectTags),
+  favoriteTags: many(favoriteTags),
 }));
 
 export const postTagsRelations = relations(postTags, ({ one }) => ({
@@ -732,3 +779,137 @@ export const financeExchanges = pgTable(
     dateIdx: index('finance_exchanges_date_idx').on(table.date),
   })
 );
+
+// Finance Loans table
+export const financeLoans = pgTable(
+  'finance_loans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    type: loanTypeEnum('type').notNull(), // 'borrow' or 'lend'
+    counterparty: text('counterparty').notNull(), // Who you borrowed from / lent to
+    amount: decimal('amount').notNull(),
+    currency: currencyEnum('currency').notNull().default('KRW'),
+    status: loanStatusEnum('status').notNull().default('active'),
+    date: date('date').notNull(), // When the loan started
+    dueDate: date('due_date'), // Optional expected repayment date
+    settledDate: date('settled_date'), // When actually settled
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    dateIdx: index('finance_loans_date_idx').on(table.date),
+    statusIdx: index('finance_loans_status_idx').on(table.status),
+  })
+);
+
+// Finance Investments table
+export const financeInvestments = pgTable(
+  'finance_investments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(), // Investment name/ticker
+    type: text('type'), // 'stock', 'crypto', 'fund', 'savings', etc.
+    amount: decimal('amount').notNull(), // Initial investment amount
+    currentValue: decimal('current_value'), // Optional current value
+    currency: currencyEnum('currency').notNull().default('VND'),
+    status: investmentStatusEnum('status').notNull().default('active'),
+    date: date('date').notNull(), // Purchase date
+    soldDate: date('sold_date'), // When sold/matured
+    soldAmount: decimal('sold_amount'), // Sale proceeds
+    description: text('description'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    dateIdx: index('finance_investments_date_idx').on(table.date),
+    statusIdx: index('finance_investments_status_idx').on(table.status),
+  })
+);
+
+// Favorite Categories table (for organizing favorites by type)
+export const favoriteCategories = pgTable('favorite_categories', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull().unique(), // e.g., "Restaurant", "Movie", "Song"
+  icon: text('icon'), // Optional icon name (e.g., "utensils", "film", "music")
+  color: text('color'), // Optional color for UI display
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+// Favorites table (individual favorite items)
+export const favorites = pgTable(
+  'favorites',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    categoryId: uuid('category_id')
+      .notNull()
+      .references(() => favoriteCategories.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(), // Name of the favorite item
+    description: text('description'), // Optional description
+    rating: integer('rating'), // Optional rating (1-5)
+    imageUrl: text('image_url'), // Optional image URL
+    externalUrl: text('external_url'), // Optional link to the item
+    metadata: jsonb('metadata').$type<Record<string, string>>(), // Flexible metadata
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    categoryIdIdx: index('favorites_category_id_idx').on(table.categoryId),
+    createdAtIdx: index('favorites_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Favorite Categories Relations
+export const favoriteCategoriesRelations = relations(
+  favoriteCategories,
+  ({ many }) => ({
+    favorites: many(favorites),
+  })
+);
+
+// Favorites Relations
+export const favoritesRelations = relations(favorites, ({ one, many }) => ({
+  category: one(favoriteCategories, {
+    fields: [favorites.categoryId],
+    references: [favoriteCategories.id],
+  }),
+  favoriteTags: many(favoriteTags),
+}));
+
+// Favorite-Tag junction table
+export const favoriteTags = pgTable(
+  'favorite_tags',
+  {
+    favoriteId: uuid('favorite_id')
+      .notNull()
+      .references(() => favorites.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.favoriteId, table.tagId] }),
+    favoriteIdIdx: index('favorite_tags_favorite_id_idx').on(table.favoriteId),
+    tagIdIdx: index('favorite_tags_tag_id_idx').on(table.tagId),
+  })
+);
+
+// Favorite Tag Relations
+export const favoriteTagsRelations = relations(favoriteTags, ({ one }) => ({
+  favorite: one(favorites, {
+    fields: [favoriteTags.favoriteId],
+    references: [favorites.id],
+  }),
+  tag: one(tags, {
+    fields: [favoriteTags.tagId],
+    references: [tags.id],
+  }),
+}));

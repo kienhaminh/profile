@@ -16,6 +16,12 @@ export interface Blog {
   excerpt: string | null;
   readTime: number | null;
   coverImage: string | null;
+  series?: {
+    id: string;
+    title: string;
+    slug: string;
+  } | null;
+  seriesOrder?: number | null;
   createdAt: string;
   updatedAt: string;
   author: Author;
@@ -56,6 +62,8 @@ export interface CreatePostInput {
   excerpt?: string | null;
   readTime?: number | null;
   coverImage?: string | null;
+  seriesId?: string | null;
+  seriesOrder?: number | null;
   authorId: string;
   tagIds?: string[];
 }
@@ -69,6 +77,8 @@ export const createPostInputSchema = z.object({
   excerpt: z.string().nullable().optional(),
   readTime: z.number().int().nullable().optional(),
   coverImage: z.string().nullable().optional(),
+  seriesId: z.string().uuid().nullable().optional(),
+  seriesOrder: z.number().int().positive().nullable().optional(),
   authorId: z.string().uuid(),
   tagIds: z.array(z.string().uuid()).optional(),
 });
@@ -82,6 +92,8 @@ export interface UpdatePostInput {
   excerpt?: string | null;
   readTime?: number | null;
   coverImage?: string | null;
+  seriesId?: string | null;
+  seriesOrder?: number | null;
   tagIds?: string[];
 }
 
@@ -94,6 +106,8 @@ export const updatePostInputSchema = z.object({
   excerpt: z.string().nullable().optional(),
   readTime: z.number().int().nullable().optional(),
   coverImage: z.string().nullable().optional(),
+  seriesId: z.string().uuid().nullable().optional(),
+  seriesOrder: z.number().int().positive().nullable().optional(),
   tagIds: z.array(z.string().uuid()).optional(),
 });
 
@@ -101,11 +115,13 @@ export const updatePostInputSchema = z.object({
 export interface ListBlogsInput {
   topic?: string;
   limit?: number;
+  search?: string;
 }
 
 export const listBlogsInputSchema = z
   .object({
     topic: z.string().optional(),
     limit: z.number().optional(),
+    search: z.string().optional(),
   })
   .optional();

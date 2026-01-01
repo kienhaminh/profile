@@ -71,6 +71,34 @@
       "when": 1766371545022,
       "tag": "0009_moaning_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1766558757593,
+      "tag": "0010_high_silvermane",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1766563958173,
+      "tag": "0011_new_white_tiger",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1766641381454,
+      "tag": "0012_plain_galactus",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1766679241078,
+      "tag": "0013_fancy_sabretooth",
+      "breakpoints": true
     }
   ]
 }

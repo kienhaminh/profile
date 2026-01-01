@@ -55,12 +55,12 @@ export function UtilitiesSection() {
 
         {/* View All Link */}
         <div className="mt-12 text-center">
-          <Link href="/utilities">
-            <Button size="lg" className="gap-2">
+          <Button size="lg" className="gap-2" asChild>
+            <Link href="/utilities">
               View All Utilities
               <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

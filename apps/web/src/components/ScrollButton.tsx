@@ -68,7 +68,7 @@ export function ContactButton({ className }: ContactButtonProps) {
       onClick={handleClick}
       variant="default"
       size="lg"
-      className={`stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group ${className || ''}`}
+      className={`bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all group ${className || ''}`}
     >
       Contact Me
       <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />

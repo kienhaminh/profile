@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { UtilityCard, type Utility } from '@/components/utilities';
-import { Wrench, ArrowLeft, Users, Hash, Dices, ImageIcon } from 'lucide-react';
+import { Users, Hash, Dices, ImageIcon } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Utilities - Free Mini Tools',
@@ -46,39 +45,33 @@ const tools: Utility[] = [
 
 export default function UtilitiesPage() {
   return (
-    <div className="min-h-screen bg-background pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Back Link */}
-        <Link
-          href="/"
-          className="inline-flex items-center text-muted-foreground hover:text-primary mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Link>
+    <main className="pt-32 pb-20 px-6 max-w-5xl mx-auto min-h-screen">
+      {/* Header Section */}
+      <section className="mb-32 relative">
+        <h1 className="text-5xl md:text-7xl font-medium tracking-tight text-foreground mb-6 leading-[1.1]">
+          Handy <span className="gradient-text-hero">Utilities</span>
+        </h1>
 
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-accent rounded-full text-accent-foreground text-sm font-medium mb-4 shadow-lg">
-            <Wrench className="w-4 h-4 mr-2" />
-            Free Mini Tools
-          </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Handy <span className="text-primary">Utilities</span>
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A collection of fun and useful mini tools. Click on any tool to get
-            started!
-          </p>
+        <p className="text-lg text-muted-foreground leading-relaxed max-w-xl font-light mb-10">
+          A curated collection of professional-grade mini tools designed to
+          enhance your daily workflow. Free, fast, and secure.
+        </p>
+      </section>
+
+      {/* Tools Section */}
+      <section id="tools" className="mb-32">
+        <div className="flex items-end justify-between mb-12">
+          <h2 className="text-2xl font-medium text-foreground tracking-tight">
+            Tool Collection
+          </h2>
         </div>
 
-        {/* Tools Grid */}
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 stagger-item">
           {tools.map((tool) => (
             <UtilityCard key={tool.id} tool={tool} />
           ))}
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

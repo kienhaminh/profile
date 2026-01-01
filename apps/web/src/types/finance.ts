@@ -108,3 +108,74 @@ export interface CreateExchangeDTO {
   date: Date;
   description?: string;
 }
+
+// ==================== LOANS ====================
+
+export type LoanType = 'borrow' | 'lend';
+export type LoanStatus = 'active' | 'settled';
+
+export interface FinanceLoan {
+  id: string;
+  type: LoanType;
+  counterparty: string;
+  amount: string;
+  currency: Currency;
+  status: LoanStatus;
+  date: string;
+  dueDate: string | null;
+  settledDate: string | null;
+  description: string | null;
+  createdAt: Date;
+}
+
+export interface CreateLoanDTO {
+  type: LoanType;
+  counterparty: string;
+  amount: number;
+  currency: Currency;
+  date: Date;
+  dueDate?: Date;
+  description?: string;
+}
+
+export interface UpdateLoanDTO extends Partial<CreateLoanDTO> {
+  id: string;
+  status?: LoanStatus;
+  settledDate?: Date;
+}
+
+// ==================== INVESTMENTS ====================
+
+export type InvestmentStatus = 'active' | 'sold' | 'matured';
+
+export interface FinanceInvestment {
+  id: string;
+  name: string;
+  type: string | null;
+  amount: string;
+  currentValue: string | null;
+  currency: Currency;
+  status: InvestmentStatus;
+  date: string;
+  soldDate: string | null;
+  soldAmount: string | null;
+  description: string | null;
+  createdAt: Date;
+}
+
+export interface CreateInvestmentDTO {
+  name: string;
+  type?: string;
+  amount: number;
+  currentValue?: number;
+  currency: Currency;
+  date: Date;
+  description?: string;
+}
+
+export interface UpdateInvestmentDTO extends Partial<CreateInvestmentDTO> {
+  id: string;
+  status?: InvestmentStatus;
+  soldDate?: Date;
+  soldAmount?: number;
+}

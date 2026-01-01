@@ -1,152 +1,59 @@
 import type { JSX } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { INFORMATION, CONTACT } from '@/constants/information';
-import { Github, Linkedin, Mail, Phone, MapPin, Facebook } from 'lucide-react';
+import { Github, Linkedin, Mail, Facebook } from 'lucide-react';
 
+/**
+ * Footer - Minimal footer following the modern design aesthetic.
+ * Clean layout with copyright and social links.
+ */
 export function Footer(): JSX.Element {
   return (
-    <footer
-      className="relative bg-gradient-to-br from-card via-muted to-card text-card-foreground overflow-hidden border-t border-border"
-      role="contentinfo"
-    >
-      <div className="absolute inset-0 overflow-hidden opacity-10 dark:opacity-20">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
-      </div>
+    <footer className="border-t border-border py-12" role="contentinfo">
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
+          {/* Copyright */}
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} {INFORMATION.name}. All rights
+            reserved.
+          </p>
 
-      <div className="relative max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-          <div className="footer-section">
-            <h3 className="text-xl font-bold mb-6 text-primary">
-              Contact Information
-            </h3>
-            <div className="space-y-4">
-              <Link
-                href={`mailto:${CONTACT.email}`}
-                className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-              >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Mail className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  {CONTACT.email}
-                </span>
-              </Link>
-              <Link
-                href={`tel:${CONTACT.mobile}`}
-                className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-              >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Phone className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  {CONTACT.mobile}
-                </span>
-              </Link>
-              <div className="flex items-center group hover:translate-x-1 transition-transform duration-200">
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <MapPin className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  {CONTACT.address}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="footer-section">
-            <h3 className="text-xl font-bold mb-6 text-primary">
-              Connect With Me
-            </h3>
-            <div className="space-y-4">
-              <Link
-                href={CONTACT.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-              >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Linkedin className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  LinkedIn
-                </span>
-              </Link>
-              <Link
-                href={CONTACT.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-              >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Github className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  GitHub
-                </span>
-              </Link>
-              <Link
-                href={CONTACT.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center group hover:translate-x-1 transition-transform duration-200"
-              >
-                <div className="p-2 rounded-lg bg-muted group-hover:bg-primary transition-colors mr-3">
-                  <Facebook className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
-                </div>
-                <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                  Facebook
-                </span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="footer-section">
-            <h3 className="text-xl font-bold mb-6 text-primary">Quick Links</h3>
-            <div className="space-y-4">
-              {/* 
-              <Link
-                href="/projects"
-                className="block text-muted-foreground hover:text-foreground hover:translate-x-1 transition-all duration-200"
-              >
-                View My Projects
-              </Link>
-*/}
-              <Link
-                href="/blog"
-                className="block text-muted-foreground hover:text-foreground hover:translate-x-1 transition-all duration-200"
-              >
-                Read My Blog
-              </Link>
-              <Link
-                href={`mailto:${CONTACT.email}`}
-                className="inline-block mt-2"
-              >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl"
-                >
-                  Get In Touch
-                  <Mail className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="pt-8 border-t border-border">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} {INFORMATION.name}. All rights
-              reserved.
-            </p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Made with</span>
-              <span className="text-destructive animate-pulse">♥</span>
-              <span>using Next.js</span>
-            </div>
+          {/* Social Links */}
+          <div className="flex items-center gap-6">
+            <Link
+              href={CONTACT.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="GitHub"
+            >
+              <Github className="w-5 h-5" />
+            </Link>
+            <Link
+              href={CONTACT.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="LinkedIn"
+            >
+              <Linkedin className="w-5 h-5" />
+            </Link>
+            <Link
+              href={CONTACT.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Facebook"
+            >
+              <Facebook className="w-5 h-5" />
+            </Link>
+            <Link
+              href={`mailto:${CONTACT.email}`}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Email"
+            >
+              <Mail className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </div>

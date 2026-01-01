@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
 
       {/* Overview KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -140,7 +140,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/20 to-purple-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="cosmic-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
+        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full -mr-10 -mt-10"></div>
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
 
       {/* Device Distribution */}
       {stats && stats.deviceDistribution.length > 0 && (
-        <Card className="cosmic-card border-2">
+        <Card className="professional-card border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MonitorSmartphone className="w-5 h-5" />
@@ -242,7 +242,7 @@ export default function AnalyticsPage() {
 
       {/* Popular Pages */}
       {stats && stats.popularPages.length > 0 && (
-        <Card className="cosmic-card border-2">
+        <Card className="professional-card border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
@@ -283,7 +283,7 @@ export default function AnalyticsPage() {
       )}
 
       {/* Recent Sessions */}
-      <Card className="cosmic-card border-2">
+      <Card className="professional-card border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />

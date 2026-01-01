@@ -112,6 +112,16 @@ export function FinanceCharts({ stats }: FinanceStatsProps) {
     (c) => c.type === 'expense'
   );
 
+  // Ensure all priority types are always present
+  const allPriorities = ['must_have', 'nice_to_have', 'waste'];
+  const priorityData = allPriorities.map((priority) => {
+    const existing = stats.byPriority.find((p) => p.name === priority);
+    return {
+      name: priority,
+      value: existing?.value || 0,
+    };
+  });
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       <Card>
@@ -125,27 +135,15 @@ export function FinanceCharts({ stats }: FinanceStatsProps) {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={expenseCategories}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }: any) =>
-                    `${name} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {expenseCategories.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
+              <BarChart data={expenseCategories} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={100}
+                  tick={{ fontSize: 12 }}
+                />
                 <Tooltip
                   formatter={(value) => {
                     const currency = searchParams?.get('currency');
@@ -154,8 +152,15 @@ export function FinanceCharts({ stats }: FinanceStatsProps) {
                     return `${prefix}${Number(value).toLocaleString()}`;
                   }}
                 />
-                <Legend />
-              </PieChart>
+                <Bar dataKey="value" name="Amount">
+                  {expenseCategories.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           )}
         </CardContent>
@@ -166,35 +171,27 @@ export function FinanceCharts({ stats }: FinanceStatsProps) {
           <CardTitle>Expenses by Priority</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
-          {stats.byPriority.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-muted-foreground">
-              No priority data for the selected filters.
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.byPriority}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="name"
-                  tickFormatter={(val) => val.replace(/_/g, ' ')}
-                  className="capitalize"
-                />
-                <YAxis />
-                <Tooltip
-                  formatter={(value) => {
-                    const currency = searchParams?.get('currency');
-                    const prefix =
-                      currency === 'VND' ? '₫' : currency === 'KRW' ? '₩' : '$';
-                    return `${prefix}${Number(value).toLocaleString()}`;
-                  }}
-                  labelFormatter={(label) =>
-                    label.toString().replace(/_/g, ' ')
-                  }
-                />
-                <Bar dataKey="value" fill="#8884d8" name="Amount" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={priorityData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="name"
+                tickFormatter={(val) => val.replace(/_/g, ' ')}
+                className="capitalize"
+              />
+              <YAxis />
+              <Tooltip
+                formatter={(value) => {
+                  const currency = searchParams?.get('currency');
+                  const prefix =
+                    currency === 'VND' ? '₫' : currency === 'KRW' ? '₩' : '$';
+                  return `${prefix}${Number(value).toLocaleString()}`;
+                }}
+                labelFormatter={(label) => label.toString().replace(/_/g, ' ')}
+              />
+              <Bar dataKey="value" fill="#8884d8" name="Amount" />
+            </BarChart>
+          </ResponsiveContainer>
         </CardContent>
       </Card>
     </div>

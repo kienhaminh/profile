@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAllProjects } from '@/services/projects';
 import {
@@ -41,61 +40,43 @@ export default async function Projects() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background pt-28">
       {/* Header */}
-      <div className="relative py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6 animate-fade-in">
-            <div className="flex justify-center">
-              <div className="p-4 rounded-full bg-primary/20 shadow-xl dark:shadow-primary/30 hover:scale-110 transition-all duration-300 hover:shadow-2xl dark:hover:shadow-primary/50 group">
-                <Rocket className="w-12 h-12 text-primary animate-pulse group-hover:rotate-12 transition-transform" />
-              </div>
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold">
-              <span className="block text-foreground">{PAGE_CONTENT.TITLE}</span>
-              <span className="block text-primary text-glow bg-clip-text">
-                Portfolio
-              </span>
-            </h1>
-            <p className="mt-4 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {PAGE_CONTENT.SUBTITLE}
-            </p>
-          </div>
-        </div>
+      <div className="max-w-5xl mx-auto px-6 mb-12">
+        <h1 className="text-3xl md:text-4xl font-medium text-foreground mb-3">
+          {PAGE_CONTENT.TITLE}
+        </h1>
+        <p className="text-muted-foreground">
+          {PAGE_CONTENT.SUBTITLE}
+        </p>
       </div>
 
       {/* Projects Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="max-w-5xl mx-auto px-6 pb-20">
         {projects.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center">
-              <Rocket className="w-12 h-12 text-primary" />
-            </div>
-            <p className="text-xl text-foreground mb-2 font-semibold">
-              Coming Soon!
+          <div className="text-center py-16 border-t border-border">
+            <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-foreground font-medium mb-1">Coming Soon</p>
+            <p className="text-sm text-muted-foreground">
+              {PAGE_CONTENT.NO_PROJECTS}
             </p>
-            <p className="text-muted-foreground">{PAGE_CONTENT.NO_PROJECTS}</p>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project, index) => (
+          <div className="grid gap-6 md:grid-cols-2">
+            {projects.map((project) => (
               <Card
                 key={project.id}
-                className="cosmic-card group h-full border-2 border-border hover:border-primary overflow-hidden relative"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="group border border-border hover:border-primary/50 bg-card/30 hover:bg-card/60 overflow-hidden transition-all duration-300"
               >
-                <CardHeader className="relative">
-                  <div className="flex justify-between items-start mb-2">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      <Link
-                        href={`/projects/${project.slug}`}
-                        className="hover:underline"
-                      >
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start gap-2">
+                    <CardTitle className="text-lg font-medium group-hover:text-primary transition-colors">
+                      <Link href={`/projects/${project.slug}`}>
                         {project.title}
                       </Link>
                     </CardTitle>
                     <span
-                      className={`px-2 py-1 text-xs rounded-full font-medium ${
+                      className={`px-2 py-0.5 text-xs rounded-full font-medium shrink-0 ${
                         STATUS_BADGE_STYLES[project.status] ||
                         STATUS_BADGE_STYLES.DRAFT
                       }`}
@@ -104,56 +85,46 @@ export default async function Projects() {
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="relative space-y-4">
-                  <p className="text-muted-foreground line-clamp-3 leading-relaxed">
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
                     {project.description}
                   </p>
 
-                  <div className="flex flex-wrap gap-2">
-                    {project.tags?.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full border border-border"
-                      >
-                        {tag.label}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    {project.liveUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                        asChild
-                      >
-                        <Link
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                  {project.tags && project.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="px-2 py-0.5 text-xs bg-muted/50 text-muted-foreground rounded-md"
                         >
-                          <ExternalLink className="w-4 h-4 mr-1" />
-                          {PROJECT_BUTTON_LABELS.LIVE_DEMO}
-                        </Link>
-                      </Button>
+                          {tag.label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    {project.liveUrl && (
+                      <Link
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        {PROJECT_BUTTON_LABELS.LIVE_DEMO}
+                      </Link>
                     )}
                     {project.githubUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 border-secondary text-secondary-foreground hover:bg-secondary hover:text-secondary-foreground transition-all"
-                        asChild
+                      <Link
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        <Link
-                          href={project.githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Github className="w-4 h-4 mr-1" />
-                          {PROJECT_BUTTON_LABELS.VIEW_CODE}
-                        </Link>
-                      </Button>
+                        <Github className="w-4 h-4" />
+                        {PROJECT_BUTTON_LABELS.VIEW_CODE}
+                      </Link>
                     )}
                   </div>
                 </CardContent>

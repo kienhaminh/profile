@@ -2,42 +2,47 @@
 
 import type { JSX } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { useTheme } from 'next-themes';
-import logoDark from '@/assets/logo-dark.png';
-import logoLight from '@/assets/logo-light.png';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+
+import { Github, Linkedin, Twitter, ExternalLink } from 'lucide-react';
+import { INFORMATION, CONTACT } from '@/constants/information';
+
+import Image from 'next/image';
+import avatarImage from '@/assets/avatar.jpg';
 
 interface NavLinkConfig {
   href: string;
   label: string;
-  scrollTo?: string; // ID to scroll to on home page
+  scrollTo?: string;
 }
 
 function getNavLinks(): NavLinkConfig[] {
   return [
     {
+      href: '/#work',
+      label: 'Work',
+      scrollTo: 'work',
+    },
+    {
+      href: '/#stack',
+      label: 'Stack',
+      scrollTo: 'stack',
+    },
+    {
       href: '/blog',
-      label: 'Blog',
+      label: 'Writing',
       scrollTo: 'blog',
     },
-    /*
-    {
-      href: '/projects',
-      label: 'Projects',
-      scrollTo: 'projects',
-    },
-*/
     {
       href: '/utilities',
       label: 'Utilities',
     },
     {
       href: '/#about',
-      label: 'About Me',
+      label: 'About',
       scrollTo: 'about',
     },
   ];
@@ -46,7 +51,7 @@ function getNavLinks(): NavLinkConfig[] {
 function scrollToSection(sectionId: string) {
   const element = document.getElementById(sectionId);
   if (element) {
-    const navHeight = 64; // navbar height
+    const navHeight = 64;
     const elementPosition = element.getBoundingClientRect().top;
     const offsetPosition = elementPosition + window.pageYOffset - navHeight;
 
@@ -57,16 +62,8 @@ function scrollToSection(sectionId: string) {
   }
 }
 
-function getLinkClasses(isActive: boolean): string {
-  if (isActive) {
-    return 'px-4 py-2 text-sm font-medium text-primary hover:text-primary/90 transition-colors';
-  }
-  return 'px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors';
-}
-
 export function Navbar(): JSX.Element {
   const pathname = usePathname() ?? '/';
-  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -86,107 +83,88 @@ export function Navbar(): JSX.Element {
     }
   };
 
-  const handleContactClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (isHomePage) {
-      e.preventDefault();
-      scrollToSection('contact');
-    }
-  };
-
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/30 shadow-lg dark:shadow-primary/10"
+      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo on the left */}
-          <div className="flex items-center">
-            <Link
-              href="/"
-              className="flex items-center space-x-2 group"
-              aria-label="Home"
-            >
-              <div className="w-[72px] h-10 rounded-lg overflow-hidden transition-all duration-300 group-hover:scale-105">
-                {mounted ? (
-                  <Image
-                    src={resolvedTheme === 'dark' ? logoDark : logoLight}
-                    alt="Kien Ha Logo"
-                    width={72}
-                    height={40}
-                    className="w-full h-full object-contain"
-                    priority
-                  />
-                ) : (
-                  <div className="w-[72px] h-10 bg-primary/10 animate-pulse" />
-                )}
-              </div>
-            </Link>
+      <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 group"
+          aria-label="Home"
+        >
+          <div className="relative w-8 h-8 rounded-full overflow-hidden border border-neutral-700 grayscale hover:grayscale-0 hover:scale-110 transition-all duration-300">
+            <Image
+              src={avatarImage}
+              alt="Avatar"
+              fill
+              className="object-cover"
+            />
           </div>
+        </Link>
 
-          {/* Menu in the center */}
-          <div className="hidden md:flex items-center space-x-1">
-            {links.map((link) => {
-              const isActive =
-                (link.href === '/blog' && pathname.startsWith('/blog')) ||
-                (link.href === '/projects' &&
-                  pathname.startsWith('/projects')) ||
-                (link.href === '/#about' && pathname === '/' && false); // about is always not active in navbar
+        {/* Menu Items */}
+        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
+          {links.map((link) => {
+            const isActive =
+              (link.href === '/blog' && pathname.startsWith('/blog')) ||
+              (link.href === '/utilities' && pathname.startsWith('/utilities'));
 
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link)}
-                  className={getLinkClasses(isActive)}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Theme toggle and Contact Me button on the right */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            {isHomePage ? (
-              <Button
-                onClick={handleContactClick}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link)}
+                className={`transition-colors hover:text-foreground ${isActive ? 'text-foreground' : ''}`}
               >
-                Contact Me
-              </Button>
-            ) : (
-              <Link href="/#contact">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200">
-                  Contact Me
-                </Button>
+                {link.label}
               </Link>
-            )}
-          </div>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      <div className="md:hidden px-4 pb-3 space-y-1">
-        {links.map((link) => {
-          const isActive =
-            (link.href === '/blog' && pathname.startsWith('/blog')) ||
-            (link.href === '/projects' && pathname.startsWith('/projects'));
-
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link)}
-              className={`block ${getLinkClasses(isActive)}`}
+        {/* Right Actions: Social + Contact */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 mr-2 border-r border-border/50 pr-4">
+            <a
+              href={CONTACT.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="GitHub"
             >
-              {link.label}
-            </Link>
-          );
-        })}
-        <div className="pt-2">
-          <ThemeToggle />
+              <Github
+                className="w-5 h-5 focus-visible:ring-2 focus-visible:ring-ring"
+                strokeWidth={1.5}
+              />
+            </a>
+            <a
+              href={CONTACT.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="LinkedIn"
+            >
+              <Linkedin
+                className="w-5 h-5 focus-visible:ring-2 focus-visible:ring-ring"
+                strokeWidth={1.5}
+              />
+            </a>
+            <ThemeToggle />
+          </div>
+
+          <Link
+            href={`mailto:${CONTACT.email}`}
+            className={buttonVariants({
+              size: 'sm',
+              className:
+                'hidden md:inline-flex bg-foreground text-background rounded-full px-4 py-1.5 text-xs font-medium hover:bg-foreground/90 transition-colors',
+            })}
+          >
+            Contact
+          </Link>
         </div>
       </div>
     </nav>

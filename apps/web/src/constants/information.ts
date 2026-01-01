@@ -123,7 +123,7 @@ export const EXPERIENCE: Experience[] = [
   {
     period: 'Sep 2019 - Jul 2025',
     company: 'NAPA GLOBAL',
-    position: 'Senior Full-stack Developer & Technical Lead',
+    position: 'Senior Full-stack Developer',
     responsibilities: [
       'Led development of scalable web/mobile apps using Next.js, React Native, and Node.js microservices.',
       'Architected secure, high-availability cloud infrastructure on AWS.',

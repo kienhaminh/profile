@@ -1,28 +1,20 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Metadata } from 'next';
-import avatarImage from '@/assets/avatar.png';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ContactButton, ViewWorkButton } from '@/components/ScrollButton';
-import { TechSkillsCarousel } from '@/components/TechSkillsCarousel';
-import { Terminal } from '@/components/Terminal';
-import { BlogCard } from '@/components/blog/blog-card';
+import avatarImage from '@/assets/avatar.jpg';
+import { CopyEmailButton } from '@/components/CopyEmailButton';
+import { BlogListItem } from '@/components/blog/blog-list-item';
 import { ChatWidget } from '@/components/chat/ChatWidget';
-import { ContactForm } from '@/components/ContactForm';
-import { UtilitiesSection } from '@/components/utilities';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { ProjectBentoCard } from '@/components/project-bento-card';
+import { TechSkillsCarousel } from '@/components/TechSkillsCarousel';
+import { ExperienceTimeline } from '@/components/experience-timeline';
 
 import {
   CONTACT,
   INFORMATION,
-  SKILLS,
   EXPERIENCE,
+  SKILLS,
 } from '@/constants/information';
 import { getAllProjects } from '@/services/projects';
 import { listBlogs } from '@/services/blog';
@@ -31,21 +23,10 @@ import type { Project } from '@/types/project';
 import type { Blog } from '@/types/blog';
 import {
   ArrowRight,
-  Github,
-  Linkedin,
-  Mail,
-  Sparkles,
-  Code,
   Brain,
-  Rocket,
-  Facebook,
-  Calendar,
-  ExternalLink,
-  CheckCircle2,
-  Trophy,
-  MapPin,
-  GraduationCap,
-  Briefcase,
+  Smartphone,
+  LayoutTemplate,
+  Send,
 } from 'lucide-react';
 import {
   generateMetadata as generateSEOMetadata,
@@ -76,14 +57,13 @@ export default async function Home() {
 
   try {
     const [projectsResult, blogsResult] = await Promise.all([
-      getAllProjects(PROJECT_STATUS.PUBLISHED, { page: 1, limit: 3 }),
+      getAllProjects(PROJECT_STATUS.PUBLISHED, { page: 1, limit: 4 }),
       listBlogs(POST_STATUS.PUBLISHED, { page: 1, limit: 3 }),
     ]);
     featuredProjects = projectsResult.data;
     recentBlogs = blogsResult.data;
   } catch (error) {
     console.warn('Failed to fetch homepage data:', error);
-    // Return empty arrays if database is not available during build
   }
 
   // FAQ Schema for AI Research
@@ -101,361 +81,258 @@ export default async function Home() {
     {
       question: 'What is AI in healthcare and medical research?',
       answer:
-        'AI in healthcare involves using machine learning and deep learning techniques to analyze medical data, predict disease outcomes, discover new drugs, and improve patient care. Research areas include computer vision for medical imaging, natural language processing for clinical notes, and predictive models for disease progression.',
+        'AI in healthcare involves using machine learning and deep learning techniques to analyze medical data, predict disease outcomes, discover new drugs, and improve patient care.',
     },
     {
       question: 'How can I collaborate on AI research projects?',
       answer:
-        'You can connect with Kien Ha through GitHub, LinkedIn, or email to discuss AI research collaborations, particularly in medical AI, drug discovery, or brain-related research. Open to academic partnerships and industry collaborations.',
+        'You can connect with Kien Ha through GitHub, LinkedIn, or email to discuss AI research collaborations, particularly in medical AI, drug discovery, or brain-related research.',
     },
   ]);
+
+  // Determine mockup types for projects
+  const getMockupType = (
+    index: number
+  ): 'dashboard' | 'phone' | 'code' | 'layers' => {
+    const types: ('dashboard' | 'phone' | 'code' | 'layers')[] = [
+      'dashboard',
+      'phone',
+      'code',
+      'layers',
+    ];
+    return types[index % types.length];
+  };
 
   return (
     <div className="min-h-screen">
       <FAQSchema data={faqSchema} />
 
-      {/* Hero Section */}
-      <section
-        id="hero"
-        className="pt-24 pb-16 md:pt-32 md:pb-24 bg-background overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left side - Summary */}
-            <div className="space-y-6 z-10">
-              <div className="inline-flex items-center px-4 py-2 bg-accent rounded-full text-accent-foreground text-sm font-medium mb-4 shadow-lg dark:shadow-primary/20 hover:shadow-xl dark:hover:shadow-primary/30 transition-all duration-300">
-                <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                AI Researcher & Full-stack Developer
-              </div>
+      <main className="pt-32 pb-20 px-6 max-w-5xl mx-auto">
+        {/* Hero Section */}
+        <section className="mb-32 relative">
+          {/* Avatar with ambient glow */}
+          {/* Hero Avatar */}
+          <div className="mb-8">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-neutral-800 grayscale hover:grayscale-0 transition-all duration-500 shadow-2xl">
+              <Image
+                src={avatarImage}
+                alt="Kien Ha"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight animate-fade-in">
-                Hi, I&apos;m{' '}
-                <span className="text-primary text-glow bg-clip-text">
-                  Kien Ha
+          {/* Status Badge with Ping Indicator */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/50 text-xs text-muted-foreground mb-8">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            Available for new projects
+          </div>
+
+          {/* Main Heading with Gradient */}
+          <h1 className="text-5xl md:text-7xl font-medium text-foreground tracking-tight mb-6 leading-[1.1]">
+            Crafting digital <br />
+            <span className="gradient-text-hero">experiences with code.</span>
+          </h1>
+
+          {/* Bio */}
+          <p className="text-lg text-muted-foreground max-w-xl leading-relaxed mb-10 font-light">
+            {INFORMATION.bio}
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="#work">
+              <Button className="group relative px-6 py-3 rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors">
+                <span className="flex items-center gap-2">
+                  View Projects
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                {INFORMATION.bio}
-              </p>
-
-              {/* Current Status Badges */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
-                  <MapPin className="w-4 h-4 mr-2 text-primary" />
-                  <span>Gwangju, South Korea</span>
-                </div>
-                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
-                  <GraduationCap className="w-4 h-4 mr-2 text-primary" />
-                  <span>Master&apos;s @ CNU - AI Convergence</span>
-                </div>
-                <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 rounded-lg text-sm text-muted-foreground border border-border/50 hover:border-primary/50 hover:text-foreground transition-all duration-300">
-                  <Briefcase className="w-4 h-4 mr-2 text-primary" />
-                  <span>AI Researcher</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <ContactButton />
-
-                {/* <ViewWorkButton /> */}
-              </div>
-
-              {/* Social Links */}
-              <div className="flex gap-4 pt-6">
-                <Link
-                  href={CONTACT.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
-                  aria-label="GitHub"
-                >
-                  <Github className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                </Link>
-                <Link
-                  href={CONTACT.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                </Link>
-                <Link
-                  href={CONTACT.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                </Link>
-                <Link
-                  href={`mailto:${CONTACT.email}`}
-                  className="group p-3 rounded-full bg-muted hover:bg-primary text-muted-foreground hover:text-primary-foreground transition-all duration-300 shadow-md hover:shadow-xl dark:hover:shadow-primary/50 hover:scale-110 hover:-translate-y-1"
-                  aria-label="Email"
-                >
-                  <Mail className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Right side - Terminal */}
-            <div className="flex justify-center md:justify-end z-10">
-              <div className="w-full max-w-lg relative group animate-fade-in">
-                <div className="absolute -inset-4 bg-gradient-to-r from-primary via-secondary to-primary rounded-xl blur-3xl opacity-20 group-hover:opacity-30 transition-all duration-1000 animate-pulse-glow"></div>
-                <Terminal className="relative z-10" />
-              </div>
-            </div>
+              </Button>
+            </Link>
+            <CopyEmailButton email={CONTACT.email} />
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* About Me Section */}
-      <section id="about" className="py-16 md:py-24 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-12 gap-12 items-center mb-16">
-            <div className="md:col-span-4 flex justify-center">
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-gradient-to-r from-primary via-secondary to-primary rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-all duration-1000 animate-pulse-glow"></div>
-                <div className="relative w-64 h-64 rounded-full overflow-hidden shadow-2xl dark:shadow-primary/30 group-hover:shadow-3xl dark:group-hover:shadow-primary/50 transition-all duration-500 ring-2 ring-primary/20 group-hover:ring-primary/40">
-                  <Image
-                    src={avatarImage}
-                    alt="Kien Ha"
-                    width={256}
-                    height={256}
-                    className="w-full h-full object-cover filter blur-[0.5px] group-hover:scale-105 transition-transform duration-700"
-                  />
-                  {/* Gradient overlay for soft bottom fade */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80 pointer-events-none"></div>
-                </div>
-              </div>
-            </div>
-            <div className="md:col-span-8 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                About <span className="text-primary">Me</span>
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto md:mx-0">
-                Passionate about leveraging technology and AI to solve
-                real-world problems. I combine deep technical knowledge in AI/ML
-                with robust software engineering practices to build impactful
-                solutions.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* Experience Highlight */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
-                  <Code className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <CardTitle className="group-hover:text-primary transition-colors">
-                  Full-stack Development
-                </CardTitle>
-                <CardDescription>6+ years of experience</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Building scalable web applications with React, Next.js,
-                  TypeScript, and modern cloud technologies.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* AI Research */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
-                  <Brain className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <CardTitle className="group-hover:text-primary transition-colors">
-                  AI Research
-                </CardTitle>
-                <CardDescription>Medical AI & Deep Learning</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Master&apos;s student at Chonnam National University,
-                  researching AI applications in drug discovery and brain age
-                  prediction.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Innovation */}
-            <Card className="cosmic-card border-2 border-accent hover:border-primary group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg dark:shadow-accent/30">
-                  <Rocket className="w-6 h-6 text-accent-foreground" />
-                </div>
-                <CardTitle className="group-hover:text-primary transition-colors">
-                  Innovation
-                </CardTitle>
-                <CardDescription>Continuous Learning</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Always exploring cutting-edge technologies and methodologies
-                  to deliver exceptional results.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Skills - Infinite Horizontal Scroll */}
-          <div>
-            <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
-              Technical Skills
-            </h3>
-            <TechSkillsCarousel
-              skills={[
-                ...SKILLS.programmingLanguage,
-                ...SKILLS.framework,
-                ...SKILLS.database,
-                ...SKILLS.service,
-              ]}
-              speed="fast"
-              className="max-w-7xl mx-auto"
-            />
-          </div>
-
-          {/* Experience Timeline */}
-          <div className="mt-16">
-            <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
-              Professional Experience
-            </h3>
-            <div className="space-y-6">
-              {EXPERIENCE.map((exp, idx) => (
-                <Card
-                  key={idx}
-                  className="cosmic-card border border-border hover:border-primary transition-all duration-300"
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                      <div>
-                        <CardTitle className="text-lg md:text-xl font-bold text-primary">
-                          {exp.position}
-                        </CardTitle>
-                        <CardDescription className="text-base font-semibold text-foreground">
-                          {exp.company}
-                        </CardDescription>
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-accent/50 text-xs font-medium text-accent-foreground border border-accent w-fit">
-                        <Calendar className="w-3 h-3 mr-1.5" />
-                        {exp.period}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-4">
-                    <div className="space-y-3">
-                      <ul className="space-y-2">
-                        {exp.responsibilities.map((resp, i) => (
-                          <li
-                            key={i}
-                            className="relative z-20 text-muted-foreground text-sm flex items-start group hover:text-primary transition-colors"
-                          >
-                            <CheckCircle2 className="w-4 h-4 mr-2.5 text-primary shrink-0 mt-0.5 group-hover:text-primary transition-colors" />
-                            <span className="leading-relaxed">{resp}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {exp.recognition && exp.recognition.length > 0 && (
-                        <div className="mt-4 pt-3 border-t border-border/50">
-                          <div className="flex flex-wrap gap-2">
-                            {exp.recognition.map((rec, i) => (
-                              <span
-                                key={i}
-                                className="inline-flex items-center text-xs text-muted-foreground bg-accent/30 px-2 py-1 rounded-md border border-accent/50"
-                              >
-                                <Trophy className="w-3 h-3 mr-1.5 text-yellow-500" />
-                                {rec}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 
-      <section id="projects" className="py-16 md:py-24 bg-background">
-        ... (projects section content)
-      </section>
-*/}
-
-      {/* Blog Section */}
-      <section id="blog" className="py-16 md:py-24 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Latest from the <span className="text-primary">Blog</span>
+        {/* Projects (Bento Grid) */}
+        <section id="work" className="mb-32">
+          <div className="flex items-end justify-between mb-12">
+            <h2 className="text-2xl font-medium text-foreground tracking-tight">
+              Selected Work
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Thoughts on AI, development, and technology
-            </p>
+            <Link
+              href="/projects"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group"
+            >
+              View all
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {featuredProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 auto-rows-[300px]">
+              {featuredProjects.slice(0, 4).map((project, index) => {
+                // First project is large (2 cols), second is tall (2 rows), rest are standard
+                const size =
+                  index === 0 ? 'large' : index === 1 ? 'tall' : 'standard';
+                return (
+                  <ProjectBentoCard
+                    key={project.id}
+                    project={project}
+                    size={size}
+                    mockupType={getMockupType(index)}
+                  />
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-16 border border-border rounded-2xl bg-card/30">
+              <p className="text-muted-foreground">
+                Projects coming soon. Check back later!
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Tech Stack - Infinite Horizontal Scroll */}
+        <section id="stack" className="mb-32">
+          <h2 className="text-2xl font-medium text-foreground tracking-tight mb-8">
+            Technologies
+          </h2>
+          <TechSkillsCarousel
+            skills={[
+              ...SKILLS.programmingLanguage,
+              ...SKILLS.framework,
+              ...SKILLS.database,
+              ...SKILLS.service,
+            ]}
+            speed="fast"
+          />
+        </section>
+
+        {/* Blog Section (List Format) */}
+        <section id="blog" className="mb-32">
+          <div className="flex items-end justify-between mb-8">
+            <h2 className="text-2xl font-medium text-foreground tracking-tight">
+              Writing
+            </h2>
+            <Link
+              href="/blog"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group"
+            >
+              Read more
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
           {recentBlogs.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="border-t border-border">
               {recentBlogs.map((blog) => (
-                <BlogCard key={blog.id} post={blog} />
+                <BlogListItem key={blog.id} post={blog} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-xl text-foreground mb-6">
-                No blog posts yet. Check back soon!
+            <div className="text-center py-12 border-t border-border">
+              <p className="text-muted-foreground">
+                No posts yet. Check back soon!
               </p>
             </div>
           )}
+        </section>
 
-          {recentBlogs.length > 0 && (
-            <div className="mt-12 text-center">
-              <Link href="/blog">
-                <Button
-                  size="lg"
-                  className="stellar-button bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all group"
-                >
-                  View All Posts
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Utilities Section */}
-      <UtilitiesSection />
-
-      {/* Contact Form Section */}
-      <section id="contact" className="py-16 md:py-24 bg-muted">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Get In <span className="text-primary">Touch</span>
+        {/* Experience + Services (Side by Side) */}
+        <section id="about" className="grid md:grid-cols-2 gap-12 mb-32">
+          {/* Experience Column */}
+          <div>
+            <h2 className="text-2xl font-medium text-foreground tracking-tight mb-6">
+              Experience
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Have a project in mind or want to collaborate? Let&apos;s talk!
-            </p>
+            <ExperienceTimeline
+              experiences={EXPERIENCE.map((exp) => ({
+                position: exp.position,
+                company: exp.company,
+                period: exp.period,
+                responsibilities: exp.responsibilities,
+                recognition: exp.recognition,
+              }))}
+            />
           </div>
 
-          <Card className="cosmic-card-border border-2 border-border shadow-xl">
-            <CardContent className="p-8">
-              <ContactForm />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+          {/* Services Column */}
+          <div>
+            <h2 className="text-2xl font-medium text-foreground tracking-tight mb-6">
+              Services
+            </h2>
+            <div className="space-y-4">
+              {/* Service: Web Development */}
+              <div className="group p-4 border border-border rounded-xl bg-card/20 hover:bg-card/50 transition-colors">
+                <div className="flex items-center gap-3 mb-2">
+                  <LayoutTemplate className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <h3 className="text-sm font-medium text-foreground">
+                    Web Development
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  High performance websites built with modern frameworks.
+                </p>
+              </div>
+
+              {/* Service: AI/ML Solutions */}
+              <div className="group p-4 border border-border rounded-xl bg-card/20 hover:bg-card/50 transition-colors">
+                <div className="flex items-center gap-3 mb-2">
+                  <Brain className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <h3 className="text-sm font-medium text-foreground">
+                    AI/ML Solutions
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Machine learning models and AI-powered applications.
+                </p>
+              </div>
+
+              {/* Service: Mobile Apps */}
+              <div className="group p-4 border border-border rounded-xl bg-card/20 hover:bg-card/50 transition-colors">
+                <div className="flex items-center gap-3 mb-2">
+                  <Smartphone className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <h3 className="text-sm font-medium text-foreground">
+                    Mobile Apps
+                  </h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Cross-platform mobile applications using React Native.
+                </p>
+              </div>
+            </div>
+
+            {/* CTA Card */}
+            <div className="mt-8 p-6 rounded-2xl bg-gradient-to-br from-card via-card to-muted/30 border border-border/50 relative overflow-hidden group">
+              <div className="relative z-10">
+                <h3 className="text-lg font-medium text-foreground mb-2">
+                  Let&apos;s work together
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Have a project in mind? Let&apos;s turn your idea into
+                  reality.
+                </p>
+                <Link
+                  href={`mailto:${CONTACT.email}`}
+                  className="inline-flex items-center gap-2 text-sm text-foreground font-medium border-b border-foreground/30 pb-0.5 hover:border-foreground transition-colors"
+                >
+                  Send me an email
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-500 transform group-hover:scale-110">
+                <Send className="w-16 h-16" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       <ChatWidget />
     </div>

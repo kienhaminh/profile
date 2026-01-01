@@ -40,6 +40,8 @@ import {
 } from '@/components/ui/dialog';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import {
+  Search,
+  X,
   Link2,
   Plus,
   Copy,
@@ -68,6 +70,7 @@ export default function ShortlinksPage() {
   const [shortlinks, setShortlinks] = useState<Shortlink[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Dialog states
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -248,20 +251,48 @@ export default function ShortlinksPage() {
     return new Date(expiresAt) < new Date();
   };
 
+  const filteredShortlinks = shortlinks.filter((link) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      link.slug.toLowerCase().includes(searchLower) ||
+      (link.title?.toLowerCase() || '').includes(searchLower) ||
+      link.destinationUrl.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Shortlinks</h1>
           <p className="text-muted-foreground">
             Create and manage short URLs for easy sharing
           </p>
         </div>
-        <Button onClick={handleOpenCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Shortlink
-        </Button>
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64 group">
+            <Input
+              placeholder="Search shortlinks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11 pr-10"
+            />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
+              >
+                <X className="w-3 h-3 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+          <Button onClick={handleOpenCreate} className="shrink-0">
+            <Plus className="mr-2 h-4 w-4" />
+            Create
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -337,7 +368,7 @@ export default function ShortlinksPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {shortlinks.map((link) => (
+                {filteredShortlinks.map((link) => (
                   <TableRow key={link.id}>
                     <TableCell>
                       <div className="flex flex-col gap-1">

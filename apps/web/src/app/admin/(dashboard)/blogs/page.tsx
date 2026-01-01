@@ -8,7 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Tag } from '@/types/tag';
 import { POST_STATUS, type PostStatus } from '@/types/enums';
-import { Search, Plus, FileText, Sparkles, ArrowUpDown } from 'lucide-react';
+import {
+  Search,
+  Plus,
+  FileText,
+  Sparkles,
+  ArrowUpDown,
+  Hash,
+  FolderTree,
+  X,
+  RotateCcw,
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,6 +38,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  TagManager,
+  type TagManagerHandle,
+} from '@/components/admin/TagManager';
 
 interface Blog {
   id: string;
@@ -43,7 +58,7 @@ interface Blog {
 type SortField = 'title' | 'status' | 'createdAt';
 type SortOrder = 'asc' | 'desc';
 
-export default function BlogsListPage() {
+function BlogsListContent() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -220,60 +235,71 @@ export default function BlogsListPage() {
     </Card>
   );
 
+  const isFiltered = filter.status !== 'all' || searchInput !== '';
+
+  const resetFilters = () => {
+    setSearchInput('');
+    setFilter({ status: 'all', search: '' });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Blog Posts</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and organize your content
-          </p>
-        </div>
-        <Button
-          asChild
-          className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          <Link href="/admin/blogs/new" className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Create New Blog
-          </Link>
-        </Button>
-      </div>
-
-      <div className="flex gap-4 flex-col sm:flex-row mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="flex gap-4 flex-col lg:flex-row items-end lg:items-center">
+        <div className="flex-1 relative w-full group">
           <Input
             type="text"
             placeholder="Search blogs by title or slug..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10 transition-all duration-200"
+            className="pl-11 pr-10 h-10 transition-all duration-200 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
             aria-label="Search blogs"
           />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
+          {searchInput && (
+            <button
+              onClick={() => setSearchInput('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="w-3 h-3 text-muted-foreground" />
+            </button>
+          )}
         </div>
-        <Select
-          value={filter.status}
-          onValueChange={(value) =>
-            setFilter((prev) => ({ ...prev, status: value }))
-          }
-        >
-          <SelectTrigger
-            className="w-full sm:w-[200px]"
-            aria-label="Filter by status"
+        <div className="flex gap-4 w-full lg:w-auto">
+          <Select
+            value={filter.status}
+            onValueChange={(value) =>
+              setFilter((prev) => ({ ...prev, status: value }))
+            }
           >
-            <SelectValue placeholder="All Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value={POST_STATUS.DRAFT}>Draft</SelectItem>
-            <SelectItem value={POST_STATUS.PUBLISHED}>Published</SelectItem>
-          </SelectContent>
-        </Select>
+            <SelectTrigger
+              className="w-full lg:w-[180px] bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+              aria-label="Filter by status"
+            >
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value={POST_STATUS.DRAFT}>Draft</SelectItem>
+              <SelectItem value={POST_STATUS.PUBLISHED}>Published</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {isFiltered && (
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              className="flex items-center gap-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary whitespace-nowrap"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
-        <Alert className="mb-6 border-destructive/50 bg-destructive/10">
+        <Alert className="border-destructive/50 bg-destructive/10">
           <AlertDescription className="text-destructive">
             {error}
           </AlertDescription>
@@ -462,6 +488,99 @@ export default function BlogsListPage() {
         title="Are you absolutely sure?"
         description={`This action cannot be undone. This will permanently delete "${blogToDelete?.title}" and remove it from the server.`}
       />
+    </div>
+  );
+}
+
+export default function PostsPage() {
+  const [activeTab, setActiveTab] = useState('posts');
+  const hashtagManagerRef = useRef<TagManagerHandle>(null);
+  const topicManagerRef = useRef<TagManagerHandle>(null);
+
+  const handleAdd = () => {
+    if (activeTab === 'hashtags') {
+      hashtagManagerRef.current?.handleAdd();
+    } else if (activeTab === 'topics') {
+      topicManagerRef.current?.handleAdd();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-2 mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Blogs</h1>
+        <p className="text-muted-foreground">
+          Manage your posts, hashtags, and topics
+        </p>
+      </div>
+
+      <Tabs
+        defaultValue="posts"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <TabsList className="mb-0">
+            <TabsTrigger value="posts" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Posts
+            </TabsTrigger>
+            <TabsTrigger value="hashtags" className="flex items-center gap-2">
+              <Hash className="w-4 h-4" />
+              Hashtags
+            </TabsTrigger>
+            <TabsTrigger value="topics" className="flex items-center gap-2">
+              <FolderTree className="w-4 h-4" />
+              Topics
+            </TabsTrigger>
+          </TabsList>
+
+          {activeTab === 'posts' ? (
+            <Button
+              asChild
+              className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Link href="/admin/blogs/new" className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Create New Blog
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              onClick={handleAdd}
+              className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add {activeTab === 'hashtags' ? 'Hashtag' : 'Topic'}
+            </Button>
+          )}
+        </div>
+
+        <TabsContent value="posts">
+          <BlogsListContent />
+        </TabsContent>
+
+        <TabsContent value="hashtags">
+          <TagManager
+            ref={hashtagManagerRef}
+            type="hashtags"
+            icon={<Hash className="w-6 h-6" />}
+            title="Hashtags"
+            description="Manage hashtags for your content"
+          />
+        </TabsContent>
+
+        <TabsContent value="topics">
+          <TagManager
+            ref={topicManagerRef}
+            type="topics"
+            icon={<FolderTree className="w-6 h-6" />}
+            title="Topics"
+            description="Manage topics for your content"
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

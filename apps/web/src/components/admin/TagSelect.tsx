@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Search } from 'lucide-react';
 import { generateSlug, isValidSlug } from '@/lib/slug';
 import { trpc } from '@/trpc/react';
 
@@ -25,13 +25,11 @@ export function TagSelect({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const utils = trpc.useUtils();
 
-  const {
-    data: tags = [],
-    isLoading: isFetchingTags,
-  } = trpc.tags.list.useQuery(undefined, {
-    staleTime: 60_000,
-    onError: (err) => setError(err.message),
-  });
+  const { data: tags = [], isLoading: isFetchingTags } =
+    trpc.tags.list.useQuery(undefined, {
+      staleTime: 60_000,
+      onError: (err) => setError(err.message),
+    });
 
   const createTagMutation = trpc.tags.create.useMutation({
     onError: (err) => {
@@ -71,10 +69,7 @@ export function TagSelect({
         label: name,
         slug,
       });
-      utils.tags.list.setData(undefined, (prev) => [
-        ...(prev ?? []),
-        newTag,
-      ]);
+      utils.tags.list.setData(undefined, (prev) => [...(prev ?? []), newTag]);
       onChange([...value, newTag.id]);
       setSearchQuery('');
       return newTag;
@@ -127,13 +122,9 @@ export function TagSelect({
     tag.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedTags = tags.filter((tag) =>
-    value.includes(tag.id)
-  );
+  const selectedTags = tags.filter((tag) => value.includes(tag.id));
 
-  const unselectedTags = filteredTags.filter(
-    (tag) => !value.includes(tag.id)
-  );
+  const unselectedTags = filteredTags.filter((tag) => !value.includes(tag.id));
 
   return (
     <div
@@ -142,10 +133,10 @@ export function TagSelect({
       role="combobox"
       aria-expanded={isOpen}
       aria-controls="tag-dropdown"
-      aria-haspopup="listbox"
       aria-label="Select tags"
     >
-      <div className="flex flex-wrap gap-2 p-3 border border-input rounded-md bg-background text-foreground min-h-[42px]">
+      <div className="flex flex-wrap items-center gap-2 p-3 border border-input rounded-md bg-background text-foreground min-h-[42px] relative pl-10 group transition-all focus-within:border-primary/50">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-foreground group-focus-within:text-primary transition-colors pointer-events-none z-10" />
         {selectedTags.map((tag) => (
           <span
             key={tag.id}
@@ -169,9 +160,7 @@ export function TagSelect({
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder={
-            value.length === 0 ? placeholder : ''
-          }
+          placeholder={value.length === 0 ? placeholder : ''}
           className="flex-1 min-w-[120px] outline-none text-sm bg-transparent text-foreground placeholder:text-muted-foreground"
           disabled={isLoading}
         />
