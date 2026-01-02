@@ -34,8 +34,8 @@ describe('Sidebar', () => {
 
       expect(screen.getAllByText('Dashboard').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Post').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Hashtag').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Topic').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Analytics').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Finance').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Tools').length).toBeGreaterThan(0);
     });
 
@@ -43,7 +43,6 @@ describe('Sidebar', () => {
       render(<Sidebar />);
 
       expect(screen.getAllByText('Admin Panel').length).toBeGreaterThan(0);
-      expect(screen.getAllByText('Content Management').length).toBeGreaterThan(0);
     });
 
     it('renders Sign Out button', () => {
@@ -60,7 +59,7 @@ describe('Sidebar', () => {
 
       const dashboardLinks = container.querySelectorAll('a[href="/admin"]');
       const hasActiveClass = Array.from(dashboardLinks).some((link) =>
-        link.className.includes('bg-gradient-to-r')
+        link.className.includes('bg-accent')
       );
       expect(hasActiveClass).toBe(true);
     });
@@ -71,7 +70,7 @@ describe('Sidebar', () => {
 
       const toolsLinks = container.querySelectorAll('a[href="/admin/tools"]');
       const hasActiveClass = Array.from(toolsLinks).some((link) =>
-        link.className.includes('bg-gradient-to-r')
+        link.className.includes('bg-accent')
       );
       expect(hasActiveClass).toBe(true);
     });
@@ -82,7 +81,7 @@ describe('Sidebar', () => {
 
       const postLinks = container.querySelectorAll('a[href="/admin/blogs"]');
       const hasActiveClass = Array.from(postLinks).some((link) =>
-        link.className.includes('bg-gradient-to-r')
+        link.className.includes('bg-accent')
       );
       expect(hasActiveClass).toBe(true);
     });
@@ -113,20 +112,20 @@ describe('Sidebar', () => {
       expect(postLink?.getAttribute('href')).toBe('/admin/blogs');
     });
 
-    it('has correct href for Hashtag menu item', () => {
+    it('has correct href for Analytics menu item', () => {
       render(<Sidebar />);
 
-      const hashtagLinks = screen.getAllByText('Hashtag');
-      const hashtagLink = hashtagLinks[0].closest('a');
-      expect(hashtagLink?.getAttribute('href')).toBe('/admin/hashtags');
+      const analyticsLinks = screen.getAllByText('Analytics');
+      const analyticsLink = analyticsLinks[0].closest('a');
+      expect(analyticsLink?.getAttribute('href')).toBe('/admin/analytics');
     });
 
-    it('has correct href for Topic menu item', () => {
+    it('has correct href for Finance menu item', () => {
       render(<Sidebar />);
 
-      const topicLinks = screen.getAllByText('Topic');
-      const topicLink = topicLinks[0].closest('a');
-      expect(topicLink?.getAttribute('href')).toBe('/admin/topics');
+      const financeLinks = screen.getAllByText('Finance');
+      const financeLink = financeLinks[0].closest('a');
+      expect(financeLink?.getAttribute('href')).toBe('/admin/finance');
     });
   });
 
@@ -261,10 +260,8 @@ describe('Sidebar', () => {
       const { container } = render(<Sidebar />);
 
       const toolsLinks = container.querySelectorAll('a[href="/admin/tools"]');
-      const hasActiveClass = Array.from(toolsLinks).some(
-        (link) =>
-          link.className.includes('from-primary') &&
-          link.className.includes('to-secondary')
+      const hasActiveClass = Array.from(toolsLinks).some((link) =>
+        link.className.includes('bg-accent')
       );
       expect(hasActiveClass).toBe(true);
     });
@@ -275,7 +272,7 @@ describe('Sidebar', () => {
 
       const toolsLinks = container.querySelectorAll('a[href="/admin/tools"]');
       const hasHoverClass = Array.from(toolsLinks).some((link) =>
-        link.className.includes('hover:bg-accent')
+        link.className.includes('hover:bg-accent/50')
       );
       expect(hasHoverClass).toBe(true);
     });

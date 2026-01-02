@@ -162,7 +162,7 @@ export default function ProjectsListPage() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 border-b">
+              <TableRow className="bg-accent/50 border-b border-border">
                 <TableHead className="font-semibold">Title</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="font-semibold">Tags</TableHead>
@@ -213,16 +213,26 @@ export default function ProjectsListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and showcase your portfolio projects
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-medium text-foreground tracking-tight">
+              Portfolio Projects
+            </h1>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+              <span className="text-[10px] font-medium text-purple-500 uppercase tracking-wide">
+                Showcase
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage and showcase your portfolio projects.
           </p>
         </div>
         <Button
           asChild
-          className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+          className="bg-primary hover:bg-primary/90 transition-all duration-200"
         >
           <Link href="/admin/projects/new" className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
@@ -239,7 +249,7 @@ export default function ProjectsListPage() {
             placeholder="Search projects by title or slug..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10 transition-all duration-200"
+            className="pl-10 h-10 transition-all duration-200 bg-card border-border hover:border-primary/50 focus:border-primary/50 focus:ring-primary/20"
             aria-label="Search projects"
           />
         </div>
@@ -250,7 +260,7 @@ export default function ProjectsListPage() {
           }
         >
           <SelectTrigger
-            className="w-full sm:w-[200px]"
+            className="w-full sm:w-[200px] h-10 bg-card border-border hover:border-primary/50 focus:border-primary/50 focus:ring-primary/20"
             aria-label="Filter by status"
           >
             <SelectValue placeholder="All Status" />
@@ -274,7 +284,7 @@ export default function ProjectsListPage() {
       {isLoading ? (
         <LoadingSkeleton />
       ) : sortedProjects.length === 0 ? (
-        <Card className="shadow-lg">
+        <Card className="border border-border">
           <CardContent className="text-center py-16">
             <div className="flex flex-col items-center gap-4">
               <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
@@ -293,7 +303,7 @@ export default function ProjectsListPage() {
               <Button
                 variant="default"
                 asChild
-                className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-primary hover:bg-primary/90 transition-all duration-200"
               >
                 <Link
                   href="/admin/projects/new"
@@ -307,12 +317,12 @@ export default function ProjectsListPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="shadow-lg hover:shadow-xl transition-all duration-200 bg-card">
+        <Card className="border border-border bg-card">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 border-b">
+                  <TableRow className="bg-accent/50 border-b border-border">
                     <TableHead className="font-semibold">
                       <button
                         onClick={() => handleSort('title')}
@@ -366,7 +376,7 @@ export default function ProjectsListPage() {
                               {project.isOngoing && (
                                 <Badge
                                   variant="outline"
-                                  className="ml-2 bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700/50"
+                                  className="ml-2 bg-sky-500/10 text-sky-500 border-sky-500/20 dark:bg-sky-500/20 dark:text-sky-400 dark:border-sky-500/30"
                                 >
                                   Ongoing
                                 </Badge>
@@ -387,8 +397,8 @@ export default function ProjectsListPage() {
                           }
                           className={
                             project.status === 'PUBLISHED'
-                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50 shadow-sm'
-                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50 shadow-sm'
+                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30'
+                              : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30'
                           }
                         >
                           {project.status.charAt(0).toUpperCase() +
@@ -400,8 +410,8 @@ export default function ProjectsListPage() {
                           {project.tags?.map((tag) => (
                             <Badge
                               key={tag.id}
-                              variant="outline"
-                              className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 shadow-sm transition-colors"
+                              variant="secondary"
+                              className="bg-accent/50 text-foreground border-border hover:bg-accent hover:border-primary/30 transition-colors"
                             >
                               {tag.label}
                             </Badge>

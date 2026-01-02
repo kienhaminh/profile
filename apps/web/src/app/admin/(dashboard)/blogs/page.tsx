@@ -180,7 +180,7 @@ function BlogsListContent() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/50 border-b">
+              <TableRow className="bg-accent/50 border-b border-border">
                 <TableHead className="font-semibold">Title</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="font-semibold">Topics</TableHead>
@@ -251,7 +251,7 @@ function BlogsListContent() {
             placeholder="Search blogs by title or slug..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-11 pr-10 h-10 transition-all duration-200 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+            className="pl-11 pr-10 h-10 transition-all duration-200 bg-card border-border hover:border-primary/50 focus:border-primary/50 focus:ring-primary/20"
             aria-label="Search blogs"
           />
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
@@ -273,7 +273,7 @@ function BlogsListContent() {
             }
           >
             <SelectTrigger
-              className="w-full lg:w-[180px] bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20"
+              className="w-full lg:w-[180px] bg-card border-border hover:border-primary/50 focus:border-primary/50 focus:ring-primary/20"
               aria-label="Filter by status"
             >
               <SelectValue placeholder="All Status" />
@@ -309,7 +309,7 @@ function BlogsListContent() {
       {isLoading ? (
         <LoadingSkeleton />
       ) : sortedBlogs.length === 0 ? (
-        <Card className="shadow-lg">
+        <Card className="border border-border">
           <CardContent className="text-center py-16">
             <div className="flex flex-col items-center gap-4">
               <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center">
@@ -342,12 +342,12 @@ function BlogsListContent() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="shadow-lg hover:shadow-xl transition-all duration-200 bg-card">
+        <Card className="border border-border bg-card">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 border-b">
+                  <TableRow className="bg-accent/50 border-b border-border">
                     <TableHead className="font-semibold">
                       <button
                         onClick={() => handleSort('title')}
@@ -415,8 +415,8 @@ function BlogsListContent() {
                           }
                           className={
                             blog.status === POST_STATUS.PUBLISHED
-                              ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50 shadow-sm'
-                              : 'bg-yellow-100 text-yellow-700 border border-yellow-200 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50 shadow-sm'
+                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30'
+                              : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30'
                           }
                         >
                           {blog.status.charAt(0).toUpperCase() +
@@ -428,8 +428,8 @@ function BlogsListContent() {
                           {blog.topics?.map((topic) => (
                             <Badge
                               key={topic.id}
-                              variant="outline"
-                              className="bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 shadow-sm transition-colors"
+                              variant="secondary"
+                              className="bg-accent/50 text-foreground border-border hover:bg-accent hover:border-primary/30 transition-colors"
                             >
                               {topic.label}
                             </Badge>
@@ -442,7 +442,7 @@ function BlogsListContent() {
                             <Badge
                               key={hashtag.id}
                               variant="outline"
-                              className="bg-secondary/10 text-secondary border-secondary/30 hover:bg-secondary/20 shadow-sm transition-colors"
+                              className="bg-card text-muted-foreground border-border hover:bg-accent hover:text-foreground transition-colors"
                             >
                               {hashtag.label}
                             </Badge>
@@ -507,11 +507,23 @@ export default function PostsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Blogs</h1>
-        <p className="text-muted-foreground">
-          Manage your posts, hashtags, and topics
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-medium text-foreground tracking-tight">
+              Content Management
+            </h1>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-sky-500/10 border border-sky-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 bg-sky-500 rounded-full"></span>
+              <span className="text-[10px] font-medium text-sky-500 uppercase tracking-wide">
+                Posts & Tags
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage your blog posts, hashtags, and topics.
+          </p>
+        </div>
       </div>
 
       <Tabs

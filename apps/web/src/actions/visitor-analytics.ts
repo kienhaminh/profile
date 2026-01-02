@@ -233,17 +233,33 @@ export interface AnalyticsStats {
     sessions: number;
     pageViews: number;
   }>;
+  activity: Array<{
+    label: string;
+    value: number;
+  }>;
   deviceDistribution: Array<{
     device: string;
     count: number;
     percentage: number;
   }>;
+  topSources: Array<{
+    source: string;
+    visitors: number;
+  }>;
+  topCountries: Array<{
+    country: string;
+    visitors: number;
+    percentage: number;
+  }>;
+  activeVisitors: number;
 }
 
 /**
  * Get comprehensive analytics stats
  */
-export async function getAnalyticsStats(): Promise<AnalyticsStats> {
+export async function getAnalyticsStats(
+  range: '24h' | '7d' | '30d' = '24h'
+): Promise<AnalyticsStats> {
   try {
     const now = new Date();
     const startOfToday = new Date(
@@ -251,37 +267,64 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
       now.getMonth(),
       now.getDate()
     );
+
+    // Calculate start date based on range
+    let startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // Default 24h
+    if (range === '7d') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+    } else if (range === '30d') {
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 30);
+    }
+
     const startOfWeek = new Date(startOfToday);
     startOfWeek.setDate(startOfWeek.getDate() - 7);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Overview stats
+    // Overview stats (Filtered by range for consistency where applicable, or global?)
+    // Usually overview top cards are global or current range. Let's make them global/total for now as per previous implementation,
+    // EXCEPT for specific specific metrics if needed.
+    // The previous implementation had "Total Visitors" (global), "Avg Duration" (global).
+    // Let's keep them global for "Overview" but maybe "this week" stats should adapt?
+    // For now, let's keep the global stats global to avoid confusion, but we can filter the "Activity" chart.
+
+    // Actually, "Total Visitors" usually means in the selected timeframe.
+    // Let's filter the MAIN counts by range.
+
+    // Total sessions in range
     const [overviewResult] = await db
       .select({
         totalSessions: count(visitorSessions.id),
         avgDuration: sql<number>`COALESCE(AVG(${visitorSessions.totalDuration}), 0)`,
       })
-      .from(visitorSessions);
+      .from(visitorSessions)
+      .where(gte(visitorSessions.startedAt, startDate));
 
-    // Count unique visitors
+    // Count unique visitors in range
     const [uniqueVisitorsResult] = await db
       .select({
         count: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
       })
-      .from(visitorSessions);
+      .from(visitorSessions)
+      .where(gte(visitorSessions.startedAt, startDate));
 
-    // Total page views
+    // Total page views in range
     const [pageViewsResult] = await db
       .select({ count: count(pageVisits.id) })
-      .from(pageVisits);
+      .from(pageVisits)
+      .leftJoin(visitorSessions, eq(pageVisits.sessionId, visitorSessions.id)) // Join to filter by session time? Or page visit time.
+      .where(gte(pageVisits.enteredAt, startDate));
 
-    // Bounce rate (sessions with only 1 page view)
+    // Bounce rate in range
     const bouncedSessions = await db
       .select({
         sessionId: pageVisits.sessionId,
         pageCount: count(pageVisits.id),
       })
       .from(pageVisits)
+      .leftJoin(visitorSessions, eq(pageVisits.sessionId, visitorSessions.id))
+      .where(gte(visitorSessions.startedAt, startDate))
       .groupBy(pageVisits.sessionId);
 
     const bounceCount = bouncedSessions.filter(
@@ -320,7 +363,7 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
       .from(pageVisits)
       .where(gte(pageVisits.enteredAt, startOfWeek));
 
-    // Popular pages
+    // Popular pages in range
     const popularPages = await db
       .select({
         pagePath: pageVisits.pagePath,
@@ -329,6 +372,8 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
         avgDuration: sql<number>`COALESCE(AVG(${pageVisits.duration}), 0)`,
       })
       .from(pageVisits)
+      .leftJoin(visitorSessions, eq(pageVisits.sessionId, visitorSessions.id))
+      .where(gte(visitorSessions.startedAt, startDate))
       .groupBy(pageVisits.pagePath, pageVisits.pageTitle)
       .orderBy(desc(count(pageVisits.id)))
       .limit(10);
@@ -368,8 +413,80 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
       .from(visitorSessions)
       .groupBy(visitorSessions.device);
 
+    // Activity Data (Dynamic based on range)
+    let activityData;
+    if (range === '24h') {
+      activityData = await db
+        .select({
+          label: sql<string>`to_char(${visitorSessions.startedAt}, 'HH24:00')`,
+          value: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
+        })
+        .from(visitorSessions)
+        .where(gte(visitorSessions.startedAt, startDate))
+        .groupBy(sql`to_char(${visitorSessions.startedAt}, 'HH24:00')`)
+        .orderBy(sql`to_char(${visitorSessions.startedAt}, 'HH24:00')`);
+    } else {
+      // 7d or 30d - Group by Date
+      activityData = await db
+        .select({
+          label: sql<string>`to_char(${visitorSessions.startedAt}, 'Mon DD')`,
+          value: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
+          sortDate: sql<string>`DATE(${visitorSessions.startedAt})`,
+        })
+        .from(visitorSessions)
+        .where(gte(visitorSessions.startedAt, startDate))
+        .groupBy(
+          sql`to_char(${visitorSessions.startedAt}, 'Mon DD')`,
+          sql`DATE(${visitorSessions.startedAt})`
+        )
+        .orderBy(sql`DATE(${visitorSessions.startedAt})`);
+    }
+
+    // Top Sources
+    const topSources = await db
+      .select({
+        source: visitorSessions.referrer,
+        visitors: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
+      })
+      .from(visitorSessions)
+      .where(
+        and(
+          gte(visitorSessions.startedAt, startDate),
+          sql`${visitorSessions.referrer} IS NOT NULL`
+        )
+      )
+      .groupBy(visitorSessions.referrer)
+      .orderBy(desc(sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`))
+      .limit(5);
+
+    // Top Countries
+    const topCountries = await db
+      .select({
+        country: visitorSessions.country,
+        visitors: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
+      })
+      .from(visitorSessions)
+      .where(gte(visitorSessions.startedAt, startDate))
+      .groupBy(visitorSessions.country)
+      .orderBy(desc(sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`))
+      .limit(5);
+
+    // Active Visitors (last 30 min)
+    const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+    const [activeVisitorsResult] = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${visitorSessions.visitorId})`,
+      })
+      .from(visitorSessions)
+      .where(gte(visitorSessions.startedAt, thirtyMinutesAgo));
+
     const totalDevices = deviceStats.reduce(
       (sum, d) => sum + Number(d.count),
+      0
+    );
+
+    const totalCountryVisitors = topCountries.reduce(
+      (sum, c) => sum + Number(c.visitors),
       0
     );
 
@@ -405,6 +522,10 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
         sessions: Number(v.sessions),
         pageViews: pageViewsMap.get(v.date) || 0,
       })),
+      activity: activityData.map((v) => ({
+        label: v.label,
+        value: Number(v.value || 0),
+      })),
       deviceDistribution: deviceStats.map((d) => ({
         device: d.device || 'unknown',
         count: Number(d.count),
@@ -413,6 +534,19 @@ export async function getAnalyticsStats(): Promise<AnalyticsStats> {
             ? Math.round((Number(d.count) / totalDevices) * 1000) / 10
             : 0,
       })),
+      topSources: topSources.map((s) => ({
+        source: s.source || 'Direct',
+        visitors: Number(s.visitors),
+      })),
+      topCountries: topCountries.map((c) => ({
+        country: c.country || 'Unknown',
+        visitors: Number(c.visitors),
+        percentage:
+          totalCountryVisitors > 0
+            ? Math.round((Number(c.visitors) / totalCountryVisitors) * 100)
+            : 0,
+      })),
+      activeVisitors: Number(activeVisitorsResult?.count || 0),
     };
   } catch (error) {
     logger.error('Error getting analytics stats', { error });

@@ -239,11 +239,21 @@ export default function VocabulariesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Vocabularies</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage vocabulary entries for different languages
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-medium text-foreground tracking-tight">
+              Vocabularies
+            </h1>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-pink-500/10 border border-pink-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 bg-pink-500 rounded-full"></span>
+              <span className="text-[10px] font-medium text-pink-500 uppercase tracking-wide">
+                Lexicon
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage vocabulary entries for different languages.
           </p>
         </div>
         <Button onClick={handleOpenDialog}>

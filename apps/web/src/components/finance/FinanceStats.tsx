@@ -24,12 +24,12 @@ interface FinanceStatsProps {
 }
 
 const COLORS = [
-  '#0088FE',
-  '#00C49F',
-  '#FFBB28',
-  '#FF8042',
-  '#8884d8',
-  '#82ca9d',
+  '#262626', // Neutral 800
+  '#525252', // Neutral 600
+  '#737373', // Neutral 500
+  '#a3a3a3', // Neutral 400
+  '#d4d4d4', // Neutral 300
+  '#e5e5e5', // Neutral 200
 ];
 
 export function FinanceStatsCards({ stats }: FinanceStatsProps) {
@@ -39,10 +39,10 @@ export function FinanceStatsCards({ stats }: FinanceStatsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Monthly Income</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-500" />
+          <TrendingUp className="h-4 w-4 text-emerald-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-emerald-500">
             <NumericFormat
               value={stats.monthlyIncome}
               displayType="text"
@@ -61,10 +61,10 @@ export function FinanceStatsCards({ stats }: FinanceStatsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Monthly Expense</CardTitle>
-          <TrendingDown className="h-4 w-4 text-red-500" />
+          <TrendingDown className="h-4 w-4 text-rose-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600">
+          <div className="text-2xl font-bold text-rose-500">
             <NumericFormat
               value={stats.monthlyExpense}
               displayType="text"
@@ -189,7 +189,12 @@ export function FinanceCharts({ stats }: FinanceStatsProps) {
                 }}
                 labelFormatter={(label) => label.toString().replace(/_/g, ' ')}
               />
-              <Bar dataKey="value" fill="#8884d8" name="Amount" />
+              <Bar
+                dataKey="value"
+                fill="currentColor"
+                className="text-primary/40"
+                name="Amount"
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

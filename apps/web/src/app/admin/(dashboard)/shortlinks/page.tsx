@@ -263,11 +263,21 @@ export default function ShortlinksPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Shortlinks</h1>
-          <p className="text-muted-foreground">
-            Create and manage short URLs for easy sharing
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-medium text-foreground tracking-tight">
+              Shortlinks
+            </h1>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+              <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wide">
+                URL Management
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Create and manage short URLs for easy sharing.
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">

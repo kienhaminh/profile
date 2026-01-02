@@ -15,6 +15,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:run": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:seed:mockup": "tsx scripts/seed-mockup.ts",
     "db:migrate-passwords": "tsx scripts/migrate-passwords.ts",
     "db:setup": "npm run db:migrate:run && npm run db:seed"
   },

@@ -16,25 +16,25 @@ export const toolCategories = [
     id: 'social',
     name: 'Social Network Scripts',
     icon: <Share2 className="w-5 h-5" />,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'bg-blue-500',
   },
   {
     id: 'automation',
     name: 'Automation Flows',
     icon: <Workflow className="w-5 h-5" />,
-    color: 'from-purple-500 to-pink-500',
+    color: 'bg-orange-500',
   },
   {
     id: 'image',
     name: 'Image Generation',
     icon: <ImageIcon className="w-5 h-5" />,
-    color: 'from-orange-500 to-red-500',
+    color: 'bg-purple-500',
   },
   {
     id: 'ai',
     name: 'AI Tools',
     icon: <Bot className="w-5 h-5" />,
-    color: 'from-green-500 to-teal-500',
+    color: 'bg-emerald-500',
   },
 ];
 

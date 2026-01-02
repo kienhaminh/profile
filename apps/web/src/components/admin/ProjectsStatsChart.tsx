@@ -9,7 +9,6 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProjectsStatsData {
@@ -46,51 +45,52 @@ export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
 
   if (!isMounted) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Projects by Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="w-full h-[300px]" />
-        </CardContent>
-      </Card>
+      <div className="p-6">
+        <Skeleton className="w-full h-[300px]" />
+      </div>
     );
   }
 
   if (!data || data.length === 0 || filteredChartData.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Projects by Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground">
-            No projects data available
-          </div>
-        </CardContent>
-      </Card>
+      <div className="p-6">
+        <div className="mb-6">
+          <h3 className="text-sm font-medium text-foreground">
+            Projects Status
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Distribution of projects by status.
+          </p>
+        </div>
+        <div className="w-full h-[300px] flex items-center justify-center text-muted-foreground bg-accent/30 rounded-lg border border-border/50 border-dashed">
+          No projects data available
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Projects by Status</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-sm font-medium text-foreground">
+            Projects Status
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Distribution of projects by status.
+          </p>
+        </div>
+      </div>
+
+      <div className="w-full h-[300px]">
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={filteredChartData}
               cx="50%"
               cy="50%"
-              labelLine={false}
-              label={(props) => {
-                const percent = Number(props.percent || 0);
-                return `${props.name}: ${(percent * 100).toFixed(0)}%`;
-              }}
-              outerRadius={80}
-              fill="#8884d8"
+              innerRadius={60}
+              paddingAngle={5}
               dataKey="value"
             >
               {filteredChartData.map((entry) => (
@@ -99,6 +99,7 @@ export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
                   fill={
                     COLORS[entry.status as keyof typeof COLORS] || '#3b82f6'
                   }
+                  strokeWidth={0}
                 />
               ))}
             </Pie>
@@ -107,12 +108,19 @@ export function ProjectsStatsChart({ data }: ProjectsStatsChartProps) {
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
+                fontSize: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
+              itemStyle={{ paddingBottom: '2px' }}
             />
-            <Legend />
+            <Legend
+              wrapperStyle={{ paddingTop: '20px', fontSize: '12px' }}
+              iconType="circle"
+              iconSize={8}
+            />
           </PieChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

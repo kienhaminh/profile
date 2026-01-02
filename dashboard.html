@@ -1,0 +1,320 @@
+<html lang="en" class="dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Overview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+        /* Chart Tooltip Animation */
+        .chart-bar:hover .tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-400 antialiased selection:bg-zinc-800 selection:text-white min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800 bg-zinc-950 flex-shrink-0 flex flex-col h-screen sticky top-0">
+        <div class="p-6 flex items-center gap-3 mb-2">
+            <div class="w-8 h-8 rounded bg-gradient-to-tr from-zinc-200 to-zinc-400 flex items-center justify-center text-zinc-900 font-semibold text-sm shadow-inner">
+                A
+            </div>
+            <span class="text-zinc-100 font-medium text-sm tracking-tight">Acme Corp</span>
+        </div>
+
+        <nav class="px-3 space-y-1 flex-1">
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-100 bg-zinc-900/60 rounded-md border border-zinc-800/60 shadow-sm transition-all">
+                <iconify-icon icon="lucide:layout-dashboard" width="16" height="16" stroke-width="1.5"></iconify-icon>
+                Overview
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 rounded-md transition-all">
+                <iconify-icon icon="lucide:bar-chart-2" width="16" height="16" stroke-width="1.5"></iconify-icon>
+                Analytics
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 rounded-md transition-all">
+                <iconify-icon icon="lucide:users" width="16" height="16" stroke-width="1.5"></iconify-icon>
+                Customers
+            </a>
+            <div class="pt-4 pb-2 px-3 text-[10px] font-medium uppercase tracking-wider text-zinc-600">Settings</div>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 rounded-md transition-all">
+                <iconify-icon icon="lucide:settings-2" width="16" height="16" stroke-width="1.5"></iconify-icon>
+                General
+            </a>
+            <a href="#" class="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/30 rounded-md transition-all">
+                <iconify-icon icon="lucide:credit-card" width="16" height="16" stroke-width="1.5"></iconify-icon>
+                Billing
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-zinc-900">
+            <button class="flex items-center gap-3 w-full px-2 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors">
+                <div class="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <iconify-icon icon="lucide:user" width="12"></iconify-icon>
+                </div>
+                <span>user@acme.com</span>
+                <iconify-icon icon="lucide:chevrons-up-down" class="ml-auto opacity-50" width="12"></iconify-icon>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 overflow-y-auto">
+        <div class="max-w-6xl mx-auto px-6 py-8 md:py-12">
+            
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-500 mb-1">
+                        <span>Overview</span>
+                    </div>
+                    <h1 class="text-2xl font-medium text-zinc-100 tracking-tight">Dashboard</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <!-- Custom Date Picker Trigger -->
+                    <button class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-zinc-300 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-800 hover:border-zinc-700 transition-all">
+                        <iconify-icon icon="lucide:calendar" width="14"></iconify-icon>
+                        Last 30 Days
+                        <iconify-icon icon="lucide:chevron-down" width="12" class="opacity-50"></iconify-icon>
+                    </button>
+                    <button class="flex items-center justify-center w-8 h-8 text-zinc-300 bg-zinc-900 border border-zinc-800 rounded hover:bg-zinc-100 hover:text-zinc-950 hover:border-zinc-100 transition-all">
+                        <iconify-icon icon="lucide:download" width="14"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- Metric Card 1 -->
+                <div class="p-5 rounded-xl bg-zinc-950 border border-zinc-800/60 shadow-sm relative overflow-hidden group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-zinc-900/50 border border-zinc-800 rounded-md text-zinc-400">
+                            <iconify-icon icon="lucide:dollar-sign" width="16"></iconify-icon>
+                        </div>
+                        <span class="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <iconify-icon icon="lucide:trending-up" width="10"></iconify-icon>
+                            12.5%
+                        </span>
+                    </div>
+                    <div class="text-zinc-500 text-xs font-medium mb-1">Total Revenue</div>
+                    <div class="text-2xl font-semibold text-zinc-100 tracking-tight">$45,231.89</div>
+                </div>
+
+                <!-- Metric Card 2 -->
+                <div class="p-5 rounded-xl bg-zinc-950 border border-zinc-800/60 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-zinc-900/50 border border-zinc-800 rounded-md text-zinc-400">
+                            <iconify-icon icon="lucide:users" width="16"></iconify-icon>
+                        </div>
+                        <span class="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700">
+                            <iconify-icon icon="lucide:minus" width="10"></iconify-icon>
+                            0.2%
+                        </span>
+                    </div>
+                    <div class="text-zinc-500 text-xs font-medium mb-1">Active Users</div>
+                    <div class="text-2xl font-semibold text-zinc-100 tracking-tight">2,420</div>
+                </div>
+
+                <!-- Metric Card 3 -->
+                <div class="p-5 rounded-xl bg-zinc-950 border border-zinc-800/60 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-zinc-900/50 border border-zinc-800 rounded-md text-zinc-400">
+                            <iconify-icon icon="lucide:activity" width="16"></iconify-icon>
+                        </div>
+                        <span class="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            <iconify-icon icon="lucide:trending-down" width="10"></iconify-icon>
+                            4.1%
+                        </span>
+                    </div>
+                    <div class="text-zinc-500 text-xs font-medium mb-1">Bounce Rate</div>
+                    <div class="text-2xl font-semibold text-zinc-100 tracking-tight">42.3%</div>
+                </div>
+            </div>
+
+            <!-- Main Chart Section -->
+            <div class="w-full bg-zinc-950 border border-zinc-800/60 rounded-xl p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-zinc-200">Traffic Overview</h3>
+                        <p class="text-xs text-zinc-500 mt-0.5">Daily requests over the last 14 days.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex items-center gap-2 px-3 py-1 bg-zinc-900 rounded border border-zinc-800">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                            <span class="text-xs text-zinc-400">Organic</span>
+                        </div>
+                        <div class="flex items-center gap-2 px-3 py-1 bg-zinc-900 rounded border border-zinc-800">
+                            <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                            <span class="text-xs text-zinc-400">Direct</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CSS-only Bar Chart -->
+                <div class="h-48 flex items-end justify-between gap-1 md:gap-2 w-full pt-4">
+                    <!-- Bar Item -->
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 35%;">
+                        <div class="tooltip opacity-0 absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700 transition-all pointer-events-none whitespace-nowrap z-10">2.4k</div>
+                    </div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 45%;">
+                         <div class="tooltip opacity-0 absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700 transition-all pointer-events-none whitespace-nowrap z-10">3.1k</div>
+                    </div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 30%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 55%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 60%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 45%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 75%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 50%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 65%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 40%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 85%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 60%;"></div>
+                    <div class="w-full bg-zinc-900 rounded-t-sm hover:bg-zinc-800 transition-all relative group chart-bar" style="height: 70%;"></div>
+                    <div class="w-full bg-indigo-500/20 rounded-t-sm border-t border-x border-indigo-500/30 hover:bg-indigo-500/30 transition-all relative group chart-bar" style="height: 90%;">
+                        <div class="tooltip opacity-0 absolute -top-8 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700 transition-all pointer-events-none whitespace-nowrap z-10">Today</div>
+                    </div>
+                </div>
+                <!-- X-Axis Labels -->
+                <div class="flex justify-between mt-2 px-1">
+                    <span class="text-[10px] text-zinc-600">Apr 1</span>
+                    <span class="text-[10px] text-zinc-600">Apr 7</span>
+                    <span class="text-[10px] text-zinc-600">Apr 14</span>
+                </div>
+            </div>
+
+            <!-- Activity Table -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-medium text-zinc-200">Recent Activity</h3>
+                    <a href="#" class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors">View All</a>
+                </div>
+                
+                <div class="bg-zinc-950 border border-zinc-800/60 rounded-xl overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="border-b border-zinc-800/60 text-xs text-zinc-500 font-medium">
+                                <th class="px-6 py-3 font-medium">Project</th>
+                                <th class="px-6 py-3 font-medium">Commit</th>
+                                <th class="px-6 py-3 font-medium">Status</th>
+                                <th class="px-6 py-3 font-medium text-right">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-800/60">
+                            <tr class="group hover:bg-zinc-900/40 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                                            <iconify-icon icon="lucide:globe" width="14"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <div class="text-zinc-200 font-medium text-xs">artemis-web</div>
+                                            <div class="text-zinc-600 text-[10px]">Production</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <iconify-icon icon="lucide:git-commit" class="text-zinc-600" width="14"></iconify-icon>
+                                        <span class="text-zinc-400 text-xs font-mono">8f3a2c</span>
+                                        <span class="text-zinc-500 text-xs">- Update landing page</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"></div>
+                                        <span class="text-xs text-emerald-500">Deployed</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right text-xs text-zinc-500">
+                                    2m ago
+                                </td>
+                            </tr>
+
+                            <tr class="group hover:bg-zinc-900/40 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                                            <iconify-icon icon="lucide:server" width="14"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <div class="text-zinc-200 font-medium text-xs">artemis-api</div>
+                                            <div class="text-zinc-600 text-[10px]">Preview</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <iconify-icon icon="lucide:git-pull-request" class="text-zinc-600" width="14"></iconify-icon>
+                                        <span class="text-zinc-400 text-xs font-mono">pr-42</span>
+                                        <span class="text-zinc-500 text-xs">- Auth refactor</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                                        <span class="text-xs text-amber-500">Building</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right text-xs text-zinc-500">
+                                    15m ago
+                                </td>
+                            </tr>
+
+                            <tr class="group hover:bg-zinc-900/40 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400">
+                                            <iconify-icon icon="lucide:database" width="14"></iconify-icon>
+                                        </div>
+                                        <div>
+                                            <div class="text-zinc-200 font-medium text-xs">artemis-db</div>
+                                            <div class="text-zinc-600 text-[10px]">Database</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <iconify-icon icon="lucide:save" class="text-zinc-600" width="14"></iconify-icon>
+                                        <span class="text-zinc-500 text-xs">Manual Backup</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-zinc-500"></div>
+                                        <span class="text-xs text-zinc-500">Completed</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right text-xs text-zinc-500">
+                                    2h ago
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</body></html>

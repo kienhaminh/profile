@@ -1,0 +1,370 @@
+<html lang="en" class="dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+        /* Chart Tooltip Animation */
+        .chart-bar:hover .tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-400 antialiased selection:bg-zinc-800 selection:text-white min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-800/60">
+        <div class="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-zinc-100 flex items-center justify-center text-zinc-950 font-bold text-xs">
+                    P
+                </div>
+                <span class="text-zinc-100 font-medium text-sm tracking-tight">portfolio.dev</span>
+                <span class="text-zinc-600">/</span>
+                <span class="text-zinc-400 text-sm">analytics</span>
+            </div>
+            <a href="#" class="group flex items-center gap-2 text-xs font-medium text-zinc-500 hover:text-zinc-200 transition-colors">
+                <span>Return to site</span>
+                <iconify-icon icon="lucide:arrow-right" class="group-hover:translate-x-0.5 transition-transform" width="12"></iconify-icon>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full">
+        <div class="max-w-5xl mx-auto px-6 py-8 md:py-12">
+            
+            <!-- Header Controls -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-xl font-medium text-zinc-100 tracking-tight">Traffic Overview</h1>
+                        <div class="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            <span class="text-[10px] font-medium text-emerald-400 uppercase tracking-wide">24 Active</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-1">Real-time insights for your portfolio.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="flex bg-zinc-900 p-0.5 rounded-md border border-zinc-800">
+                        <button class="px-3 py-1 text-xs font-medium text-zinc-200 bg-zinc-800 rounded shadow-sm border border-zinc-700/50">24h</button>
+                        <button class="px-3 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-colors">7d</button>
+                        <button class="px-3 py-1 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition-colors">30d</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2">
+                        <iconify-icon icon="lucide:eye" class="text-zinc-600" width="14"></iconify-icon>
+                        <div class="text-xs font-medium text-zinc-500">Total Views</div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-semibold text-zinc-100 tracking-tight">8,242</span>
+                        <span class="text-[10px] font-medium text-emerald-400 flex items-center">
+                            <iconify-icon icon="lucide:arrow-up" width="10"></iconify-icon> 12%
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 shadow-sm">
+                     <div class="flex items-center gap-2 mb-2">
+                        <iconify-icon icon="lucide:file-text" class="text-zinc-600" width="14"></iconify-icon>
+                        <div class="text-xs font-medium text-zinc-500">Resume Downloads</div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-semibold text-zinc-100 tracking-tight">146</span>
+                        <span class="text-[10px] font-medium text-emerald-400 flex items-center">
+                            <iconify-icon icon="lucide:arrow-up" width="10"></iconify-icon> 4%
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 shadow-sm">
+                     <div class="flex items-center gap-2 mb-2">
+                        <iconify-icon icon="lucide:mail" class="text-zinc-600" width="14"></iconify-icon>
+                        <div class="text-xs font-medium text-zinc-500">Contact Clicks</div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-semibold text-zinc-100 tracking-tight">28</span>
+                        <span class="text-[10px] font-medium text-zinc-500 flex items-center">
+                            <iconify-icon icon="lucide:minus" width="10"></iconify-icon> 0%
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-zinc-900/20 border border-zinc-800/60 shadow-sm">
+                     <div class="flex items-center gap-2 mb-2">
+                        <iconify-icon icon="lucide:clock" class="text-zinc-600" width="14"></iconify-icon>
+                        <div class="text-xs font-medium text-zinc-500">Avg. Time</div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-2xl font-semibold text-zinc-100 tracking-tight">2m 14s</span>
+                        <span class="text-[10px] font-medium text-emerald-400 flex items-center">
+                            <iconify-icon icon="lucide:arrow-up" width="10"></iconify-icon> 8%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Chart Section -->
+            <div class="w-full bg-zinc-900/20 border border-zinc-800/60 rounded-xl p-6 mb-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-zinc-200">Activity</h3>
+                        <p class="text-xs text-zinc-500 mt-0.5">Visitors over the last 24 hours.</p>
+                    </div>
+                </div>
+
+                <!-- High Density Bar Chart -->
+                <div class="h-56 flex items-end justify-between gap-[3px] w-full pt-4 px-1">
+                    <!-- Generating bars -->
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 20%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 35%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 25%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 45%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 30%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 55%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 40%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 60%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 50%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 75%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 65%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 45%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 35%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 50%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 40%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 60%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 80%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 70%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 55%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 45%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 65%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 75%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 90%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 85%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 60%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 50%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 40%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 30%;"></div>
+                    <div class="w-full bg-zinc-800/50 rounded-t-[1px] hover:bg-zinc-600 transition-all chart-bar relative" style="height: 45%;"></div>
+                    <div class="w-full bg-indigo-500 rounded-t-[1px] shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:bg-indigo-400 transition-all chart-bar relative group" style="height: 65%;">
+                         <div class="tooltip opacity-0 absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-800 text-white text-[10px] px-2 py-1 rounded border border-zinc-700 transition-all pointer-events-none whitespace-nowrap z-10 shadow-lg flex flex-col items-center">
+                            <span class="font-bold">24 Visitors</span>
+                            <span class="text-zinc-400">Just now</span>
+                        </div>
+                    </div>
+                </div>
+                 <!-- X-Axis Labels -->
+                 <div class="flex justify-between mt-3 px-1">
+                    <span class="text-[10px] text-zinc-600 font-mono">00:00</span>
+                    <span class="text-[10px] text-zinc-600 font-mono">06:00</span>
+                    <span class="text-[10px] text-zinc-600 font-mono">12:00</span>
+                    <span class="text-[10px] text-zinc-600 font-mono">18:00</span>
+                    <span class="text-[10px] text-zinc-600 font-mono">Now</span>
+                </div>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Top Projects/Pages -->
+                <div class="bg-zinc-900/20 border border-zinc-800/60 rounded-xl overflow-hidden flex flex-col h-full">
+                    <div class="px-5 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-zinc-200">Top Pages</h3>
+                        <iconify-icon icon="lucide:layout" class="text-zinc-600" width="14"></iconify-icon>
+                    </div>
+                    <div class="flex-1 p-2">
+                        <!-- List Item -->
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative">
+                            <!-- Background Progress Bar -->
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 85%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-mono text-zinc-300">/</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700/50">Home</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">4,231</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 62%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-mono text-zinc-300">/projects/finance-dashboard</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">2,102</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 45%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-mono text-zinc-300">/projects/ai-chat</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">1,400</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 30%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-mono text-zinc-300">/about</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">934</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 15%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <span class="text-xs font-mono text-zinc-300">/resume.pdf</span>
+                                <iconify-icon icon="lucide:download" width="10" class="text-zinc-600"></iconify-icon>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">121</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sources -->
+                <div class="bg-zinc-900/20 border border-zinc-800/60 rounded-xl overflow-hidden flex flex-col h-full">
+                     <div class="px-5 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+                        <h3 class="text-sm font-medium text-zinc-200">Sources</h3>
+                        <iconify-icon icon="lucide:share-2" class="text-zinc-600" width="14"></iconify-icon>
+                    </div>
+                    <div class="flex-1 p-2">
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 55%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <iconify-icon icon="lucide:linkedin" width="12" class="text-zinc-500"></iconify-icon>
+                                <span class="text-xs text-zinc-300">LinkedIn</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">2,201</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 32%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <iconify-icon icon="lucide:dribbble" width="12" class="text-zinc-500"></iconify-icon>
+                                <span class="text-xs text-zinc-300">Dribbble</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">1,402</div>
+                        </div>
+
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 25%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <iconify-icon icon="lucide:twitter" width="12" class="text-zinc-500"></iconify-icon>
+                                <span class="text-xs text-zinc-300">Twitter / X</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">1,100</div>
+                        </div>
+                        
+                        <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 15%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <iconify-icon icon="lucide:globe" width="12" class="text-zinc-500"></iconify-icon>
+                                <span class="text-xs text-zinc-300">Direct</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">521</div>
+                        </div>
+
+                         <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                            <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 8%;"></div>
+                            <div class="flex items-center gap-2 relative z-10">
+                                <iconify-icon icon="lucide:github" width="12" class="text-zinc-500"></iconify-icon>
+                                <span class="text-xs text-zinc-300">GitHub</span>
+                            </div>
+                            <div class="text-xs text-zinc-400 font-medium relative z-10">203</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Locations (Full Width) -->
+                <div class="bg-zinc-900/20 border border-zinc-800/60 rounded-xl overflow-hidden flex flex-col h-full lg:col-span-2">
+                    <div class="px-5 py-4 border-b border-zinc-800/60 flex items-center justify-between">
+                       <h3 class="text-sm font-medium text-zinc-200">Visitor Locations</h3>
+                       <iconify-icon icon="lucide:map-pin" class="text-zinc-600" width="14"></iconify-icon>
+                   </div>
+                   <div class="grid grid-cols-1 md:grid-cols-2">
+                       <div class="p-2 border-b md:border-b-0 md:border-r border-zinc-800/60">
+                           <!-- Country List -->
+                            <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative">
+                                <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 40%;"></div>
+                                <div class="flex items-center gap-3 relative z-10">
+                                    <div class="w-4 h-3 bg-zinc-700 rounded-[1px] overflow-hidden relative opacity-80">
+                                        <div class="absolute inset-0 bg-gradient-to-b from-blue-900 to-red-900 opacity-50"></div>
+                                    </div>
+                                    <span class="text-xs text-zinc-300">United States</span>
+                                </div>
+                                <div class="text-xs text-zinc-400 font-medium relative z-10">40%</div>
+                            </div>
+                            <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                                <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 15%;"></div>
+                                <div class="flex items-center gap-3 relative z-10">
+                                    <div class="w-4 h-3 bg-zinc-700 rounded-[1px] overflow-hidden relative opacity-80">
+                                        <div class="absolute inset-0 bg-yellow-900 opacity-50"></div>
+                                    </div>
+                                    <span class="text-xs text-zinc-300">Germany</span>
+                                </div>
+                                <div class="text-xs text-zinc-400 font-medium relative z-10">15%</div>
+                            </div>
+                            <div class="group flex items-center justify-between p-2 rounded hover:bg-zinc-900/60 transition-colors relative mt-1">
+                                <div class="absolute left-0 top-0 bottom-0 bg-zinc-800/30 rounded z-0" style="width: 12%;"></div>
+                                <div class="flex items-center gap-3 relative z-10">
+                                    <div class="w-4 h-3 bg-zinc-700 rounded-[1px] overflow-hidden relative opacity-80">
+                                        <div class="absolute inset-0 bg-blue-900 opacity-50"></div>
+                                    </div>
+                                    <span class="text-xs text-zinc-300">United Kingdom</span>
+                                </div>
+                                <div class="text-xs text-zinc-400 font-medium relative z-10">12%</div>
+                            </div>
+                       </div>
+                       <div class="p-2 flex items-center justify-center min-h-[150px] relative overflow-hidden">
+                           <!-- Abstract Map Visualization using Flex/Grid -->
+                           <div class="relative w-full max-w-[280px] aspect-video opacity-80">
+                                <!-- Simulated dots for map -->
+                                <div class="absolute top-[30%] left-[20%] w-1.5 h-1.5 bg-zinc-700 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
+                                <div class="absolute top-[35%] left-[25%] w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.6)] animate-pulse"></div>
+                                <div class="absolute top-[25%] left-[80%] w-1.5 h-1.5 bg-zinc-700 rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+                                <div class="absolute top-[40%] left-[55%] w-1.5 h-1.5 bg-zinc-700 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
+                                <div class="absolute top-[32%] left-[48%] w-1.5 h-1.5 bg-zinc-600 rounded-full"></div> <!-- Europe -->
+                                <div class="absolute top-[34%] left-[50%] w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse"></div> <!-- Central EU -->
+                                <div class="absolute top-[60%] left-[75%] w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
+                                <div class="absolute top-[70%] left-[30%] w-1.5 h-1.5 bg-zinc-800 rounded-full"></div>
+                           </div>
+                           <div class="absolute bottom-3 right-3 flex items-center gap-2">
+                                <span class="flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-indigo-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                </span>
+                               <span class="text-[10px] text-zinc-500 font-mono uppercase">Live Map</span>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+            </div>
+
+        </div>
+    </main>
+
+</body></html>

@@ -95,35 +95,34 @@ html {
 }
 
 .dark {
-  /* Core Colors - Dark Mode (Prompt Reference: Neutral 950) */
-  --background: #0a0a0a; /* neutral-950 */
-  --foreground: #d4d4d4; /* neutral-300 */
+  /* Core Colors - Dark Mode (Zinc palette from profile.html) */
+  --background: #09090b; /* zinc-950 */
+  --foreground: #a1a1aa; /* zinc-400 */
 
-  --card: #171717; /* neutral-900 */
-  --card-foreground: #ffffff;
+  --card: #18181b; /* zinc-900 */
+  --card-foreground: #fafafa; /* zinc-50 */
 
-  --popover: #0a0a0a;
-  --popover-foreground: #d4d4d4;
+  --popover: #09090b; /* zinc-950 */
+  --popover-foreground: #a1a1aa; /* zinc-400 */
 
-  /* Primary - White (High Contrast for Buttons/Badges) */
-  --primary: #ffffff;
-  --primary-foreground: #000000;
+  /* Primary - Near-white (High Contrast for Buttons/Badges) */
+  --primary: #f4f4f5; /* zinc-100 */
+  --primary-foreground: #09090b; /* zinc-950 */
 
   /* Secondary & Muted */
-  --secondary: #171717;
-  --secondary-foreground: #ffffff;
-  --muted: #171717;
-  --muted-foreground: #737373; /* neutral-500 */
-  --accent: #262626; /* neutral-800 */
-  --accent-foreground: #ffffff;
+  --secondary: #18181b; /* zinc-900 */
+  --secondary-foreground: #fafafa; /* zinc-50 */
+  --muted: #27272a; /* zinc-800 */
+  --muted-foreground: #71717a; /* zinc-500 */
+  --accent: #27272a; /* zinc-800 */
+  --accent-foreground: #fafafa; /* zinc-50 */
 
   /* Semantic */
-  /* Semantic (red-500/10 for bg in design system) */
-  --destructive: #ef4444; /* red-500, but components may use /10 opacity */
-  --destructive-foreground: #ef4444; /* red-500 text color */
-  --border: #262626; /* neutral-800 */
-  --input: #262626;
-  --ring: #ffffff;
+  --destructive: #ef4444; /* red-500 */
+  --destructive-foreground: #fafafa; /* zinc-50 - white text on red background */
+  --border: #27272a; /* zinc-800 */
+  --input: #27272a; /* zinc-800 */
+  --ring: #f4f4f5; /* zinc-100 */
 
   /* Glow Colors (Dark Mode) */
   --glow-1: #1e3a8a; /* blue-900 */
@@ -133,22 +132,22 @@ html {
   --gradient-subtle: linear-gradient(135deg, var(--glow-1), var(--glow-2));
   --backdrop-blur: 12px;
 
-  /* Charts */
-  --chart-1: #3b82f6;
-  --chart-2: #8b5cf6;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #ef4444;
+  /* Charts - Zinc-based monochrome */
+  --chart-1: #e4e4e7; /* zinc-200 */
+  --chart-2: #a1a1aa; /* zinc-400 */
+  --chart-3: #71717a; /* zinc-500 */
+  --chart-4: #52525b; /* zinc-600 */
+  --chart-5: #3f3f46; /* zinc-700 */
 
-  /* Sidebar */
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #d4d4d4;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #171717;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #262626;
-  --sidebar-ring: #ffffff;
+  /* Sidebar - Matching profile.html */
+  --sidebar: #09090b; /* zinc-950 */
+  --sidebar-foreground: #a1a1aa; /* zinc-400 */
+  --sidebar-primary: #f4f4f5; /* zinc-100 */
+  --sidebar-primary-foreground: #09090b; /* zinc-950 */
+  --sidebar-accent: #18181b; /* zinc-900 */
+  --sidebar-accent-foreground: #fafafa; /* zinc-50 */
+  --sidebar-border: #27272a; /* zinc-800 */
+  --sidebar-ring: #f4f4f5; /* zinc-100 */
 
   /* Shadows - Dark */
   --shadow-2xs: 0 1px 2px rgba(0, 0, 0, 0.3);

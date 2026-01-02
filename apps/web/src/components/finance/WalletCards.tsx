@@ -33,10 +33,10 @@ export function WalletCards({ wallets }: WalletCardsProps) {
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-emerald-500" />
                 <div>
                   <p className="text-muted-foreground">Income</p>
-                  <p className="font-medium text-green-600">
+                  <p className="font-medium text-emerald-500">
                     <NumericFormat
                       value={wallet.monthlyIncome}
                       displayType="text"
@@ -47,10 +47,10 @@ export function WalletCards({ wallets }: WalletCardsProps) {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-rose-500" />
                 <div>
                   <p className="text-muted-foreground">Expense</p>
-                  <p className="font-medium text-red-600">
+                  <p className="font-medium text-rose-500">
                     <NumericFormat
                       value={wallet.monthlyExpense}
                       displayType="text"
@@ -63,15 +63,15 @@ export function WalletCards({ wallets }: WalletCardsProps) {
 
               {(wallet.exchangeIn > 0 || wallet.exchangeOut > 0) && (
                 <>
-                  <div className="flex items-center gap-2 border-t pt-2">
-                    <div className="h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-600 font-bold">
+                  <div className="flex items-center gap-2 border-t border-border pt-2">
+                    <div className="h-4 w-4 rounded-full bg-accent flex items-center justify-center text-[10px] text-muted-foreground font-bold">
                       ↓
                     </div>
                     <div>
                       <p className="text-muted-foreground text-[10px]">
                         Exch. In
                       </p>
-                      <p className="font-medium text-blue-600">
+                      <p className="font-medium text-foreground">
                         <NumericFormat
                           value={wallet.exchangeIn}
                           displayType="text"
@@ -81,15 +81,15 @@ export function WalletCards({ wallets }: WalletCardsProps) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 border-t pt-2">
-                    <div className="h-4 w-4 rounded-full bg-orange-100 flex items-center justify-center text-[10px] text-orange-600 font-bold">
+                  <div className="flex items-center gap-2 border-t border-border pt-2">
+                    <div className="h-4 w-4 rounded-full bg-accent flex items-center justify-center text-[10px] text-muted-foreground font-bold">
                       ↑
                     </div>
                     <div>
                       <p className="text-muted-foreground text-[10px]">
                         Exch. Out
                       </p>
-                      <p className="font-medium text-orange-600">
+                      <p className="font-medium text-foreground">
                         <NumericFormat
                           value={wallet.exchangeOut}
                           displayType="text"

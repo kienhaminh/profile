@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -12,15 +11,19 @@ import {
   FolderTree,
   Hash,
   TrendingUp,
+  Calendar,
+  ChevronDown,
+  Download,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
 import { authFetch, authDelete } from '@/lib/auth';
 import type { Blog } from '@/types/blog';
-import { PostsOverTimeChart } from '@/components/admin/posts-over-time-chart';
-import { TopicsDistributionChart } from '@/components/admin/topics-distribution-chart';
-import { HashtagsDistributionChart } from '@/components/admin/hashtags-distribution-chart';
-import { ProjectsStatsChart } from '@/components/admin/projects-stats-chart';
+import { PostsOverTimeChart } from '@/components/admin/PostsOverTimeChart';
+import { ProjectsStatsChart } from '@/components/admin/ProjectsStatsChart';
+import { formatDistanceToNow } from 'date-fns';
 
 interface DashboardStats {
   postsOverTime: Array<{ month: string; count: string; status: string }>;
@@ -120,256 +123,284 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Manage your blog posts and content
-        </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-medium text-foreground tracking-tight">
+              Dashboard Overview
+            </h1>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full">
+              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>
+              <span className="text-[10px] font-medium text-indigo-500 uppercase tracking-wide">
+                System Online
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Welcome back to your command center.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Custom Date Picker Trigger */}
+          <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-muted-foreground bg-card border border-border rounded hover:bg-accent hover:text-foreground transition-all">
+            <Calendar className="w-3.5 h-3.5" />
+            Last 30 Days
+            <ChevronDown className="w-3 h-3 opacity-50" />
+          </button>
+          <button className="flex items-center justify-center w-8 h-8 text-muted-foreground bg-card border border-border rounded hover:bg-foreground hover:text-background hover:border-foreground transition-all">
+            <Download className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Posts
-              </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-600 dark:from-indigo-400 dark:to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Metric Card 1: Total Posts */}
+        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+              <FileText className="w-4 h-4" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-indigo-500 to-blue-500 dark:from-indigo-400 dark:to-blue-400 bg-clip-text text-transparent">
-              {stats?.recentActivity.total_posts || posts.length}
+            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <TrendingUp className="w-2.5 h-2.5" />
+              {stats?.recentActivity.posts_this_week || 0} new
+            </span>
+          </div>
+          <div className="text-muted-foreground text-xs font-medium mb-1">
+            Total Posts
+          </div>
+          <div className="text-2xl font-semibold text-foreground tracking-tight">
+            {stats?.recentActivity.total_posts || posts.length}
+          </div>
+        </div>
+
+        {/* Metric Card 2: Total Projects */}
+        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+              <FolderKanban className="w-4 h-4" />
             </div>
-            <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-green-500" />
-              <p className="text-xs text-muted-foreground font-medium">
-                {stats?.recentActivity.posts_this_week || 0} this week
-              </p>
+            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+              <TrendingUp className="w-2.5 h-2.5" />
+              {stats?.recentActivity.projects_this_week || 0} new
+            </span>
+          </div>
+          <div className="text-muted-foreground text-xs font-medium mb-1">
+            Total Projects
+          </div>
+          <div className="text-2xl font-semibold text-foreground tracking-tight">
+            {stats?.recentActivity.total_projects || 0}
+          </div>
+        </div>
+
+        {/* Metric Card 3: Topics */}
+        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+              <FolderTree className="w-4 h-4" />
             </div>
-          </CardContent>
-        </Card>
-        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-secondary/20 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/20 to-teal-500/20 rounded-full -mr-10 -mt-10"></div>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Projects
-              </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-teal-600 dark:from-cyan-400 dark:to-teal-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FolderKanban className="w-5 h-5 text-white" />
-              </div>
+          </div>
+          <div className="text-muted-foreground text-xs font-medium mb-1">
+            Total Topics
+          </div>
+          <div className="text-2xl font-semibold text-foreground tracking-tight">
+            {stats?.recentActivity.total_topics || 0}
+          </div>
+        </div>
+
+        {/* Metric Card 4: Hashtags */}
+        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+              <Hash className="w-4 h-4" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-teal-500 dark:from-cyan-400 dark:to-teal-400 bg-clip-text text-transparent">
-              {stats?.recentActivity.total_projects || 0}
-            </div>
-            <div className="flex items-center gap-1 mt-2">
-              <TrendingUp className="w-3 h-3 text-green-500" />
-              <p className="text-xs text-muted-foreground font-medium">
-                {stats?.recentActivity.projects_this_week || 0} this week
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-accent/20 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/20 to-indigo-500/20 rounded-full -mr-10 -mt-10"></div>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Topics
-              </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 dark:from-violet-400 dark:to-indigo-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FolderTree className="w-5 h-5 text-white" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-violet-500 to-indigo-500 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
-              {stats?.recentActivity.total_topics || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2 font-medium">
-              Content categories
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="professional-card relative overflow-hidden border shadow-lg hover:shadow-xl dark:hover:shadow-primary/20 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-sky-500/20 to-blue-500/20 rounded-full -mr-10 -mt-10"></div>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Hashtags
-              </CardTitle>
-              <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 dark:from-sky-400 dark:to-blue-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Hash className="w-5 h-5 text-white" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-sky-500 to-blue-500 dark:from-sky-400 dark:to-blue-400 bg-clip-text text-transparent">
-              {stats?.recentActivity.total_hashtags || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2 font-medium">
-              Content tags
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-muted-foreground text-xs font-medium mb-1">
+            Total Hashtags
+          </div>
+          <div className="text-2xl font-semibold text-foreground tracking-tight">
+            {stats?.recentActivity.total_hashtags || 0}
+          </div>
+        </div>
       </div>
 
+      {/* Main Chart Section */}
       {stats && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <PostsOverTimeChart data={stats.postsOverTime} />
-          <ProjectsStatsChart data={stats.projectsStats} />
-          <TopicsDistributionChart data={stats.topicsDistribution} />
-          <HashtagsDistributionChart data={stats.hashtagsDistribution} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="w-full bg-card border border-border/60 rounded-xl p-1 overflow-hidden">
+            <PostsOverTimeChart data={stats.postsOverTime} />
+          </div>
+          <div className="space-y-6">
+            <div className="w-full bg-card border border-border/60 rounded-xl p-1 overflow-hidden">
+              <ProjectsStatsChart data={stats.projectsStats} />
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="grid gap-6">
-        <Card className="professional-card border-2 hover:border-primary transition-all duration-300">
-          <CardHeader className="border-b bg-accent/30 dark:bg-accent/10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-indigo-500 to-blue-500 dark:from-primary dark:to-secondary rounded-lg shadow-sm">
-                  <FileText className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold text-foreground">
-                    Blog Posts
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {posts.length} {posts.length === 1 ? 'post' : 'posts'} total
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push('/admin/blogs')}
-                className="gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                View All
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            <div className="space-y-4">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <Skeleton className="h-6 w-3/4 mb-2" />
-                            <Skeleton className="h-4 w-1/2 mb-2" />
-                            <div className="flex gap-2">
-                              <Skeleton className="h-6 w-16" />
-                              <Skeleton className="h-6 w-20" />
-                            </div>
+      {/* Activity Table */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Recent Posts
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Latest blog posts and updates
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/admin/blogs')}
+            className="text-xs text-muted-foreground hover:text-foreground h-auto p-0 hover:bg-transparent"
+          >
+            View All
+          </Button>
+        </div>
+
+        <div className="bg-card border border-border/60 rounded-xl overflow-hidden">
+          {error && (
+            <Alert variant="destructive" className="m-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border/60 text-xs text-muted-foreground font-medium">
+                  <th className="px-6 py-3 font-medium">Post</th>
+                  <th className="px-6 py-3 font-medium">Tags</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium text-right">Updated</th>
+                  <th className="px-6 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-10 w-48" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-6 w-24" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-6 w-16" />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Skeleton className="h-4 w-20 ml-auto" />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Skeleton className="h-8 w-8 ml-auto rounded-full" />
+                      </td>
+                    </tr>
+                  ))
+                ) : posts.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-muted-foreground"
+                    >
+                      No posts found
+                    </td>
+                  </tr>
+                ) : (
+                  posts.slice(0, 10).map((post) => (
+                    <tr
+                      key={post.id}
+                      className="group hover:bg-accent/40 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded bg-accent/50 border border-border flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
+                            <FileText className="w-4 h-4" />
                           </div>
-                          <div className="flex gap-2">
-                            <Skeleton className="h-8 w-16" />
-                            <Skeleton className="h-8 w-16" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                posts.map((post) => (
-                  <Card
-                    key={post.id}
-                    className="hover:shadow-md transition-all duration-200 border hover:border-primary group"
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start gap-3 mb-3">
-                            <div className="p-1.5 bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20 rounded-md group-hover:from-primary/20 group-hover:to-secondary/20 dark:group-hover:from-primary/30 dark:group-hover:to-secondary/30 transition-colors">
-                              <FileText className="h-4 w-4 text-primary" />
+                          <div>
+                            <div className="text-foreground font-medium text-xs line-clamp-1">
+                              {post.title}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-1">
-                                {post.title}
-                              </h3>
-                              <p className="text-sm text-muted-foreground font-mono mb-3">
-                                /{post.slug}
-                              </p>
-                              <div className="flex flex-wrap gap-2 items-center">
-                                <span
-                                  className={`px-2.5 py-1 text-xs font-medium rounded-full border ${
-                                    post.status === 'PUBLISHED'
-                                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/30'
-                                      : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-400 dark:border-yellow-500/30'
-                                  }`}
-                                >
-                                  {post.status}
-                                </span>
-                                {post.tags.slice(0, 3).map((tag) => (
-                                  <span
-                                    key={tag.id}
-                                    className="px-2.5 py-1 text-xs font-medium bg-primary/10 text-primary border border-primary/20 rounded-full hover:bg-primary/20 transition-colors dark:bg-primary/20 dark:text-primary dark:border-primary/30"
-                                  >
-                                    {tag.label}
-                                  </span>
-                                ))}
-                                {post.tags.length > 3 && (
-                                  <span className="px-2.5 py-1 text-xs text-muted-foreground">
-                                    +{post.tags.length - 3} more
-                                  </span>
-                                )}
-                              </div>
+                            <div className="text-muted-foreground text-[10px] font-mono">
+                              /{post.slug}
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-2 shrink-0">
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          {post.tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={tag.id}
+                              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary text-secondary-foreground border border-border"
+                            >
+                              <Hash className="w-3 h-3 mr-0.5 opacity-50" />
+                              {tag.label}
+                            </span>
+                          ))}
+                          {post.tags.length > 2 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              +{post.tags.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <div
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              post.status === 'PUBLISHED'
+                                ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]'
+                                : 'bg-amber-500'
+                            }`}
+                          ></div>
+                          <span
+                            className={`text-xs ${
+                              post.status === 'PUBLISHED'
+                                ? 'text-emerald-500'
+                                : 'text-amber-500'
+                            }`}
+                          >
+                            {post.status.charAt(0) +
+                              post.status.slice(1).toLowerCase()}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(post.updatedAt), {
+                          addSuffix: true,
+                        })}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button
-                            size="sm"
-                            variant="outline"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
                             onClick={() => handleEdit(post.id)}
-                            className="hover:bg-primary/10 hover:border-primary hover:text-primary"
                           >
-                            Edit
+                            <Pencil className="w-3.5 h-3.5" />
                           </Button>
                           <Button
-                            size="sm"
-                            variant="destructive"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={() => handleDelete(post)}
-                            disabled={deletingPostId === post.id}
                           >
-                            {deletingPostId === post.id
-                              ? 'Deleting...'
-                              : 'Delete'}
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-              {posts.length === 0 && (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <p className="text-muted-foreground">No posts found</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <ConfirmDeleteDialog

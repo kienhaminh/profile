@@ -130,18 +130,23 @@ export function TransactionDialog({
   const onSubmit = async (values: TransactionFormValues) => {
     setIsLoading(true);
     try {
+      const adjustedDate = new Date(values.date);
+      adjustedDate.setHours(12, 0, 0, 0);
+
+      const submissionData = {
+        ...values,
+        date: adjustedDate,
+        categoryId: values.categoryId || undefined,
+      };
+
       if (transaction) {
         await updateTransaction({
-          ...values,
+          ...submissionData,
           id: transaction.id,
-          categoryId: values.categoryId || undefined,
         });
         toast.success('Transaction updated');
       } else {
-        await createTransaction({
-          ...values,
-          categoryId: values.categoryId || undefined,
-        });
+        await createTransaction(submissionData);
         toast.success('Transaction created');
       }
       onSuccess();

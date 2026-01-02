@@ -9,6 +9,7 @@ import { ConditionalLayout } from '@/components/ConditionalLayout';
 import { Toaster } from '@/components/ui/sonner';
 import { AmbientBackground } from '@/components/ui/ambient-background';
 import { WebsiteSchema, PersonSchema } from '@/components/seo/JsonLd';
+import { DesignSystemProvider } from '@/components/design-system/DesignSystemProvider';
 import {
   generateMetadata,
   generateWebsiteSchema,
@@ -97,16 +98,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AmbientBackground />
-          {measurementId && <GoogleAnalytics measurementId={measurementId} />}
-          <WebVitalsReporter />
-          <VisitorTracker />
-          <div className="relative">
-            <TRPCReactProvider>
-              <ConditionalLayout>{children}</ConditionalLayout>
-            </TRPCReactProvider>
-          </div>
-          <Toaster />
+          <DesignSystemProvider>
+            <AmbientBackground />
+            {measurementId && <GoogleAnalytics measurementId={measurementId} />}
+            <WebVitalsReporter />
+            <VisitorTracker />
+            <div className="relative">
+              <TRPCReactProvider>
+                <ConditionalLayout>{children}</ConditionalLayout>
+              </TRPCReactProvider>
+            </div>
+            <Toaster />
+          </DesignSystemProvider>
         </ThemeProvider>
       </body>
     </html>

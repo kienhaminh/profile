@@ -28,6 +28,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { authPost } from '@/lib/auth';
 
 const menuItems = [
@@ -119,16 +120,13 @@ export function Sidebar() {
 
   const SidebarContent = () => (
     <>
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-lg dark:shadow-primary/30">
-            <LayoutDashboard className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Admin Panel</h2>
-            <p className="text-xs text-muted-foreground">Content Management</p>
-          </div>
+      <div className="p-6 flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded bg-gradient-to-tr from-muted-foreground to-foreground flex items-center justify-center text-background font-semibold text-sm">
+          A
         </div>
+        <span className="text-foreground font-medium text-sm tracking-tight">
+          Admin Panel
+        </span>
       </div>
 
       <nav className="flex-1 px-3 py-4">
@@ -142,26 +140,14 @@ export function Sidebar() {
                 <Link
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative overflow-hidden ${
+                  className={`flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-lg dark:shadow-primary/30'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                      ? 'text-foreground bg-accent border border-border'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-transparent'
                   }`}
                 >
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-foreground rounded-r-full"></div>
-                  )}
-                  <Icon
-                    className={`w-5 h-5 transition-transform duration-200 ${
-                      isActive
-                        ? 'scale-110'
-                        : 'group-hover:scale-110 group-hover:text-primary'
-                    }`}
-                  />
-                  <span className="font-medium">{item.name}</span>
-                  {!isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-secondary/0 group-hover:from-primary/10 group-hover:to-secondary/10 transition-all duration-200 rounded-xl"></div>
-                  )}
+                  <Icon className="w-4 h-4" strokeWidth={1.5} />
+                  <span>{item.name}</span>
                 </Link>
               </li>
             );
@@ -169,17 +155,22 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-border">
-        <Button
+      <div className="px-6 py-6 mt-auto border-t border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Theme
+          </span>
+          <ThemeToggle />
+        </div>
+        <button
           onClick={handleSignOut}
-          variant="outline"
-          className="w-full flex items-center gap-3 justify-start text-muted-foreground border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-all duration-200 group"
+          className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all w-full"
         >
-          <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" />
-          <span className="font-medium">Sign Out</span>
-        </Button>
+          <LogOut className="w-4 h-4" strokeWidth={1.5} />
+          <span>Sign Out</span>
+        </button>
         {error && (
-          <p className="text-sm text-destructive mt-2 bg-destructive/10 p-2 rounded-lg border border-destructive/30">
+          <p className="text-xs text-red-500 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
             {error}
           </p>
         )}
@@ -190,7 +181,7 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex flex-col h-full bg-card border-r border-border w-64">
+      <div className="hidden lg:flex flex-col h-full bg-sidebar border-r border-sidebar-border w-64">
         <SidebarContent />
       </div>
 
@@ -206,7 +197,7 @@ export function Sidebar() {
               <Menu className="h-4 w-4 transition-transform duration-200" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 bg-card">
+          <SheetContent side="left" className="w-64 p-0 bg-card border-border">
             <VisuallyHidden>
               <SheetTitle>Navigation Menu</SheetTitle>
               <SheetDescription>
