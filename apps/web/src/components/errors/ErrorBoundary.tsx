@@ -43,21 +43,21 @@ export class ErrorBoundary extends Component<
       }
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <Card className="max-w-md w-full">
+        <div className="min-h-screen flex items-center justify-center bg-background px-4">
+          <Card className="max-w-md w-full border-border bg-card text-card-foreground shadow-lg">
             <CardHeader>
-              <CardTitle className="text-red-600">
+              <CardTitle className="text-destructive">
                 Something went wrong
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 We&apos;re sorry, but something unexpected happened. Please try
                 refreshing the page.
               </p>
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="mt-4 p-4 bg-gray-100 rounded text-xs overflow-auto">
-                  <pre className="whitespace-pre-wrap">
+                <div className="mt-4 p-4 bg-muted rounded text-xs overflow-auto border border-border">
+                  <pre className="whitespace-pre-wrap text-foreground font-mono">
                     {this.state.error.message}
                     {'\n\n'}
                     {this.state.error.stack}

@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { sendContactEmail, ContactState } from '@/actions/contact';
-import { CONTACT } from '@/constants/information';
+import { INFORMATION } from '@/constants/information';
 
 const initialState: ContactState = {
   success: false,
@@ -141,14 +141,14 @@ export function ContactForm() {
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <a
-            href={`mailto:${CONTACT.email}`}
+            href={`mailto:${INFORMATION.email}`}
             className="inline-flex items-center justify-center px-4 py-2 bg-muted hover:bg-accent rounded-lg text-foreground transition-colors"
           >
             <Mail className="w-4 h-4 mr-2" />
-            {CONTACT.email}
+            {INFORMATION.email}
           </a>
           <a
-            href={CONTACT.linkedin}
+            href={INFORMATION.socialLinks.linkedin}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-4 py-2 bg-muted hover:bg-accent rounded-lg text-foreground transition-colors"

@@ -32,15 +32,15 @@ export function FinanceFilters({ categories }: FinanceFiltersProps) {
 
   const currentCategory = searchParams.get('categoryId') || 'all';
   const currentPriority = searchParams.get('priority') || 'all';
-  const currentCurrency = searchParams.get('currency') || 'all';
+  const currentCurrency = searchParams.get('currency') || 'KRW';
 
   const startDateParam = searchParams.get('startDate');
   const endDateParam = searchParams.get('endDate');
 
-  // Calculate default current week
+  // Calculate default last 30 days
   const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
 
   const dateRange: DateRange | undefined =
     startDateParam && endDateParam
@@ -49,8 +49,8 @@ export function FinanceFilters({ categories }: FinanceFiltersProps) {
           to: new Date(endDateParam),
         }
       : {
-          // Default to current week if no params
-          from: startOfWeek,
+          // Default to last 30 days if no params
+          from: thirtyDaysAgo,
           to: now,
         };
 
@@ -160,7 +160,6 @@ export function FinanceFilters({ categories }: FinanceFiltersProps) {
           <SelectValue placeholder="All Currencies" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Currencies</SelectItem>
           <SelectItem value="KRW">KRW (₩)</SelectItem>
           <SelectItem value="VND">VND (₫)</SelectItem>
         </SelectContent>

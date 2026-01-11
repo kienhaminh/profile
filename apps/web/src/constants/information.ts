@@ -1,9 +1,4 @@
-import type {
-  ContactInfo,
-  Education,
-  Experience,
-  Skills,
-} from '@/types/profile';
+import type { Education, Experience, Skills } from '@/types/profile';
 
 // Contact information with environment variable support and fallbacks
 // Uses NEXT_PUBLIC_ prefixed variables for client-safe values
@@ -41,6 +36,7 @@ export const INFORMATION = {
   name,
   email,
   phone,
+  mobile: process.env.NEXT_PUBLIC_CONTACT_MOBILE || '0776978875',
   address,
   title:
     process.env.NEXT_PUBLIC_SITE_TITLE ||
@@ -55,7 +51,11 @@ export const INFORMATION = {
     facebook:
       process.env.NEXT_PUBLIC_FACEBOOK ||
       'https://www.facebook.com/haminh.kien',
-    twitter: process.env.NEXT_PUBLIC_TWITTER || '',
+    x: process.env.NEXT_PUBLIC_X || 'https://x.com/aicungkien',
+    youtube:
+      process.env.NEXT_PUBLIC_YOUTUBE || 'https://www.youtube.com/@aicungkien',
+    tiktok:
+      process.env.NEXT_PUBLIC_TIKTOK || 'https://www.tiktok.com/@aicungkien',
   },
   // Academic & Research Profiles
   academicProfiles: {
@@ -88,16 +88,6 @@ export const INFORMATION_VALIDATION = {
   nameValid: rawName.trim() !== '',
   shortNameValid: rawShortName.trim() !== '',
 } as const;
-
-// Profile contact information
-export const CONTACT: ContactInfo = {
-  address: 'K12/08 Hoang Van Thai Street, Danang',
-  mobile: '0776978875',
-  email: 'minhkien2208@gmail.com',
-  facebook: 'https://www.facebook.com/haminh.kien',
-  linkedin: 'http://linkedin.com/in/haminhkien',
-  github: 'https://github.com/kienhaminh',
-};
 
 // Education history
 export const EDUCATION: Education[] = [

@@ -1,0 +1,1 @@
+ALTER TABLE "finance_categories" ADD COLUMN "type" "finance_transaction_type" DEFAULT 'expense';

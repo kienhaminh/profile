@@ -1,12 +1,3 @@
-export interface ContactInfo {
-  address: string;
-  mobile: string;
-  email: string;
-  facebook: string;
-  linkedin: string;
-  github: string;
-}
-
 export interface Education {
   period: string;
   institution: string;

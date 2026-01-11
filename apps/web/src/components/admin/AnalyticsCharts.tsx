@@ -8,6 +8,7 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -16,7 +17,6 @@ import {
   MapPin,
   Download,
   Linkedin,
-  Twitter,
   Github,
   Globe,
   Dribbble,
@@ -25,6 +25,7 @@ import {
   Eye,
   Clock,
 } from 'lucide-react';
+import { XIcon } from '@/components/icons/social-icons';
 import { AnalyticsStats } from '@/actions/visitor-analytics';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +36,32 @@ interface ActivityChartProps {
 }
 
 export function ActivityChart({ data }: ActivityChartProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <Card className="bg-card/50 border-border/60 shadow-sm">
+        <CardHeader className="pb-2 border-b border-border/60 mb-4 px-6 pt-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Activity</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Visitor activity over the selected period.
+              </p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <Skeleton className="h-56 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-card/50 border-border/60 shadow-sm">
       <CardHeader className="pb-2 border-b border-border/60 mb-4 px-6 pt-6">
@@ -49,7 +76,12 @@ export function ActivityChart({ data }: ActivityChartProps) {
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="h-56 w-full">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={0}
+            minHeight={0}
+          >
             <BarChart data={data} barGap={2}>
               <XAxis
                 dataKey="label"
@@ -147,8 +179,8 @@ function getSourceIcon(source: string) {
   const s = source.toLowerCase();
   if (s.includes('linkedin'))
     return <Linkedin className="w-3 h-3 text-blue-500" />;
-  if (s.includes('twitter') || s.includes('t.co'))
-    return <Twitter className="w-3 h-3 text-sky-500" />;
+  if (s.includes('twitter') || s.includes('t.co') || s.includes('x.com'))
+    return <XIcon className="w-3 h-3 text-foreground" />;
   if (s.includes('github')) return <Github className="w-3 h-3" />;
   if (s.includes('dribbble'))
     return <Dribbble className="w-3 h-3 text-pink-500" />;

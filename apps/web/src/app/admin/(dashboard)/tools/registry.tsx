@@ -40,9 +40,10 @@ export const toolCategories = [
 
 export const tools: Tool[] = [
   {
-    id: 'twitter-thread-generator',
-    name: 'Twitter Thread Generator',
-    description: 'Create engaging Twitter threads from long-form content',
+    id: 'x-thread-generator',
+    name: 'X Thread Generator',
+    description:
+      'Create engaging X (formerly Twitter) threads from long-form content',
     category: 'social',
     icon: <Share2 className="w-4 h-4" />,
   },

@@ -94,7 +94,12 @@ export function PostsOverTimeChart({ data }: PostsOverTimeChartProps) {
       </div>
 
       <div className="w-full h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={0}
+          minHeight={0}
+        >
           <LineChart data={chartData}>
             <CartesianGrid
               strokeDasharray="3 3"

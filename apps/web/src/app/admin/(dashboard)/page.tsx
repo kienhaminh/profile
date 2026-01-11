@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,74 +19,22 @@ import {
 } from 'lucide-react';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { logger } from '@/lib/logger';
-import { authFetch, authDelete } from '@/lib/auth';
+import { authDelete } from '@/lib/auth';
 import type { Blog } from '@/types/blog';
 import { PostsOverTimeChart } from '@/components/admin/PostsOverTimeChart';
 import { ProjectsStatsChart } from '@/components/admin/ProjectsStatsChart';
 import { formatDistanceToNow } from 'date-fns';
-
-interface DashboardStats {
-  postsOverTime: Array<{ month: string; count: string; status: string }>;
-  topicsDistribution: Array<{ name: string; post_count: string }>;
-  hashtagsDistribution: Array<{
-    name: string;
-    post_count: string;
-    project_count: string;
-  }>;
-  projectsStats: Array<{ status: string; count: string }>;
-  recentActivity: {
-    posts_this_week: string;
-    projects_this_week: string;
-    total_posts: string;
-    total_projects: string;
-    total_topics: string;
-    total_hashtags: string;
-  };
-}
+import { useAdminPosts, useAdminStats } from '@/hooks/admin';
 
 export default function AdminDashboard() {
-  const [posts, setPosts] = useState<Blog[]>([]);
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // SWR hooks for data fetching
+  const { posts, isLoading, error, mutate: mutatePosts } = useAdminPosts();
+  const { stats } = useAdminStats();
+
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<Blog | null>(null);
   const router = useRouter();
-
-  const fetchPosts = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await authFetch('/api/admin/posts');
-      if (!response.ok) throw new Error('Failed to fetch posts');
-      const data = await response.json();
-      setPosts(data.items);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
-      logger.error('Failed to fetch posts', { error: err });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const response = await authFetch('/api/admin/stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      const data = await response.json();
-      setStats(data);
-    } catch (err) {
-      logger.error('Failed to fetch stats', { error: err });
-    }
-  };
-
-  useEffect(() => {
-    fetchPosts();
-    fetchStats();
-  }, []);
 
   const handleEdit = (postId: string) => {
     router.push(`/admin/blogs/${postId}`);
@@ -108,12 +56,9 @@ export default function AdminDashboard() {
 
       if (!response.ok) throw new Error('Failed to delete post');
 
-      // Remove the post from state
-      setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
+      // Revalidate posts using SWR mutate
+      mutatePosts();
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMessage);
       logger.error('Failed to delete post', { error: err });
     } finally {
       setDeletingPostId(null);

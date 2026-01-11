@@ -9,7 +9,7 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 280,
+          fontSize: 360,
           background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f3a 100%)',
           width: '100%',
           height: '100%',
@@ -21,7 +21,8 @@ export default function Icon() {
       >
         <span
           style={{
-            background: 'linear-gradient(135deg, #22d3ee 0%, #6366f1 50%, #ec4899 100%)',
+            background:
+              'linear-gradient(135deg, #22d3ee 0%, #6366f1 50%, #ec4899 100%)',
             backgroundClip: 'text',
             color: 'transparent',
             fontWeight: 800,

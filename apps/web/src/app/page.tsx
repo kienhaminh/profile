@@ -10,12 +10,7 @@ import { ProjectBentoCard } from '@/components/project-bento-card';
 import { TechSkillsCarousel } from '@/components/TechSkillsCarousel';
 import { ExperienceTimeline } from '@/components/experience-timeline';
 
-import {
-  CONTACT,
-  INFORMATION,
-  EXPERIENCE,
-  SKILLS,
-} from '@/constants/information';
+import { INFORMATION, EXPERIENCE, SKILLS } from '@/constants/information';
 import { getAllProjects } from '@/services/projects';
 import { listBlogs } from '@/services/blog';
 import { POST_STATUS, PROJECT_STATUS } from '@/types/enums';
@@ -118,6 +113,7 @@ export default async function Home() {
                 src={avatarImage}
                 alt="Kien Ha"
                 fill
+                sizes="80px"
                 className="object-cover"
                 priority
               />
@@ -154,7 +150,7 @@ export default async function Home() {
                 </span>
               </Button>
             </Link>
-            <CopyEmailButton email={CONTACT.email} />
+            <CopyEmailButton email={INFORMATION.email} />
           </div>
         </section>
 
@@ -319,7 +315,7 @@ export default async function Home() {
                   reality.
                 </p>
                 <Link
-                  href={`mailto:${CONTACT.email}`}
+                  href={`mailto:${INFORMATION.email}`}
                   className="inline-flex items-center gap-2 text-sm text-foreground font-medium border-b border-foreground/30 pb-0.5 hover:border-foreground transition-colors"
                 >
                   Send me an email

@@ -1,12 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, ChevronDown, Download } from 'lucide-react';
-import {
-  getAnalyticsStats,
-  type AnalyticsStats,
-} from '@/actions/visitor-analytics';
 import {
   StatsOverview,
   ActivityChart,
@@ -14,29 +9,13 @@ import {
   SourcesList,
   VisitorLocations,
 } from '@/components/admin/AnalyticsCharts';
+import { useAdminAnalytics } from '@/hooks/admin';
 
 export default function AnalyticsPage() {
-  const [stats, setStats] = useState<AnalyticsStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
+  const { stats, isLoading } = useAdminAnalytics(timeRange);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const statsData = await getAnalyticsStats(timeRange);
-        setStats(statsData);
-      } catch (error) {
-        console.error('Error fetching analytics:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [timeRange]);
-
-  if (isLoading) {
+  if (isLoading && !stats) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="flex justify-between items-center">

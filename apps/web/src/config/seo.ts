@@ -46,8 +46,8 @@ export const SEO_CONFIG = {
     'research publications',
   ],
 
-  // Social media
-  twitter: {
+  // Social media (X, formerly Twitter)
+  x: {
     handle: '@yourusername',
     site: '@yourusername',
     cardType: 'summary_large_image' as const,
@@ -62,7 +62,7 @@ export const SEO_CONFIG = {
 
   // Images
   defaultOgImage: '/og-image.jpg',
-  defaultTwitterImage: '/twitter-card.jpg',
+  defaultXImage: '/x-card.jpg',
 
   // Author information
   author: {
@@ -81,7 +81,9 @@ export const SEO_CONFIG = {
       INFORMATION.socialLinks.github || '',
       INFORMATION.socialLinks.linkedin || '',
       INFORMATION.socialLinks.facebook || '',
-      INFORMATION.socialLinks.twitter || '',
+      INFORMATION.socialLinks.x || '',
+      INFORMATION.socialLinks.youtube || '',
+      INFORMATION.socialLinks.tiktok || '',
       INFORMATION.academicProfiles.googleScholar || '',
       INFORMATION.academicProfiles.researchGate || '',
       INFORMATION.academicProfiles.orcid || '',
@@ -160,9 +162,7 @@ export function generateMetadata({
   const pageImage = image
     ? `${SEO_CONFIG.siteUrl}${image}`
     : `${SEO_CONFIG.siteUrl}${SEO_CONFIG.defaultOgImage}`;
-  const pageUrl = url
-    ? `${SEO_CONFIG.siteUrl}${url}`
-    : SEO_CONFIG.siteUrl;
+  const pageUrl = url ? `${SEO_CONFIG.siteUrl}${url}` : SEO_CONFIG.siteUrl;
 
   return {
     title: pageTitle,
@@ -199,11 +199,11 @@ export function generateMetadata({
       }),
     },
     twitter: {
-      card: SEO_CONFIG.twitter.cardType,
+      card: SEO_CONFIG.x.cardType,
       title: pageTitle,
       description: pageDescription,
-      creator: SEO_CONFIG.twitter.handle,
-      site: SEO_CONFIG.twitter.site,
+      creator: SEO_CONFIG.x.handle,
+      site: SEO_CONFIG.x.site,
       images: [pageImage],
     },
     other: {
@@ -258,7 +258,9 @@ export function generateArticleSchema({
   };
 }
 
-export function generateBreadcrumbSchema(items: { name: string; url: string }[]) {
+export function generateBreadcrumbSchema(
+  items: { name: string; url: string }[]
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

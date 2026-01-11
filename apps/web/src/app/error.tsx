@@ -20,19 +20,28 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <Card className="max-w-md w-full border-border bg-card text-card-foreground shadow-lg">
         <CardHeader>
-          <CardTitle className="text-red-600">Something went wrong</CardTitle>
+          <CardTitle className="text-destructive">
+            Something went wrong
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 mb-4">
+          <p className="text-muted-foreground mb-4">
             We&apos;re sorry, but something unexpected happened. Please try
             again.
           </p>
           {process.env.NODE_ENV === 'development' && (
-            <div className="mt-4 p-4 bg-gray-100 rounded text-xs overflow-auto">
-              <pre className="whitespace-pre-wrap">{error.message}</pre>
+            <div className="mt-4 p-4 bg-muted rounded text-xs overflow-auto border border-border">
+              <pre className="whitespace-pre-wrap text-foreground font-mono">
+                {error.message}
+                {error.digest && (
+                  <>
+                    {'\n'}Digest: {error.digest}
+                  </>
+                )}
+              </pre>
             </div>
           )}
           <div className="flex gap-2 mt-4">

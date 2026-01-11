@@ -17,13 +17,15 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:seed:mockup": "tsx scripts/seed-mockup.ts",
     "db:migrate-passwords": "tsx scripts/migrate-passwords.ts",
-    "db:setup": "npm run db:migrate:run && npm run db:seed"
+    "db:setup": "npm run db:migrate:run && npm run db:seed",
+    "admin:update-password": "tsx scripts/update-admin-password.ts"
   },
   "dependencies": {
     "@google/adk": "^0.2.1",
     "@google/genai": "^1.28.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
+    "@icons-pack/react-simple-icons": "^13.8.0",
     "@langchain/core": "^1.0.1",
     "@langchain/langgraph": "^1.0.0",
     "@langchain/openai": "^1.0.0",
@@ -87,6 +89,7 @@
     "slick-carousel": "^1.8.1",
     "slugify": "^1.6.6",
     "sonner": "^2.0.7",
+    "swr": "^2.3.3",
     "tailwind-merge": "^3.3.1",
     "web-vitals": "^5.1.0",
     "zod": "^4.1.11"

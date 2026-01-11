@@ -6,6 +6,7 @@ import {
   financeTransactions,
   financeLoans,
   financeInvestments,
+  financeAggregates,
 } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import {
@@ -24,6 +25,7 @@ import {
 } from '@/types/finance';
 import { eq, desc, sql, and, gte, lte, SQL } from 'drizzle-orm';
 import { requireAdminAuth } from '@/lib/server-auth';
+import { format } from 'date-fns';
 
 // Helper functions for dates
 function formatDate(date: Date): string {
@@ -52,21 +54,31 @@ export async function getCategories() {
   });
 }
 
-export async function createCategory(name: string) {
+export async function createCategory(
+  name: string,
+  type: 'income' | 'expense' = 'expense'
+) {
   await requireAdminAuth();
   const [category] = await db
     .insert(financeCategories)
-    .values({ name })
+    .values({ name, type })
     .returning();
 
   revalidatePath('/admin/finance');
   return category;
 }
 
-export async function updateCategory(id: string, name: string) {
+export async function updateCategory(
+  id: string,
+  name: string,
+  type?: 'income' | 'expense'
+) {
+  const updateData: { name: string; type?: 'income' | 'expense' } = { name };
+  if (type) updateData.type = type;
+
   const [category] = await db
     .update(financeCategories)
-    .set({ name })
+    .set(updateData)
     .where(eq(financeCategories.id, id))
     .returning();
 
@@ -256,12 +268,32 @@ export async function getFinanceStats(
     })
   );
 
+  // Last 12 Months Data
+  const monthlyData: { month: string; income: number; expense: number }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const mStart = formatDate(getStartOfMonth(d));
+    const mEnd = formatDate(getEndOfMonth(d));
+
+    const [income, expense] = await Promise.all([
+      getSum('income', mStart, mEnd),
+      getSum('expense', mStart, mEnd),
+    ]);
+
+    monthlyData.push({
+      month: format(d, 'MMM yyyy'),
+      income,
+      expense,
+    });
+  }
+
   return {
     monthlyIncome,
     monthlyExpense,
     weeklyExpense,
     byCategory,
     byPriority,
+    monthlyData,
   };
 }
 
@@ -517,53 +549,14 @@ export async function getWalletBalances(month?: string) {
     const monthlyOutflow = Number(monthlyOutflowResult?.total || 0);
     const monthlyInflow = Number(monthlyInflowResult?.total || 0);
 
-    // Get CUMULATIVE balance (All time up to monthEnd)
-    const [totalIncomeResult] = await db
-      .select({ total: sql<number>`sum(${financeTransactions.amount})` })
-      .from(financeTransactions)
-      .where(
-        and(
-          eq(financeTransactions.type, 'income'),
-          eq(financeTransactions.currency, currency),
-          lte(financeTransactions.date, monthEnd)
-        )
-      );
+    const aggregates = await db.query.financeAggregates.findFirst({
+      where: eq(financeAggregates.currency, currency),
+    });
 
-    const [totalExpenseResult] = await db
-      .select({ total: sql<number>`sum(${financeTransactions.amount})` })
-      .from(financeTransactions)
-      .where(
-        and(
-          eq(financeTransactions.type, 'expense'),
-          eq(financeTransactions.currency, currency),
-          lte(financeTransactions.date, monthEnd)
-        )
-      );
-
-    const [totalInflowResult] = await db
-      .select({ total: sql<number>`sum(${financeExchanges.toAmount})` })
-      .from(financeExchanges)
-      .where(
-        and(
-          eq(financeExchanges.toCurrency, currency),
-          lte(financeExchanges.date, monthEnd)
-        )
-      );
-
-    const [totalOutflowResult] = await db
-      .select({ total: sql<number>`sum(${financeExchanges.fromAmount})` })
-      .from(financeExchanges)
-      .where(
-        and(
-          eq(financeExchanges.fromCurrency, currency),
-          lte(financeExchanges.date, monthEnd)
-        )
-      );
-
-    const totalIncome = Number(totalIncomeResult?.total || 0);
-    const totalExpense = Number(totalExpenseResult?.total || 0);
-    const totalInflow = Number(totalInflowResult?.total || 0);
-    const totalOutflow = Number(totalOutflowResult?.total || 0);
+    const totalIncome = Number(aggregates?.totalIncome || 0);
+    const totalExpense = Number(aggregates?.totalExpense || 0);
+    const totalInflow = Number(aggregates?.totalExchangeIn || 0);
+    const totalOutflow = Number(aggregates?.totalExchangeOut || 0);
 
     wallets.push({
       currency,

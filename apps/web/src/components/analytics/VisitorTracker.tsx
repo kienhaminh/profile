@@ -193,6 +193,11 @@ export function VisitorTracker(): null {
 
   // Main effect - handles both initialization and route changes
   useEffect(() => {
+    // Skip tracking for admin pages
+    if (pathname.startsWith('/admin')) {
+      return;
+    }
+
     // Skip if pathname hasn't changed (except for initial load)
     if (previousPathnameRef.current === pathname && isInitializedRef.current) {
       return;

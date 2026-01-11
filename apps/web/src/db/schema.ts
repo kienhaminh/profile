@@ -680,6 +680,7 @@ export const pageVisitsRelations = relations(pageVisits, ({ one }) => ({
 export const financeCategories = pgTable('finance_categories', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
+  type: financeTransactionTypeEnum('type').default('expense'), // 'income' | 'expense'
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -913,3 +914,15 @@ export const favoriteTagsRelations = relations(favoriteTags, ({ one }) => ({
     references: [tags.id],
   }),
 }));
+
+// Finance Aggregates table (Cached totals)
+export const financeAggregates = pgTable('finance_aggregates', {
+  currency: currencyEnum('currency').primaryKey(),
+  totalIncome: decimal('total_income').default('0').notNull(),
+  totalExpense: decimal('total_expense').default('0').notNull(),
+  totalExchangeIn: decimal('total_exchange_in').default('0').notNull(),
+  totalExchangeOut: decimal('total_exchange_out').default('0').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});

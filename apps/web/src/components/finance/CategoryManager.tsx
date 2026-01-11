@@ -4,9 +4,16 @@ import { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Loader2, Plus, Save, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { FinanceCategory } from '@/types/finance';
+import { FinanceCategory, FinanceTransactionType } from '@/types/finance';
 import {
   createCategory,
   updateCategory,
@@ -22,11 +29,20 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   const [isPending, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [editType, setEditType] = useState<FinanceTransactionType>('expense');
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryType, setNewCategoryType] =
+    useState<FinanceTransactionType>('expense');
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+
+  // Group categories by type
+  const incomeCategories = categories.filter((c) => c.type === 'income');
+  const expenseCategories = categories.filter(
+    (c) => c.type === 'expense' || !c.type
+  );
 
   const handleCreate = () => {
     if (!newCategoryName.trim()) {
@@ -37,7 +53,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     setIsCreating(true);
     startTransition(async () => {
       try {
-        await createCategory(newCategoryName.trim());
+        await createCategory(newCategoryName.trim(), newCategoryType);
         setNewCategoryName('');
         toast.success('Category created');
       } catch (error) {
@@ -52,6 +68,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   const handleEdit = (category: FinanceCategory) => {
     setEditingId(category.id);
     setEditValue(category.name);
+    setEditType((category.type as FinanceTransactionType) || 'expense');
   };
 
   const handleSave = (id: string) => {
@@ -63,7 +80,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     setSavingId(id);
     startTransition(async () => {
       try {
-        await updateCategory(id, editValue.trim());
+        await updateCategory(id, editValue.trim(), editType);
         setEditingId(null);
         toast.success('Category updated');
       } catch (error) {
@@ -97,6 +114,87 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     setEditValue('');
   };
 
+  const renderCategoryRow = (category: FinanceCategory) => {
+    const isEditing = editingId === category.id;
+    const isLoading = savingId === category.id;
+
+    return (
+      <div
+        key={category.id}
+        className="flex items-center gap-2 p-3 border rounded-lg"
+      >
+        {isEditing ? (
+          <>
+            <Input
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSave(category.id);
+                if (e.key === 'Escape') handleCancel();
+              }}
+              className="flex-1"
+              autoFocus
+              disabled={isLoading}
+            />
+            <Select
+              value={editType}
+              onValueChange={(v) => setEditType(v as FinanceTransactionType)}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">Expense</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              onClick={() => handleSave(category.id)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel}>
+              <X className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <span className="flex-1 font-medium">{category.name}</span>
+            <span
+              className={`text-xs px-2 py-1 rounded ${
+                category.type === 'income'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+              }`}
+            >
+              {category.type === 'income' ? 'Income' : 'Expense'}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => handleEdit(category)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setDeleteId(category.id)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -104,7 +202,7 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground mb-4">
-          Add, edit, or remove spending categories.
+          Add, edit, or remove income and expense categories.
         </p>
 
         {/* Add new category */}
@@ -115,7 +213,22 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
             onChange={(e) => setNewCategoryName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             disabled={isCreating}
+            className="flex-1"
           />
+          <Select
+            value={newCategoryType}
+            onValueChange={(v) =>
+              setNewCategoryType(v as FinanceTransactionType)
+            }
+          >
+            <SelectTrigger className="w-[120px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             onClick={handleCreate}
             disabled={isCreating || !newCategoryName.trim()}
@@ -128,68 +241,29 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
           </Button>
         </div>
 
-        {/* Category list */}
-        <div className="grid gap-2">
-          {categories.map((category) => {
-            const isEditing = editingId === category.id;
-            const isLoading = savingId === category.id;
+        {/* Income Categories */}
+        {incomeCategories.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              Income Categories
+            </h3>
+            <div className="grid gap-2">
+              {incomeCategories.map(renderCategoryRow)}
+            </div>
+          </div>
+        )}
 
-            return (
-              <div
-                key={category.id}
-                className="flex items-center gap-2 p-3 border rounded-lg"
-              >
-                {isEditing ? (
-                  <>
-                    <Input
-                      value={editValue}
-                      onChange={(e) => setEditValue(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSave(category.id);
-                        if (e.key === 'Escape') handleCancel();
-                      }}
-                      className="flex-1"
-                      autoFocus
-                      disabled={isLoading}
-                    />
-                    <Button
-                      size="sm"
-                      onClick={() => handleSave(category.id)}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Save className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={handleCancel}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <span className="flex-1 font-medium">{category.name}</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(category)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setDeleteId(category.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {/* Expense Categories */}
+        {expenseCategories.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-400">
+              Expense Categories
+            </h3>
+            <div className="grid gap-2">
+              {expenseCategories.map(renderCategoryRow)}
+            </div>
+          </div>
+        )}
 
         {categories.length === 0 && (
           <p className="text-muted-foreground text-center py-8">

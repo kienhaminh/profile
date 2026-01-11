@@ -5,6 +5,7 @@ export type Currency = 'KRW' | 'VND';
 export interface FinanceCategory {
   id: string;
   name: string;
+  type?: FinanceTransactionType | null; // 'income' | 'expense' | null
   createdAt: Date;
 }
 
@@ -49,6 +50,7 @@ export interface FinanceStats {
   weeklyExpense: number;
   byCategory: { name: string; value: number; type: FinanceTransactionType }[];
   byPriority: { name: string; value: number }[];
+  monthlyData: { month: string; income: number; expense: number }[];
 }
 
 export interface WalletStats {

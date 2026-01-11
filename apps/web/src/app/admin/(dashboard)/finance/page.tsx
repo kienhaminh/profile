@@ -14,6 +14,7 @@ import {
   FinanceStatsCards,
   FinanceCharts,
 } from '@/components/finance/FinanceStats';
+import { CashflowSankey } from '@/components/finance/CashflowSankey';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { FinanceFilters } from '@/components/finance/FinanceFilters';
 import { BudgetProgress } from '@/components/finance/BudgetProgress';
@@ -47,18 +48,18 @@ interface PageProps {
 export default async function FinancePage({ searchParams }: PageProps) {
   const params = await searchParams;
 
-  // Set default to current week if no dates specified
+  // Set default to last 30 days if no dates specified
   const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
 
-  const defaultStartDate = `${startOfWeek.getFullYear()}-${String(startOfWeek.getMonth() + 1).padStart(2, '0')}-${String(startOfWeek.getDate()).padStart(2, '0')}`;
+  const defaultStartDate = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`;
   const defaultEndDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   const filter: FinanceFilter = {
     categoryId: params.categoryId,
     priority: params.priority as any,
-    currency: params.currency as any,
+    currency: (params.currency as any) || 'KRW',
     startDate: params.startDate || defaultStartDate,
     endDate: params.endDate || defaultEndDate,
   };
@@ -105,6 +106,11 @@ export default async function FinancePage({ searchParams }: PageProps) {
         </TabsList>
         <TabsContent value="overview" className="space-y-6">
           <WalletCards wallets={wallets} />
+          <CashflowSankey
+            stats={stats}
+            exchanges={exchanges}
+            wallets={wallets}
+          />
           <BudgetProgress progress={budgetProgress} />
           <FinanceCharts stats={stats} />
         </TabsContent>

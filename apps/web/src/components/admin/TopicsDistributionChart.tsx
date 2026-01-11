@@ -73,7 +73,12 @@ export function TopicsDistributionChart({
         <CardTitle>Topics Distribution</CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          minWidth={0}
+          minHeight={0}
+        >
           <BarChart data={filteredChartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis dataKey="name" className="text-muted-foreground" />

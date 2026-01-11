@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { users, configs, tags, financeCategories } from '../src/db/schema';
 import { logger } from '../src/lib/logger';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
 import { eq } from 'drizzle-orm';
 

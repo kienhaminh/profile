@@ -9,7 +9,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,18 +57,18 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  getShortlinks,
   createShortlink,
   updateShortlink,
   deleteShortlink,
   toggleShortlinkStatus,
   generateSlug,
-  type Shortlink,
 } from '@/actions/shortlinks';
+import { useAdminShortlinks, type Shortlink } from '@/hooks/admin';
 
 export default function ShortlinksPage() {
-  const [shortlinks, setShortlinks] = useState<Shortlink[]>([]);
-  const [loading, setLoading] = useState(true);
+  // SWR hook for data fetching
+  const { shortlinks, isLoading: loading, mutate } = useAdminShortlinks();
+
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -86,24 +86,6 @@ export default function ShortlinksPage() {
     expiresAt: '',
     password: '',
   });
-
-  // Load shortlinks on mount
-  useEffect(() => {
-    fetchShortlinks();
-  }, []);
-
-  const fetchShortlinks = async () => {
-    try {
-      setLoading(true);
-      const data = await getShortlinks();
-      setShortlinks(data);
-    } catch (error) {
-      console.error('Error fetching shortlinks:', error);
-      toast.error('Failed to load shortlinks');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenCreate = async () => {
     const slug = await generateSlug();
@@ -169,7 +151,7 @@ export default function ShortlinksPage() {
         if (result.success) {
           toast.success('Shortlink updated successfully');
           setDialogOpen(false);
-          await fetchShortlinks();
+          mutate();
         } else {
           toast.error(result.error || 'Failed to update shortlink');
         }
@@ -178,7 +160,7 @@ export default function ShortlinksPage() {
         if (result.success) {
           toast.success('Shortlink created successfully');
           setDialogOpen(false);
-          await fetchShortlinks();
+          mutate();
         } else {
           toast.error(result.error || 'Failed to create shortlink');
         }
@@ -198,7 +180,7 @@ export default function ShortlinksPage() {
       const result = await deleteShortlink(deleteId);
       if (result.success) {
         toast.success('Shortlink deleted successfully');
-        await fetchShortlinks();
+        mutate();
       } else {
         toast.error(result.error || 'Failed to delete shortlink');
       }
@@ -217,7 +199,7 @@ export default function ShortlinksPage() {
         toast.success(
           `Shortlink ${result.isActive ? 'activated' : 'deactivated'}`
         );
-        await fetchShortlinks();
+        mutate();
       } else {
         toast.error(result.error || 'Failed to toggle status');
       }

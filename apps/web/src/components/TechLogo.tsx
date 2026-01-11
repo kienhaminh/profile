@@ -81,6 +81,7 @@ export function TechLogo({ name, className }: TechLogoProps) {
           src={logoPath}
           alt={`${name} logo`}
           fill
+          sizes="80px"
           className="object-contain"
           title={name}
         />

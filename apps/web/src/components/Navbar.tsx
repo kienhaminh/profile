@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-import { Github, Linkedin, Twitter, ExternalLink } from 'lucide-react';
-import { INFORMATION, CONTACT } from '@/constants/information';
+import { Github, Linkedin, ExternalLink } from 'lucide-react';
+import { INFORMATION } from '@/constants/information';
 
 import Image from 'next/image';
 import avatarImage from '@/assets/avatar.jpg';
@@ -100,6 +100,7 @@ export function Navbar(): JSX.Element {
               src={avatarImage}
               alt="Avatar"
               fill
+              sizes="32px"
               className="object-cover"
             />
           </div>
@@ -129,7 +130,7 @@ export function Navbar(): JSX.Element {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 mr-2 border-r border-border/50 pr-4">
             <a
-              href={CONTACT.github}
+              href={INFORMATION.socialLinks.github}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -141,7 +142,7 @@ export function Navbar(): JSX.Element {
               />
             </a>
             <a
-              href={CONTACT.linkedin}
+              href={INFORMATION.socialLinks.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -156,7 +157,7 @@ export function Navbar(): JSX.Element {
           </div>
 
           <Link
-            href={`mailto:${CONTACT.email}`}
+            href={`mailto:${INFORMATION.email}`}
             className={buttonVariants({
               size: 'sm',
               className:

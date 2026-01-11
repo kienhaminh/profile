@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { INFORMATION, CONTACT } from '@/constants/information';
+import { INFORMATION } from '@/constants/information';
 import { trpc } from '@/trpc/react';
 
 export default function ProjectDetail() {
@@ -240,24 +240,24 @@ export default function ProjectDetail() {
                 <div className="flex items-center">
                   <span className="text-gray-400 mr-3">📧</span>
                   <Link
-                    href={`mailto:${CONTACT.email}`}
+                    href={`mailto:${INFORMATION.email}`}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    {CONTACT.email}
+                    {INFORMATION.email}
                   </Link>
                 </div>
                 <div className="flex items-center">
                   <span className="text-gray-400 mr-3">📱</span>
                   <Link
-                    href={`tel:${CONTACT.mobile}`}
+                    href={`tel:${INFORMATION.mobile}`}
                     className="text-gray-300 hover:text-white transition-colors"
                   >
-                    {CONTACT.mobile}
+                    {INFORMATION.mobile}
                   </Link>
                 </div>
                 <div className="flex items-start">
                   <span className="text-gray-400 mr-3 mt-0.5">📍</span>
-                  <span className="text-gray-300">{CONTACT.address}</span>
+                  <span className="text-gray-300">{INFORMATION.address}</span>
                 </div>
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function ProjectDetail() {
                 <div className="flex items-center">
                   <span className="text-gray-400 mr-3">💼</span>
                   <Link
-                    href={CONTACT.linkedin}
+                    href={INFORMATION.socialLinks.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors"
@@ -280,7 +280,7 @@ export default function ProjectDetail() {
                 <div className="flex items-center">
                   <span className="text-gray-400 mr-3">🐙</span>
                   <Link
-                    href={CONTACT.github}
+                    href={INFORMATION.socialLinks.github}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors"
@@ -291,7 +291,7 @@ export default function ProjectDetail() {
                 <div className="flex items-center">
                   <span className="text-gray-400 mr-3">📘</span>
                   <Link
-                    href={CONTACT.facebook}
+                    href={INFORMATION.socialLinks.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-300 hover:text-white transition-colors"
@@ -319,7 +319,7 @@ export default function ProjectDetail() {
                   Read My Blog
                 </Link>
                 <Link
-                  href={`mailto:${CONTACT.email}`}
+                  href={`mailto:${INFORMATION.email}`}
                   className="inline-block mt-4"
                 >
                   <Button

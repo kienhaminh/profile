@@ -15,34 +15,10 @@ export const knowledgeBase = {
   },
 
   skills: {
-    languages: [
-      'TypeScript',
-      'JavaScript',
-      'Python',
-      'Go',
-      'SQL',
-    ],
-    frontend: [
-      'React',
-      'Next.js',
-      'Tailwind CSS',
-      'shadcn/ui',
-      'tRPC',
-    ],
-    backend: [
-      'Node.js',
-      'tRPC',
-      'Drizzle ORM',
-      'PostgreSQL',
-      'REST APIs',
-    ],
-    tools: [
-      'Git',
-      'Docker',
-      'Vercel',
-      'Supabase',
-      'Turbo',
-    ],
+    languages: ['TypeScript', 'JavaScript', 'Python', 'Go', 'SQL'],
+    frontend: ['React', 'Next.js', 'Tailwind CSS', 'shadcn/ui', 'tRPC'],
+    backend: ['Node.js', 'tRPC', 'Drizzle ORM', 'PostgreSQL', 'REST APIs'],
+    tools: ['Git', 'Docker', 'Vercel', 'Supabase', 'Turbo'],
   },
 
   experience: [
@@ -60,7 +36,8 @@ export const knowledgeBase = {
     highlighted: [
       {
         name: 'Portfolio Website',
-        description: 'A modern portfolio website built with Next.js 15, tRPC, and PostgreSQL',
+        description:
+          'A modern portfolio website built with Next.js 15, tRPC, and PostgreSQL',
         technologies: ['Next.js', 'tRPC', 'PostgreSQL', 'Tailwind CSS'],
         url: 'https://kienha.online',
         achievements: [
@@ -81,7 +58,8 @@ export const knowledgeBase = {
       'Modern UI/UX implementation',
       'Technical consulting',
     ],
-    process: 'I follow an agile development process with regular communication and iterative delivery.',
+    process:
+      'I follow an agile development process with regular communication and iterative delivery.',
   },
 
   education: [
@@ -110,21 +88,26 @@ export const knowledgeBase = {
   social: {
     github: 'Add your GitHub username',
     linkedin: 'Add your LinkedIn profile URL',
-    twitter: 'Add your Twitter handle (optional)',
+    x: 'Add your X (formerly Twitter) handle (optional)',
+    youtube: 'Add your YouTube channel URL (optional)',
+    tiktok: 'Add your TikTok profile URL (optional)',
   },
 
   faq: [
     {
       question: 'What technologies do you specialize in?',
-      answer: 'I specialize in modern full-stack development with TypeScript, React, Next.js, tRPC, and PostgreSQL.',
+      answer:
+        'I specialize in modern full-stack development with TypeScript, React, Next.js, tRPC, and PostgreSQL.',
     },
     {
       question: 'Are you available for freelance work?',
-      answer: 'Yes, I am available for freelance projects. Please reach out through the contact form or email.',
+      answer:
+        'Yes, I am available for freelance projects. Please reach out through the contact form or email.',
     },
     {
       question: 'What is your typical project timeline?',
-      answer: 'Project timelines vary based on scope and complexity. I provide detailed estimates after understanding requirements.',
+      answer:
+        'Project timelines vary based on scope and complexity. I provide detailed estimates after understanding requirements.',
     },
     // Add more FAQs
   ],
@@ -155,32 +138,40 @@ Backend: ${kb.skills.backend.join(', ')}
 Tools & Platforms: ${kb.skills.tools.join(', ')}
 
 EXPERIENCE:
-${kb.experience.map(exp => `
+${kb.experience
+  .map(
+    (exp) => `
 - ${exp.title} at ${exp.company} (${exp.duration})
   ${exp.description}
   Technologies: ${exp.technologies.join(', ')}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 HIGHLIGHTED PROJECTS:
-${kb.projects.highlighted.map(proj => `
+${kb.projects.highlighted
+  .map(
+    (proj) => `
 - ${proj.name}
   ${proj.description}
   Technologies: ${proj.technologies.join(', ')}
   ${proj.url ? `URL: ${proj.url}` : ''}
   Key achievements:
-  ${proj.achievements.map(a => `  * ${a}`).join('\n')}
-`).join('\n')}
+  ${proj.achievements.map((a) => `  * ${a}`).join('\n')}
+`
+  )
+  .join('\n')}
 
 SERVICES OFFERED:
-${kb.services.available.map(s => `- ${s}`).join('\n')}
+${kb.services.available.map((s) => `- ${s}`).join('\n')}
 
 Process: ${kb.services.process}
 
 EDUCATION:
-${kb.education.map(edu => `- ${edu.degree}, ${edu.institution} (${edu.year})`).join('\n')}
+${kb.education.map((edu) => `- ${edu.degree}, ${edu.institution} (${edu.year})`).join('\n')}
 
 INTERESTS:
-${kb.interests.map(i => `- ${i}`).join('\n')}
+${kb.interests.map((i) => `- ${i}`).join('\n')}
 
 AVAILABILITY:
 Status: ${kb.availability.status}
@@ -190,13 +181,19 @@ Response Time: ${kb.availability.responseTime}
 SOCIAL LINKS:
 - GitHub: ${kb.social.github}
 - LinkedIn: ${kb.social.linkedin}
-${kb.social.twitter ? `- Twitter: ${kb.social.twitter}` : ''}
+${kb.social.x ? `- X (formerly Twitter): ${kb.social.x}` : ''}
+${kb.social.youtube ? `- YouTube: ${kb.social.youtube}` : ''}
+${kb.social.tiktok ? `- TikTok: ${kb.social.tiktok}` : ''}
 
 FREQUENTLY ASKED QUESTIONS:
-${kb.faq.map(q => `
+${kb.faq
+  .map(
+    (q) => `
 Q: ${q.question}
 A: ${q.answer}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 INSTRUCTIONS:
 1. Answer questions about ${kb.personal.name}'s background, skills, experience, and services professionally
