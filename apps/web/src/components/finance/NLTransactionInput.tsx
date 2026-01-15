@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +34,7 @@ export function NLTransactionInput() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [preview, setPreview] = useState<ParsedTransaction | null>(null);
   const [placeholder, setPlaceholder] = useState(PLACEHOLDER_EXAMPLES[0]);
+  const router = useRouter();
 
   // Set random placeholder only on client to avoid hydration mismatch
   useEffect(() => {
@@ -75,6 +77,7 @@ export function NLTransactionInput() {
         setInput('');
         setPreview(null);
         setIsOpen(false);
+        router.refresh();
       } else {
         toast.error(result.error || 'Failed to create transaction');
       }
@@ -93,7 +96,7 @@ export function NLTransactionInput() {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2">
           <Sparkles className="h-4 w-4" />
           AI Input
           <ChevronDown

@@ -7,6 +7,7 @@ import {
   financeLoans,
   financeInvestments,
   financeAggregates,
+  financeRecurringTransactions,
 } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import {
@@ -22,6 +23,10 @@ import {
   CreateInvestmentDTO,
   UpdateInvestmentDTO,
   InvestmentStatus,
+  FinanceRecurringTransaction,
+  CreateRecurringTransactionDTO,
+  UpdateRecurringTransactionDTO,
+  ProjectedCashflow,
 } from '@/types/finance';
 import { eq, desc, sql, and, gte, lte, SQL } from 'drizzle-orm';
 import { requireAdminAuth } from '@/lib/server-auth';
@@ -162,8 +167,14 @@ export async function getFinanceStats(
 ): Promise<FinanceStats> {
   const now = new Date();
 
-  const monthStart = filter?.startDate || formatDate(getStartOfMonth(now));
-  const monthEnd = filter?.endDate || formatDate(getEndOfMonth(now));
+  const monthStart =
+    filter?.startDate && filter.startDate !== ''
+      ? filter.startDate
+      : formatDate(getStartOfMonth(now));
+  const monthEnd =
+    filter?.endDate && filter.endDate !== ''
+      ? filter.endDate
+      : formatDate(getEndOfMonth(now));
   const weekStart = formatDate(getStartOfWeek(now));
 
   async function getSum(
@@ -295,6 +306,48 @@ export async function getFinanceStats(
     byPriority,
     monthlyData,
   };
+}
+
+export async function getProjectedCashflow(
+  month?: string
+): Promise<ProjectedCashflow[]> {
+  const targetMonth = month || format(new Date(), 'yyyy-MM');
+  const [year, monthNum] = targetMonth.split('-').map(Number);
+  const wallets = await getWalletBalances(targetMonth);
+
+  // Get active recurring transactions not yet generated for this month
+  const recurring = await db.query.financeRecurringTransactions.findMany({
+    where: eq(financeRecurringTransactions.isActive, true),
+  });
+
+  const pendingByCurrency = new Map<string, number>();
+
+  for (const rt of recurring) {
+    // Skip if already generated
+    if (rt.lastGeneratedMonth === targetMonth) continue;
+
+    // Check frequency
+    if (rt.frequency === 'yearly' && rt.monthOfYear !== monthNum) continue;
+
+    const currentPending = pendingByCurrency.get(rt.currency) || 0;
+    const amount = Number(rt.amount);
+
+    if (rt.type === 'income') {
+      pendingByCurrency.set(rt.currency, currentPending + amount);
+    } else {
+      pendingByCurrency.set(rt.currency, currentPending - amount);
+    }
+  }
+
+  return wallets.map((wrapper) => {
+    const pending = pendingByCurrency.get(wrapper.currency) || 0;
+    return {
+      currency: wrapper.currency,
+      currentBalance: wrapper.balance,
+      pendingRecurring: pending,
+      projectedBalance: wrapper.balance + pending,
+    };
+  });
 }
 
 // ==================== BUDGET ACTIONS ====================
@@ -560,8 +613,8 @@ export async function getWalletBalances(month?: string) {
 
     wallets.push({
       currency,
-      monthlyIncome,
-      monthlyExpense,
+      monthlyIncome: monthlyIncome + monthlyInflow,
+      monthlyExpense: monthlyExpense + monthlyOutflow,
       exchangeIn: monthlyInflow,
       exchangeOut: monthlyOutflow,
       balance: totalIncome - totalExpense + totalInflow - totalOutflow,
@@ -705,4 +758,157 @@ export async function deleteInvestment(id: string) {
   await requireAdminAuth();
   await db.delete(financeInvestments).where(eq(financeInvestments.id, id));
   revalidatePath('/admin/finance');
+}
+
+// ==================== RECURRING TRANSACTION ACTIONS ====================
+
+export async function getRecurringTransactions(): Promise<
+  FinanceRecurringTransaction[]
+> {
+  await requireAdminAuth();
+
+  const recurring = await db.query.financeRecurringTransactions.findMany({
+    with: {
+      category: true,
+    },
+    orderBy: (rt, { asc }) => [asc(rt.dayOfMonth)],
+  });
+
+  return recurring.map((r) => ({
+    ...r,
+    amount: r.amount.toString(),
+  }));
+}
+
+export async function createRecurringTransaction(
+  dto: CreateRecurringTransactionDTO
+) {
+  await requireAdminAuth();
+
+  const [created] = await db
+    .insert(financeRecurringTransactions)
+    .values({
+      name: dto.name,
+      type: dto.type,
+      amount: dto.amount.toString(),
+      currency: dto.currency,
+      categoryId: dto.categoryId || null,
+      priority: dto.priority || null,
+      frequency: dto.frequency,
+      dayOfMonth: dto.dayOfMonth,
+      monthOfYear: dto.monthOfYear,
+      description: dto.description || null,
+    })
+    .returning();
+
+  revalidatePath('/admin/finance');
+  return created;
+}
+
+export async function updateRecurringTransaction(
+  dto: UpdateRecurringTransactionDTO
+) {
+  await requireAdminAuth();
+
+  const { id, ...rest } = dto;
+  const updateData: any = { updatedAt: new Date() };
+
+  if (rest.name !== undefined) updateData.name = rest.name;
+  if (rest.type !== undefined) updateData.type = rest.type;
+  if (rest.amount !== undefined) updateData.amount = rest.amount.toString();
+  if (rest.currency !== undefined) updateData.currency = rest.currency;
+  if (rest.categoryId !== undefined) updateData.categoryId = rest.categoryId;
+  if (rest.priority !== undefined) updateData.priority = rest.priority;
+  if (rest.frequency !== undefined) updateData.frequency = rest.frequency;
+  if (rest.dayOfMonth !== undefined) updateData.dayOfMonth = rest.dayOfMonth;
+  if (rest.monthOfYear !== undefined) updateData.monthOfYear = rest.monthOfYear;
+  if (rest.description !== undefined) updateData.description = rest.description;
+  if (rest.isActive !== undefined) updateData.isActive = rest.isActive;
+
+  const [updated] = await db
+    .update(financeRecurringTransactions)
+    .set(updateData)
+    .where(eq(financeRecurringTransactions.id, id))
+    .returning();
+
+  revalidatePath('/admin/finance');
+  return updated;
+}
+
+export async function deleteRecurringTransaction(id: string) {
+  await requireAdminAuth();
+  await db
+    .delete(financeRecurringTransactions)
+    .where(eq(financeRecurringTransactions.id, id));
+  revalidatePath('/admin/finance');
+}
+
+/**
+ * Generate transactions from recurring templates for the specified month.
+ * Called automatically when visiting the finance page.
+ */
+export async function generateRecurringTransactions(
+  month?: string
+): Promise<{ generated: number; skipped: number }> {
+  await requireAdminAuth();
+
+  const now = new Date();
+  const targetMonth = month || format(now, 'yyyy-MM');
+  const [year, monthNum] = targetMonth.split('-').map(Number);
+
+  // Get all active recurring transactions
+  const recurring = await db.query.financeRecurringTransactions.findMany({
+    where: eq(financeRecurringTransactions.isActive, true),
+  });
+
+  let generated = 0;
+  let skipped = 0;
+
+  for (const rt of recurring) {
+    // Skip if already generated for this month
+    if (rt.lastGeneratedMonth === targetMonth) {
+      skipped++;
+      continue;
+    }
+
+    // Check for yearly frequency
+    if (rt.frequency === 'yearly' && rt.monthOfYear !== monthNum) {
+      continue;
+    }
+
+    // Calculate the actual date (handle months with fewer days)
+    const daysInMonth = new Date(year, monthNum, 0).getDate();
+    const actualDay = Math.min(rt.dayOfMonth, daysInMonth);
+    const transactionDate = new Date(year, monthNum - 1, actualDay);
+
+    // Create the transaction
+    await db.insert(financeTransactions).values({
+      type: rt.type,
+      amount: rt.amount,
+      currency: rt.currency,
+      categoryId: rt.categoryId,
+      priority: rt.priority,
+      description: rt.description
+        ? `[Auto] ${rt.name}: ${rt.description}`
+        : `[Auto] ${rt.name}`,
+      date: formatDate(transactionDate),
+    });
+
+    // Update lastGeneratedMonth
+    await db
+      .update(financeRecurringTransactions)
+      .set({
+        lastGeneratedMonth: targetMonth,
+        updatedAt: new Date(),
+      })
+      .where(eq(financeRecurringTransactions.id, rt.id));
+
+    generated++;
+  }
+
+  if (generated > 0) {
+    revalidatePath('/admin/finance');
+  }
+
+  return { generated, skipped };
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -29,6 +30,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   const handleEdit = (transaction: FinanceTransaction) => {
     setEditingTransaction(transaction);
@@ -125,7 +127,10 @@ export function TransactionList({ transactions }: TransactionListProps) {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         transaction={editingTransaction}
-        onSuccess={() => {}}
+        onSuccess={() => {
+          setEditingTransaction(undefined);
+          router.refresh();
+        }}
       />
 
       <ConfirmDeleteDialog

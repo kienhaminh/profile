@@ -33,6 +33,11 @@ export const investmentStatusEnum = pgEnum('investment_status', [
   'matured',
 ]);
 
+export const financeFrequencyEnum = pgEnum('finance_frequency', [
+  'monthly',
+  'yearly',
+]);
+
 // Users table (single admin account)
 export const users = pgTable(
   'users',
@@ -926,3 +931,44 @@ export const financeAggregates = pgTable('finance_aggregates', {
     .defaultNow()
     .notNull(),
 });
+
+// Finance Recurring Transactions table (for fixed/recurring income and expenses)
+export const financeRecurringTransactions = pgTable(
+  'finance_recurring_transactions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(), // e.g., "Salary", "Rent", "Internet"
+    type: financeTransactionTypeEnum('type').notNull(), // 'income' | 'expense'
+    amount: decimal('amount').notNull(),
+    currency: currencyEnum('currency').notNull().default('KRW'),
+    categoryId: uuid('category_id').references(() => financeCategories.id),
+    priority: financePriorityEnum('priority'), // For expenses
+    frequency: financeFrequencyEnum('frequency').notNull().default('monthly'),
+    dayOfMonth: integer('day_of_month').notNull(), // 1-31, day to generate transaction
+    monthOfYear: integer('month_of_year'), // 1-12, for yearly frequency
+    isActive: boolean('is_active').notNull().default(true),
+    description: text('description'),
+    lastGeneratedMonth: text('last_generated_month'), // YYYY-MM format to track generation
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    dayOfMonthIdx: index('finance_recurring_day_idx').on(table.dayOfMonth),
+    isActiveIdx: index('finance_recurring_is_active_idx').on(table.isActive),
+  })
+);
+
+// Finance Recurring Transactions Relations
+export const financeRecurringTransactionsRelations = relations(
+  financeRecurringTransactions,
+  ({ one }) => ({
+    category: one(financeCategories, {
+      fields: [financeRecurringTransactions.categoryId],
+      references: [financeCategories.id],
+    }),
+  })
+);

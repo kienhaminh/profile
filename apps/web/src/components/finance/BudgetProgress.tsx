@@ -7,6 +7,7 @@ import { NumericFormat } from 'react-number-format';
 
 interface BudgetProgressProps {
   progress: BudgetProgressType[];
+  noCard?: boolean;
 }
 
 function getProgressColor(percentage: number): string {
@@ -15,83 +16,118 @@ function getProgressColor(percentage: number): string {
   return 'bg-green-500';
 }
 
-export function BudgetProgress({ progress }: BudgetProgressProps) {
+export function BudgetProgress({ progress, noCard }: BudgetProgressProps) {
   if (progress.length === 0) {
+    const emptyContent = (
+      <div className="h-[200px] flex items-center justify-center">
+        <p className="text-muted-foreground text-sm text-center">
+          No budgets set for this month.
+        </p>
+      </div>
+    );
+    if (noCard) return emptyContent;
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Budget Progress</CardTitle>
+      <Card className="h-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Budget Progress
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            No budgets set for this month. Go to the Budgets tab to set up your
-            spending limits.
-          </p>
-        </CardContent>
+        <CardContent>{emptyContent}</CardContent>
       </Card>
     );
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Budget Progress</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {progress.map((item) => (
-          <div key={item.categoryId} className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">{item.categoryName}</span>
-              <span className="text-sm text-muted-foreground flex gap-1">
+  const content = (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {progress.map((item) => {
+        const isOverBudget = item.remaining < 0;
+        const statusColor = isOverBudget
+          ? 'rose'
+          : item.percentage > 80
+            ? 'amber'
+            : 'emerald';
+        const bgClassName = `bg-${statusColor}-500/5`;
+        const borderClassName = `border-${statusColor}-500/20`;
+
+        return (
+          <div
+            key={item.categoryId}
+            className={`p-2 rounded-lg border ${bgClassName} ${borderClassName} transition-all hover:bg-${statusColor}-500/10`}
+          >
+            <div className="flex justify-between items-start mb-1.5">
+              <span className="text-[11px] font-bold tracking-tight">
+                {item.categoryName}
+              </span>
+              <span
+                className={`text-[10px] font-bold ${isOverBudget ? 'text-rose-500' : 'text-muted-foreground'}`}
+              >
                 <NumericFormat
                   value={item.spentAmount}
                   displayType="text"
                   thousandSeparator=","
                   prefix={item.currency === 'KRW' ? '₩' : '₫'}
                 />
-                <span>/</span>
+                <span className="mx-0.5 text-[9px] opacity-50">/</span>
                 <NumericFormat
                   value={item.budgetAmount}
                   displayType="text"
                   thousandSeparator=","
-                  prefix={item.currency === 'KRW' ? '₩' : '₫'}
                 />
               </span>
             </div>
-            <div className="relative">
+
+            <div className="relative mb-1.5">
               <Progress
-                value={item.percentage}
-                className="h-3"
+                value={Math.min(item.percentage, 100)}
+                className="h-1 bg-muted"
                 indicatorClassName={getProgressColor(item.percentage)}
               />
             </div>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{item.percentage.toFixed(0)}% used</span>
+
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-muted-foreground font-medium">
+                {item.percentage.toFixed(0)}% used
+              </span>
               <span
-                className={item.remaining < 0 ? 'text-red-500 font-medium' : ''}
+                className={`font-bold ${isOverBudget ? 'text-rose-500' : 'text-emerald-500'}`}
               >
                 {item.remaining >= 0 ? (
                   <NumericFormat
                     value={item.remaining}
                     displayType="text"
                     thousandSeparator=","
-                    prefix={item.currency === 'KRW' ? '₩' : '₫'}
-                    suffix=" remaining"
+                    suffix=" left"
                   />
                 ) : (
                   <NumericFormat
                     value={Math.abs(item.remaining)}
                     displayType="text"
                     thousandSeparator=","
-                    prefix={item.currency === 'KRW' ? '₩' : '₫'}
-                    suffix=" over budget"
+                    suffix=" over"
                   />
                 )}
               </span>
             </div>
           </div>
-        ))}
-      </CardContent>
+        );
+      })}
+    </div>
+  );
+
+  if (noCard) return content;
+
+  return (
+    <Card className="bg-card/50">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          Budget Status
+        </CardTitle>
+        <div className="text-[10px] bg-muted px-2 py-0.5 rounded-full font-medium text-muted-foreground">
+          {progress.length} Categories
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">{content}</CardContent>
     </Card>
   );
 }

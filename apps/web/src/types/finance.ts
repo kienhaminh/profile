@@ -18,6 +18,7 @@ export interface FinanceTransaction {
   categoryId: string | null;
   category?: FinanceCategory | null; // Joined
   priority: FinancePriority | null;
+
   description: string | null;
   date: string; // ISO date string
 }
@@ -180,4 +181,51 @@ export interface UpdateInvestmentDTO extends Partial<CreateInvestmentDTO> {
   status?: InvestmentStatus;
   soldDate?: Date;
   soldAmount?: number;
+}
+
+// ==================== RECURRING TRANSACTIONS ====================
+
+export interface FinanceRecurringTransaction {
+  id: string;
+  name: string;
+  type: FinanceTransactionType;
+  amount: string;
+  currency: Currency;
+  categoryId: string | null;
+  category?: FinanceCategory | null;
+  priority: FinancePriority | null;
+  frequency: 'monthly' | 'yearly';
+  dayOfMonth: number; // 1-31
+  monthOfYear?: number | null; // 1-12
+  isActive: boolean;
+  description: string | null;
+  lastGeneratedMonth: string | null; // YYYY-MM format
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateRecurringTransactionDTO {
+  name: string;
+  type: FinanceTransactionType;
+  amount: number;
+  currency: Currency;
+  categoryId?: string;
+  priority?: FinancePriority;
+  frequency: 'monthly' | 'yearly';
+  monthOfYear?: number;
+  dayOfMonth: number;
+  description?: string;
+}
+
+export interface UpdateRecurringTransactionDTO
+  extends Partial<CreateRecurringTransactionDTO> {
+  id: string;
+  isActive?: boolean;
+}
+
+export interface ProjectedCashflow {
+  currency: Currency;
+  currentBalance: number;
+  pendingRecurring: number;
+  projectedBalance: number; // Safe to Spend
 }

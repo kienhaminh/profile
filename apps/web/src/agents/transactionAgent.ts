@@ -69,8 +69,8 @@ RULES:
    - "yesterday" or "어제" → ${yesterday}
    - Specific dates → YYYY-MM-DD format
    - Default to ${today} if not specified
-5. For expenses, try to match category from: ${categoryNames}
-6. Priority keywords: 
+5. Try to match category from the following list: ${categoryNames}
+6. Priority keywords (ONLY for expenses): 
    - "must have", "필수", "essential" → must_have
    - "nice to have" → nice_to_have
    - "waste", "낭비", "unnecessary" → waste
@@ -80,7 +80,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation):
   "type": "income" or "expense",
   "amount": number,
   "currency": "KRW" or "VND",
-  "categoryName": "category name if applicable" or null,
+  "categoryName": "category name if it matches one from the list" or null,
   "priority": "must_have", "nice_to_have", or "waste" (only for expenses, null otherwise),
   "description": "extracted description" or null,
   "date": "YYYY-MM-DD"

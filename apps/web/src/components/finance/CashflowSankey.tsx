@@ -6,6 +6,13 @@ import { Sankey, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FinanceStats, FinanceExchange, WalletStats } from '@/types/finance';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface CashflowSankeyProps {
   stats: FinanceStats;
@@ -28,6 +35,8 @@ interface SankeyData {
 const INCOME_COLOR = '#10b981'; // Emerald 500
 const KRW_WALLET_COLOR = '#3b82f6'; // Blue 500
 const VND_WALLET_COLOR = '#f59e0b'; // Amber 500
+
+const EXCHANGE_COLOR = '#8b5cf6'; // Violet 500
 const EXCHANGE_LINK_COLOR = '#8b5cf6'; // Violet 500 (for links)
 const EXPENSE_COLORS = [
   '#ef4444', // Red 500
@@ -46,16 +55,25 @@ const EXPENSE_COLORS = [
 const SURPLUS_COLOR = '#10b981'; // Green for surplus
 const DEFICIT_COLOR = '#ef4444'; // Red for deficit
 
+const PRIORITY_COLORS: Record<string, string> = {
+  must_have: '#10b981', // Emerald 500 for Must Have (Good)
+  nice_to_have: '#f59e0b', // Amber 500 for Nice to Have (Medium)
+  waste: '#ef4444', // Red 500 for Waste (Bad)
+  uncategorized: '#94a3b8', // Gray for uncategorized
+};
+
 interface TransformOptions {
   stats: FinanceStats;
   exchanges?: FinanceExchange[];
   wallets?: WalletStats[];
+  breakdown: 'category' | 'priority';
 }
 
 function transformToSankeyData({
   stats,
   exchanges,
   wallets,
+  breakdown,
 }: TransformOptions): SankeyData {
   const nodes: SankeyNode[] = [];
   const links: { source: number; target: number; value: number }[] = [];
@@ -74,15 +92,37 @@ function transformToSankeyData({
   const incomeCategories = stats.byCategory.filter(
     (c) => c.type === 'income' || c.name === 'Uncategorized'
   );
-  const expenseCategories = stats.byCategory.filter(
-    (c) => c.type === 'expense' && c.name !== 'Uncategorized'
-  );
+
+  // Prepare Expense Data based on breakdown
+  const expenseData =
+    breakdown === 'category'
+      ? stats.byCategory.filter(
+          (c) => c.type === 'expense' && c.name !== 'Uncategorized'
+        )
+      : stats.byPriority.filter((p) => p.value > 0);
+
+  const activeIncome =
+    incomeCategories.length > 0
+      ? incomeCategories.reduce((sum, c) => sum + c.value, 0)
+      : stats.monthlyIncome;
+
+  const activeExpense =
+    expenseData.length > 0
+      ? expenseData.reduce((sum, c) => sum + c.value, 0)
+      : stats.monthlyExpense;
+
+  // Use wallet data for monthly figures (correct monthly scope)
+  // Fall back to stats only when wallets are not available
+  const krwIncome = krwWallet?.monthlyIncome ?? activeIncome;
+  const krwExpense = krwWallet?.monthlyExpense ?? activeExpense;
+
+  const vndIncome = vndWallet?.monthlyIncome ?? 0;
+  const vndExpense = vndWallet?.monthlyExpense ?? 0;
 
   // ============ BUILD NODES ============
   const nodeMap = new Map<string, number>(); // Track node indices
 
   // Helper to add node
-  // Use uniqueKey for tracking, but allow custom displayName
   const addNode = (uniqueKey: string, displayName: string): number => {
     if (nodeMap.has(uniqueKey)) {
       return nodeMap.get(uniqueKey)!;
@@ -93,59 +133,24 @@ function transformToSankeyData({
     return index;
   };
 
-  // 1. Determine Income/Expense amounts based on currency context
-  // Use stats for the active currency to ensure consistency with filters
-  // Fallback to wallet data for non-active currency
-  const isKRW =
-    (!wallets && !exchanges) ||
-    (stats.monthlyIncome > 0 &&
-      (!wallets?.find((w) => w.currency === 'KRW')?.monthlyIncome ||
-        stats.monthlyIncome !==
-          wallets?.find((w) => w.currency === 'KRW')?.monthlyIncome));
-
-  // Calculate totals from categories to reflect any re-categorization (e.g. Uncategorized -> Income)
-  const activeIncome =
-    incomeCategories.length > 0
-      ? incomeCategories.reduce((sum, c) => sum + c.value, 0)
-      : stats.monthlyIncome;
-
-  const activeExpense =
-    expenseCategories.length > 0
-      ? expenseCategories.reduce((sum, c) => sum + c.value, 0)
-      : stats.monthlyExpense;
-
-  const krwIncome =
-    isKRW || !wallets ? activeIncome : krwWallet?.monthlyIncome || 0;
-  const krwExpense =
-    isKRW || !wallets ? activeExpense : krwWallet?.monthlyExpense || 0;
-
-  // For VND, separate income and expense
-  const vndIncome = !isKRW
-    ? activeIncome || vndWallet?.monthlyIncome || 0
-    : vndWallet?.monthlyIncome || 0;
-  // VND Expense from stats if active, otherwise from wallet
-  const vndExpense = !isKRW ? activeExpense : vndWallet?.monthlyExpense || 0;
-
   // -- Track Indices --
   let krwIncomeIndex = -1;
   let krwExpensesIndex = -1;
   let vndIncomeIndex = -1;
-  let vndExpensesIndex = -1;
+
   let vndSurplusIndex = -1;
   let krwSurplusIndex = -1;
   let krwDeficitIndex = -1;
   const krwIncomeCatIndices = new Map<string, number>();
-  const krwExpenseCatIndices = new Map<string, number>();
+  const krwExpenseIndices = new Map<string, number>(); // Can be category or priority
 
   if (krwIncome > 0) {
-    // Use category breakdown if available and income > 0
     if (
       incomeCategories.length > 0 &&
       incomeCategories.some((c) => c.value > 0)
     ) {
       incomeCategories.forEach((cat) => {
         if (cat.value > 0) {
-          // Prefix to ensure Income categories are distinct from Expense categories
           krwIncomeCatIndices.set(
             cat.name,
             addNode(`inc-${cat.name}`, cat.name)
@@ -162,19 +167,19 @@ function transformToSankeyData({
 
   // 3. KRW Expense nodes
   if (krwExpense > 0) {
-    // Use category breakdown if available
-    if (
-      expenseCategories.length > 0 &&
-      expenseCategories.some((c) => c.value > 0)
-    ) {
-      // Filter expense categories that are NOT VND if we can distinguish?
-      // For now assume all 'expense' type categories in stats are KRW if isKRW is true
-      expenseCategories.forEach((cat) => {
-        if (cat.value > 0) {
-          // Prefix for expenses
-          krwExpenseCatIndices.set(
-            cat.name,
-            addNode(`exp-${cat.name}`, cat.name)
+    if (expenseData.length > 0) {
+      expenseData.forEach((item) => {
+        if (item.value > 0) {
+          const displayName =
+            breakdown === 'priority'
+              ? item.name
+                  .replace(/_/g, ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase())
+              : item.name;
+
+          krwExpenseIndices.set(
+            item.name,
+            addNode(`exp-${item.name}`, displayName)
           );
         }
       });
@@ -193,8 +198,10 @@ function transformToSankeyData({
     ) ||
     0;
 
+  console.log(totalExchangeFromKRW);
+
   const totalExchangeToVND =
-    krwWallet?.exchangeIn || // Assuming wallet has this, or we calculate
+    krwWallet?.exchangeIn ||
     exchanges?.reduce(
       (sum, ex) =>
         ex.fromCurrency === 'KRW' ? sum + Number(ex.toAmount) : sum,
@@ -202,23 +209,24 @@ function transformToSankeyData({
     ) ||
     0;
 
-  // 4. VND Wallet (if there are exchanges or VND income)
+  // 4. VND Wallet
   let vndWalletIndex = -1;
   const vndTotal = totalExchangeToVND + vndIncome;
   const vndRemaining = vndTotal - vndExpense;
 
-  if (totalExchangeFromKRW > 0 || vndIncome > 0 || vndExpense > 0) {
-    vndWalletIndex = addNode('VND Wallet', 'VND Wallet');
+  let exchangeNodeIndex = -1;
+  const hasVndFlow = totalExchangeFromKRW > 0 || vndIncome > 0;
 
-    // VND Income
-    if (vndIncome > 0) {
-      vndIncomeIndex = addNode('VND Income', 'VND Income');
+  if (hasVndFlow) {
+    if (totalExchangeFromKRW > 0 && totalExchangeToVND > 0) {
+      // User specifically requested the name 'exchange'
+      exchangeNodeIndex = addNode('exchange', 'exchange');
     }
 
-    // VND Expenses node (aggregated)
-    if (vndExpense > 0) {
-      const label = `VND Expenses (₫${vndExpense.toLocaleString()})`;
-      vndExpensesIndex = addNode(label, label);
+    vndWalletIndex = addNode('VND Wallet', 'VND Wallet');
+
+    if (vndIncome > 0) {
+      vndIncomeIndex = addNode('VND Income', 'VND Income');
     }
 
     if (vndRemaining > 0) {
@@ -227,11 +235,13 @@ function transformToSankeyData({
     }
   }
 
-  // 5. KRW Surplus/Deficit
+  // 5. KRW Available calculation (Income - Expense - Exchange)
   const krwNetFlow = krwIncome - krwExpense - totalExchangeFromKRW;
+
   if (krwNetFlow > 0) {
-    const label = `KRW Surplus (₩${krwNetFlow.toLocaleString()})`;
-    krwSurplusIndex = addNode(label, label);
+    // User specifically requested the name 'Available'
+    const label = `Available (₩${krwNetFlow.toLocaleString()})`;
+    krwSurplusIndex = addNode('Available', label);
   } else if (krwNetFlow < 0) {
     const label = `KRW Deficit (₩${Math.abs(krwNetFlow).toLocaleString()})`;
     krwDeficitIndex = addNode(label, label);
@@ -263,10 +273,9 @@ function transformToSankeyData({
 
   // Links: KRW Wallet → KRW Expenses
   if (krwExpense > 0) {
-    if (krwExpenseCatIndices.size > 0) {
-      krwExpenseCatIndices.forEach((index, name) => {
-        const value =
-          expenseCategories.find((c) => c.name === name)?.value || 0;
+    if (krwExpenseIndices.size > 0) {
+      krwExpenseIndices.forEach((index, name) => {
+        const value = expenseData.find((c) => c.name === name)?.value || 0;
         if (value > 0) {
           links.push({
             source: krwWalletIndex,
@@ -284,47 +293,27 @@ function transformToSankeyData({
     }
   }
 
-  // Links: KRW Wallet → VND Wallet (exchange)
+  // Links: KRW Wallet → Exchange → VND Wallet
   if (
     totalExchangeFromKRW > 0 &&
     vndWalletIndex !== -1 &&
-    totalExchangeToVND > 0
+    totalExchangeToVND > 0 &&
+    exchangeNodeIndex !== -1
   ) {
     links.push({
       source: krwWalletIndex,
+      target: exchangeNodeIndex,
+      value: totalExchangeFromKRW, // KRW Outflow
+    });
+
+    links.push({
+      source: exchangeNodeIndex,
       target: vndWalletIndex,
-      value: totalExchangeToVND, // Visualizes the FLOW into VND
+      value: totalExchangeToVND, // VND Inflow
     });
   }
 
-  // Links: VND Income → VND Wallet
-  if (vndIncome > 0 && vndIncomeIndex !== -1 && vndWalletIndex !== -1) {
-    links.push({
-      source: vndIncomeIndex,
-      target: vndWalletIndex,
-      value: vndIncome,
-    });
-  }
-
-  // Links: VND Wallet → VND Expenses
-  if (vndExpense > 0 && vndExpensesIndex !== -1 && vndWalletIndex !== -1) {
-    links.push({
-      source: vndWalletIndex,
-      target: vndExpensesIndex,
-      value: vndExpense,
-    });
-  }
-
-  // Links: VND Wallet → VND Surplus
-  if (vndRemaining > 0 && vndSurplusIndex !== -1 && vndWalletIndex !== -1) {
-    links.push({
-      source: vndWalletIndex,
-      target: vndSurplusIndex,
-      value: vndRemaining,
-    });
-  }
-
-  // Links: KRW Wallet → KRW Surplus/Deficit
+  // Links: KRW Wallet → Available (or Deficit)
   if (krwNetFlow > 0 && krwSurplusIndex !== -1) {
     links.push({
       source: krwWalletIndex,
@@ -348,6 +337,9 @@ export function CashflowSankey({
   wallets,
 }: CashflowSankeyProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [breakdown, setBreakdown] = useState<'category' | 'priority'>(
+    'category'
+  );
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -355,44 +347,44 @@ export function CashflowSankey({
   }, []);
 
   const sankeyData = useMemo(
-    () => transformToSankeyData({ stats, exchanges, wallets }),
-    [stats, exchanges, wallets]
+    () => transformToSankeyData({ stats, exchanges, wallets, breakdown }),
+    [stats, exchanges, wallets, breakdown]
   );
 
   const currency = searchParams?.get('currency') || 'KRW';
   const currencyPrefix =
     currency === 'VND' ? '₫' : currency === 'KRW' ? '₩' : '$';
 
-  // Calculate totals for display
-  const incomeCategories = stats.byCategory.filter(
-    (c) => c.type === 'income' || c.name === 'Uncategorized'
-  );
-  const expenseCategories = stats.byCategory.filter(
-    (c) => c.type === 'expense' && c.name !== 'Uncategorized'
-  );
-  const totalIncome =
-    incomeCategories.reduce((sum, c) => sum + c.value, 0) ||
-    stats.monthlyIncome;
-  const totalExpense = expenseCategories.reduce((sum, c) => sum + c.value, 0);
+  // Calculate totals for display using WALLET data (monthly scope)
+  const krwWallet = wallets?.find((w) => w.currency === 'KRW');
+  const vndWallet = wallets?.find((w) => w.currency === 'VND');
 
-  const exchangeToVND =
-    exchanges?.reduce((sum, ex) => {
-      if (ex.toCurrency === 'VND') {
-        return sum + Number(ex.fromAmount); // Show KRW flowing out
-      }
-      return sum;
-    }, 0) || 0;
+  // Use wallet monthly figures for correct monthly display
+  const totalIncome = krwWallet?.monthlyIncome ?? stats.monthlyIncome;
+  const totalExpense = krwWallet?.monthlyExpense ?? stats.monthlyExpense;
 
-  const netFlow = totalIncome - totalExpense - exchangeToVND;
+  const exchangeFromKRW = krwWallet?.exchangeOut ?? 0;
+  const exchangeToVND = vndWallet?.exchangeIn ?? 0;
+
+  // Adjust display totals based on currency
+  const isVND = currency === 'VND';
+  const displayIncome = isVND ? (vndWallet?.monthlyIncome ?? 0) : totalIncome;
+  const displayExpense = isVND
+    ? (vndWallet?.monthlyExpense ?? 0)
+    : totalExpense;
+  const netFlow =
+    displayIncome - displayExpense - (isVND ? 0 : exchangeFromKRW);
 
   // Determine node colors
   const getNodeColor = (nodeName: string, index: number) => {
     // Wallet nodes
     if (nodeName.includes('KRW Wallet')) return KRW_WALLET_COLOR;
     if (nodeName.includes('VND Wallet')) return VND_WALLET_COLOR;
+    if (nodeName === 'exchange') return EXCHANGE_COLOR;
 
     // Surplus/Deficit nodes
-    if (nodeName.includes('Surplus')) return SURPLUS_COLOR;
+    if (nodeName === 'Available' || nodeName.includes('Surplus'))
+      return SURPLUS_COLOR;
     if (nodeName.includes('Deficit')) return DEFICIT_COLOR;
 
     // Income nodes
@@ -402,16 +394,29 @@ export function CashflowSankey({
     // Aggregated expense nodes
     if (nodeName.includes('Expenses')) return EXPENSE_COLORS[0];
 
-    // Check if it's an income category (fallback/legacy check)
+    // Check if it's an income category
+    const incomeCategories = stats.byCategory.filter(
+      (c) => c.type === 'income' || c.name === 'Uncategorized'
+    );
     if (incomeCategories.some((c) => nodeName.includes(c.name)))
       return INCOME_COLOR;
 
+    // Handle Priority Colors
+    if (breakdown === 'priority') {
+      // Clean prefix "exp-"
+      const cleanName = nodeName.replace('exp-', '');
+      // Try to find if cleanName matches any priority key
+      // The keys in stats.byPriority (and thus nodeName) are 'must_have', 'nice_to_have', 'waste'
+      if (PRIORITY_COLORS[cleanName]) {
+        return PRIORITY_COLORS[cleanName];
+      }
+    }
+
     // Expense category - try to match name
-    // Cleanup prefix "exp-" if present
     const cleanName = nodeName.replace('exp-', '');
-    const expenseIndex = expenseCategories.findIndex(
-      (c) => c.name === cleanName
-    );
+    const expenseIndex = stats.byCategory
+      .filter((c) => c.type === 'expense')
+      .findIndex((c) => c.name === cleanName);
     if (expenseIndex >= 0) {
       return EXPENSE_COLORS[expenseIndex % EXPENSE_COLORS.length];
     }
@@ -448,42 +453,82 @@ export function CashflowSankey({
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-        <CardTitle>Cashflow</CardTitle>
-        <div className="flex gap-4 text-sm flex-wrap">
-          <span className="text-emerald-500 font-medium">
-            Income: {currencyPrefix}
-            {totalIncome.toLocaleString()}
-          </span>
-          <span className="text-rose-500 font-medium">
-            Expense: {currencyPrefix}
-            {totalExpense.toLocaleString()}
-          </span>
-          {exchangeToVND > 0 && (
-            <span className="text-violet-500 font-medium">
-              Exchange: {currencyPrefix}
-              {exchangeToVND.toLocaleString()}
-            </span>
-          )}
-          <span
-            className={`font-medium ${netFlow >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
+    <Card className="h-full bg-card/50">
+      <CardHeader className="flex flex-row items-center justify-between pb-4 space-y-0">
+        <div className="flex items-center gap-4">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+            Flow
+          </CardTitle>
+          <Select
+            value={breakdown}
+            onValueChange={(v: 'category' | 'priority') => setBreakdown(v)}
           >
-            {netFlow >= 0 ? 'Surplus' : 'Deficit'}: {currencyPrefix}
-            {Math.abs(netFlow).toLocaleString()}
-          </span>
+            <SelectTrigger className="w-[130px] h-7 text-[10px] font-bold uppercase tracking-tight">
+              <SelectValue placeholder="Breakdown By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="category">Categories</SelectItem>
+              <SelectItem value="priority">Priorities</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 flex-wrap justify-end">
+          <div className="px-2 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+            <div className="text-[8px] text-emerald-500 font-bold uppercase leading-none mb-0.5">
+              Income
+            </div>
+            <div className="text-[10px] font-bold text-emerald-500">
+              {currencyPrefix}
+              {displayIncome.toLocaleString()}
+            </div>
+          </div>
+          <div className="px-2 py-1 rounded-md bg-rose-500/10 border border-rose-500/20">
+            <div className="text-[8px] text-rose-500 font-bold uppercase leading-none mb-0.5">
+              Expense
+            </div>
+            <div className="text-[10px] font-bold text-rose-500">
+              {currencyPrefix}
+              {displayExpense.toLocaleString()}
+            </div>
+          </div>
+          {!isVND && exchangeFromKRW > 0 && (
+            <div className="px-2 py-1 rounded-md bg-violet-500/10 border border-violet-500/20">
+              <div className="text-[8px] text-violet-500 font-bold uppercase leading-none mb-0.5">
+                Exchange
+              </div>
+              <div className="text-[10px] font-bold text-violet-500">
+                {currencyPrefix}
+                {exchangeFromKRW.toLocaleString()}
+              </div>
+            </div>
+          )}
+          <div
+            className={`px-2 py-1 rounded-md ${netFlow >= 0 ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-rose-500/20 border-rose-500/30'} border`}
+          >
+            <div
+              className={`text-[8px] ${netFlow >= 0 ? 'text-emerald-500' : 'text-rose-500'} font-bold uppercase leading-none mb-0.5`}
+            >
+              {netFlow >= 0 ? 'Available' : 'Deficit'}
+            </div>
+            <div
+              className={`text-[10px] font-bold ${netFlow >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}
+            >
+              {currencyPrefix}
+              {Math.abs(netFlow).toLocaleString()}
+            </div>
+          </div>
         </div>
       </CardHeader>
-      <CardContent className="h-[400px]">
+      <CardContent className="h-[350px]">
         <ResponsiveContainer width="100%" height="100%">
           <Sankey
             data={sankeyData}
-            nodeWidth={15}
-            nodePadding={40}
+            nodeWidth={20}
+            nodePadding={20}
             linkCurvature={0.5}
             iterations={64}
             node={(props) => {
-              // Cast payload to our custom interface
               const payload = props.payload as SankeyNode;
               const { x, y, width, height, index } = props;
               const name = payload.name;
@@ -540,7 +585,6 @@ export function CashflowSankey({
                 payload,
               } = props;
 
-              // Recharts passes initialized objects for source/target in payload
               const sourceNode = payload.source as any;
               const targetNode = payload.target as any;
 
@@ -556,7 +600,8 @@ export function CashflowSankey({
                   : '');
 
               const isExchangeLink =
-                sourceName === 'KRW Wallet' && targetName === 'VND Wallet';
+                (sourceName === 'KRW Wallet' && targetName === 'exchange') ||
+                (sourceName === 'exchange' && targetName === 'VND Wallet');
 
               return (
                 <path

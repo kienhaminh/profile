@@ -18,6 +18,7 @@ import {
   BarChart3,
   DollarSign,
   Heart,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,11 +28,26 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { authPost } from '@/lib/auth';
 
-const menuItems = [
+interface MenuItem {
+  name: string;
+  href: string;
+  icon: any;
+  items?: {
+    name: string;
+    href: string;
+  }[];
+}
+
+const menuItems: MenuItem[] = [
   {
     name: 'Dashboard',
     href: '/admin',
@@ -83,6 +99,16 @@ const menuItems = [
     name: 'Finance',
     href: '/admin/finance',
     icon: DollarSign,
+    items: [
+      {
+        name: 'Overview',
+        href: '/admin/finance/overview',
+      },
+      {
+        name: 'Records',
+        href: '/admin/finance/detail',
+      },
+    ],
   },
   {
     name: 'Tools',
@@ -129,11 +155,61 @@ export function Sidebar() {
         </span>
       </div>
 
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href ||
+              (item.items?.some((subItem) => pathname === subItem.href) ??
+                false);
+            const isSubItemActive = (href: string) => pathname === href;
+
+            if (item.items) {
+              return (
+                <li key={item.href}>
+                  <Collapsible
+                    defaultOpen={isActive}
+                    className="group/collapsible"
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className={`flex items-center justify-between w-full gap-3 px-3 py-2 text-sm rounded-md transition-all ${
+                          isActive
+                            ? 'text-foreground font-medium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4" strokeWidth={1.5} />
+                          <span>{item.name}</span>
+                        </div>
+                        <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <ul className="mt-1 space-y-1 pl-10">
+                        {item.items.map((subItem) => (
+                          <li key={subItem.href}>
+                            <Link
+                              href={subItem.href}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className={`block px-3 py-2 text-sm rounded-md transition-all ${
+                                isSubItemActive(subItem.href)
+                                  ? 'text-foreground bg-accent border border-border'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-transparent'
+                              }`}
+                            >
+                              {subItem.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </li>
+              );
+            }
 
             return (
               <li key={item.href}>

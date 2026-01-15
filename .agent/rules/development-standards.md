@@ -2,260 +2,148 @@
 trigger: always_on
 ---
 
----
+# Antigravity Development Standards & Protocols
 
-## trigger: always_on
+**System Version**: 2.0
+**Enforcement**: STRICT & MANDATORY
 
-# Software Development Principles & Standards
-
-This document serves as the comprehensive guide for all development activities. Adherence to these standards is MANDATORY to ensure code quality, maintainability, and scalability.
-
----
-
-## 0. SYSTEM KNOWLEDGE & DOCUMENTATION (CRITICAL)
-
-- **Official Source of Truth**: The `/docs` directory is the single source of truth for all system architecture, technical specifications, and domain knowledge.
-- **MUST FOLLOW**: You MUST strictly follow the patterns, conventions, and technical decisions documented in `/docs`. Do NOT deviate from what is specified.
-- **READ BEFORE ACTION**: Before starting any complex task, refactoring, or architectural change, you MUST consult the relevant files in `/docs` to understand existing constraints and patterns.
-- **DO NOT MODIFY DOCS**: You are NOT allowed to modify or update files in `/docs`. Only the user can update documentation. If you believe documentation needs updating, inform the user.
-- **References**:
-  - `01_Overview.md`: System overview and high-level architecture.
-  - Check other files in `/docs` for specific implementation details (Auth, DB, Deployment, etc.).
-- **Consultation Rule**: If a user request involves a specific domain, you must first read the relevant documentation to understand the existing constraints and patterns before writing any code.
+This document encapsulates the engineering and design standards for the Antigravity Agent. You must adhere to these rules without exception. These standards prioritize premium aesthetics, robust architecture, and a disciplined workflow.
 
 ---
 
-## 1. Core Values
+## 1. 🎨 Design & Aesthetics (THE "WOW" STANDARD)
 
-- **Quality over Speed**: Do not rush implementation at the cost of technical debt.
-- **Maintainability**: Write code for the next engineer who will read it.
-- **Consistency**: Follow established patterns throughout the codebase.
-- **Simplicity**: Avoid over-engineering. Favor the simplest solution that works.
+**Principle**: If it looks basic, you have FAILED. Visuals are not an afterthought; they are a priority.
 
----
+### 1.1 Visual Excellence
 
-## 2. Clean Code & Naming Conventions
+- **Premium Feel**: Avoid generic browser defaults (plain blue links, Times New Roman). Use curated color palettes (HSL), custom fonts (Inter, Roboto, Outfit), and sophisticated spacing.
+- **Dynamic Interface**: The UI must feel "alive" and responsive.
+  - **MANDATORY**: Hover effects on all interactive elements.
+  - **MANDATORY**: Smooth transitions (e.g., `transition: all 0.3s ease`) for state changes.
+  - **RECOMMENDED**: Micro-animations for user feedback (clicks, loading, success states).
+- **Modern Styling**: Use gradients, glassmorphism (backdrop-blur), and subtle shadows to create depth. Flat design is acceptable only if executed with high-end typography and perfect whitespace.
 
-### 2.1 Meaningful Naming
+### 1.2 No Placeholders
 
-- **Variables**: Use descriptive nouns. Avoid abbreviations unless standard (e.g., `userProfile` instead of `up`).
-- **Functions**: Use verb-noun pairs. `fetchData`, `validateEmail`, `calculateTotal`.
-- **Booleans**: Prefix with `is`, `has`, `should`, or `can`. `isActive`, `hasPermission`.
-- **Classes/Types**: Use PascalCase nouns. `UserSession`, `OrderRepository`.
-
-### 2.2 Function Best Practices
-
-- **Small & Focused**: Functions should ideally be less than 20 lines.
-- **Single Responsibility**: A function should do exactly one thing.
-- **Arguments**: Limit to 2-3 arguments. Use objects for more than 3 parameters.
-- **No Side Effects**: Prefer pure functions for business logic.
-
-### 2.3 Comments
-
-- Code should be self-documenting. Use comments to explain **WHY**, not **WHAT**.
-- Avoid "noise" comments that just restate the code.
+- **Real Content**: Never use "Lorem Ipsum" or "Text Here" unless strictly necessary for layouting. Generate context-aware dummy data.
+- **Assets**: If an image is needed and none exists, use the `generate_image` tool to create a working demonstration. Do not leave blank boxes.
 
 ---
 
-## 3. SOLID Principles in Practice
+## 2. 🛠 Technology Stack & Implementation
 
-### 3.1 Single Responsibility Principle (SRP)
+### 2.1 Core Technologies
 
-- Every module, class, or function should have one reason to change.
-- Separate business logic from UI rendering and data fetching.
+- **Structure**: Semantic HTML5.
+- **Logic**: Modern JavaScript/TypeScript (ES6+).
+- **Styling**:
+  - **DEFAULT**: Vanilla CSS (CSS Variables, Flexbox, Grid) for maximum flexibility.
+  - **TAILWIND**: Use **ONLY** if the User explicitly requests it.
+- **Frameworks**: Next.js or Vite only when explicitly requested for complex web apps.
 
-### 3.2 Open/Closed Principle (OCP)
+### 2.2 New Project Protocol
 
-- Software entities should be open for extension but closed for modification.
-- Use polymorphism and dependency injection.
-
-### 3.3 Liskov Substitution Principle (LSP)
-
-- Subtypes must be substitutable for their base types without altering correctness.
-
-### 3.4 Interface Segregation Principle (ISP)
-
-- Clients should not be forced to depend on interfaces they do not use.
-- Prefer smaller, specific interfaces over large, fat ones.
-
-### 3.5 Dependency Inversion Principle (DIP)
-
-- Depend on abstractions, not concretions.
-- Use hooks to abstract data fetching from components.
+1.  **Initialization**: Use `npx -y [package] ./` (non-interactive in current folder).
+2.  **Verification**: Always run `--help` first to see available options before creating.
+3.  **Local Dev**: Use `npm run dev` for development; build only when requested/verifying.
 
 ---
 
-## 4. Component Architecture & Reusability (CRITICAL)
+## 3. 🏗 Implementation Workflow (The 5-Step Process)
 
-### 4.1 Common Components Preference
+You must follow this systematic approach for building applications:
 
-- **REUSE OVER RECREATE**: Before building a new UI element, check for an existing common component in `/app/components/ui` or `/app/common`.
-- **BUSINESS LOGIC REUSE**: If multiple parts of the application share the same business logic, extract it into a dedicated hook or service.
-- **GENERIC COMPONENTS**: Build components to be as generic as possible. Use props for variations instead of creating `ButtonRed`, `ButtonBlue`.
-- **DRY Logic**: Never duplicate API calls or data transformation logic across components. Use a centralized service layer.
-
-### 4.2 Component Design
-
-- **Atomic Design**: Structure components into Atoms (buttons, inputs), Molecules (form fields), and Organisms (headers, footers).
-- **Controlled vs Uncontrolled**: Favor controlled components for predictable state management.
-- **Composition**: Use the `children` prop and slots to allow flexible layouts.
-- **Theme-able**: Always use design tokens or CSS variables for styling instead of hardcoded hex values.
-
-### 4.3 Prop Typing
-
-- Always provide full Typescript interfaces/types for props.
-- Use optional props with sensible defaults.
-- Document complex props using JSDoc.
+1.  **PLAN**: Understand requirements -> Outline features -> Design mental model -> Check `/docs`.
+2.  **FOUNDATION**: Create/Update `index.css` -> Define Design System (Colors, Typography, Tokens).
+3.  **COMPONENTS**: Build reusable, atomic components (Buttons, Cards, Inputs) using the foundation.
+4.  **ASSEMBLE**: Construct pages using components -> Handle Routing/Navigation -> Layouts.
+5.  **POLISH**: Review Experience -> Optimize Performance -> Check SEO -> Verify "Wow" Factor.
 
 ---
 
-## 5. Testing Strategy
+## 4. 🧹 Clean Code & Architecture
 
-### 5.1 Unit Testing
+### 4.1 The "Docs First" Rule
 
-- **Coverage**: Aim for 80%+ coverage on business logic and complex algorithms.
-- **Tools**: Use Vitest for fast, isolated unit tests.
-- **Isolation**: Mock dependencies to test units in isolation.
+- **Source of Truth**: The `/docs` directory is inviolable. Read it before coding.
+- **Immutable**: Never modify `/docs` without explicit user instruction.
+- **Consistency**: Follow the patterns documented in `/docs` (Auth, DB, Deployment).
 
-### 5.2 Integration Testing
+### 4.2 Naming & Structure
 
-- Test how components interact with each other.
-- Use React Testing Library (RTL) for UI behavior testing.
-- Focus on user interactions: "When I click X, Y should happen."
+- **Variables/Functions**: Descriptive, verb-noun (e.g., `fetchUserData`, `isLoggedIn`). Avoid abbreviations.
+- **Files**: `kebab-case` for utils/files (`user-profile.ts`), `PascalCase` for Components (`UserProfile.tsx`).
+- **SOLID Principles**:
+  - **SRP**: One function, one purpose.
+  - **DRY**: Don't Repeat Yourself - extract shared logic to hooks/utils.
+  - **Components**: Prefer Composition (children prop) over Inheritance or massive "God components".
 
-### 5.3 E2E Testing
+### 4.3 Component Architecture
 
-- Focus on critical user journeys (e.g., Login, Registration, Checkout).
-- Using Playwright for automated browser testing is recommended.
+- **Reuse**: Check `.app/components/` before creating new ones.
+- **Generic**: Components should be agnostic of specific business logic where possible to maximize reuse.
+- **Types**: Always use TypeScript interfaces for Props.
 
-### 5.4 Test-Driven Development (TDD)
+### 4.4 Code Hygiene
 
-- Highly encouraged to write tests alongside or before implementation to define requirements.
-- Use the Red-Green-Refactor cycle.
+- **Delete, Don't Comment**: Remove unused code entirely. Git history preserves it if needed. Do not leave commented-out blocks of code.
+- **Clean Imports**: Remove unused imports immediately. Keep the file header clean.
 
----
+### 4.5 No Hardcoded Strings
 
-## 6. Library Installation & Dependency Management
+- **Use Enums/Constants**: All reusable text strings MUST be declared as enums, constants, or configuration objects. Never hardcode strings directly in the codebase.
+- **Scope**:
+  - **UI Labels**: Button text, form labels, headings, tooltips, error messages.
+  - **API Endpoints**: Route paths, query parameters, header keys.
+  - **Status/State Values**: `'loading'`, `'success'`, `'error'`, etc.
+  - **Keys/Identifiers**: Object keys, localStorage keys, event names.
+- **Organization**:
+  - Group related constants in dedicated files (e.g., `constants/ui.ts`, `constants/api.ts`).
+  - Use TypeScript `enum` for finite sets of values, `as const` objects for complex mappings.
+- **Example**:
 
-### 6.1 Official CLI Usage (MANDATORY)
+  ```typescript
+  // ❌ BAD: Hardcoded strings
+  if (status === 'loading') { ... }
+  <button>Submit</button>
 
-- **NEVER** manually create boilerplate files if a CLI exists.
-- **Official Tools**: Always prioritize official CLI tools (e.g., `npx`, `pnpm dlx`).
-- **Examples**:
-  - Tailwind: `npx tailwindcss init`
-  - Shadcn UI: `npx shadcn-ui@latest add [component]`
-  - Prisma: `npx prisma init`
-  - Next.js: `npx create-next-app`
-  - React Router: `npx react-router init`
-- **Verification**: ALWAYS check official documentation for the recommended CLI installation command.
+  // ✅ GOOD: Using constants/enums
+  enum Status { Loading = 'loading', Success = 'success' }
+  const UI_LABELS = { submitButton: 'Submit' } as const;
 
-### 6.2 Version Control
-
-- Pin versions of critical libraries to avoid breaking changes.
-- Regularly run audit checks for security vulnerabilities.
-
----
-
-## 7. Project Structure & Organization
-
-### 7.1 Separation of Concerns
-
-- `/app/routes`: Page routes and handlers (React Router v7).
-- `/app/components`: UI components.
-- `/app/hooks`: Custom React hooks.
-- `/app/services`: API calls and external integrations.
-- `/app/utils`: Pure utility functions.
-- `/app/types`: Shared type definitions.
-
-### 7.2 File Naming
-
-- Use kebab-case for directories and non-component files (`user-profile.ts`).
-- Use PascalCase for component files (`UserProfile.tsx`).
-- Test files should match the file they test: `UserProfile.test.tsx`.
+  if (status === Status.Loading) { ... }
+  <button>{UI_LABELS.submitButton}</button>
+  ```
 
 ---
 
-## 8. Error Handling & Logging
+## 5. 🔍 SEO & Performance Standards
 
-### 8.1 Defensive Programming
+**Every public-facing page must include:**
 
-- Validate inputs. Handle null/undefined cases explicitly.
-- Use Optional Chaining (`?.`) and Nullish Coalescing (`??`).
-- Use Zod for runtime validation of API responses and Forms.
-
-### 8.2 Error Boundaries
-
-- Implement React Error Boundaries to prevent the entire app from crashing on UI errors.
-- Provide a graceful fallback UI.
-
-### 8.3 Centralized Error Handling
-
-- Use a global error handler for API responses.
-- Ensure user-facing error messages are localized and helpful.
+1.  **Title Tags**: `<title>Descriptive Content</title>`
+2.  **Meta Description**: `<meta name="description" ... />`
+3.  **Semantic Hierarchy**: Single `<h1>` per page, logical `<h2>`...`<h6>`.
+4.  **Optimization**: WebP images, lazy loading, proper bundle splitting.
+5.  **Unique IDs**: Ensure interactive elements have unique IDs for testing/accessibility.
 
 ---
 
-## 9. Performance & Optimization
+## 6. 🛡 Security & Safety
 
-### 9.1 Rendering Performance
-
-- Use `React.memo`, `useMemo`, and `useCallback` judiciously.
-- Profile components using React DevTools to find bottlenecks.
-- Implement virtualization for long lists.
-
-### 9.2 Asset Optimization
-
-- Optimize images using WebP format.
-- Use lazy loading for non-critical components.
+- **No Dangerous Commands**: Never auto-run `rm -rf`, system installs, or unverified complex scripts.
+- **Input Validation**: Sanitize everything. Zod is recommended for runtime validation.
+- **Secrets**: Never hardcode API keys or secrets. Use `.env` variables.
+- **Auth**: Validate permissions on the server-side, not just client-side.
 
 ---
 
-## 10. Security Best Practices
+## 7. 🤖 Agent Behavior & Communication
 
-### 10.1 Data Protection
-
-- Sanitize user inputs to prevent XSS.
-- Never store sensitive data (tokens, PII) in local storage without proper security measures.
-- Use `HttpOnly` cookies for session tokens where possible.
-
-### 10.2 Authentication
-
-- Implement proper RBAC (Role-Based Access Control).
-- Validate all user actions on the server side.
+- **Proactive**: Don't just answer; solve. If a build fails, fix it. If a design looks bad, improve it.
+- **Formatting**: Use Markdown headers, bold text for key terms, and code blocks.
+- **Clarity**: Explain **WHY** a technical decision was made (e.g., "Choosing Context API over Redux for simplicity here").
+- **Collaboration**: Acknowledge mistakes immediately and correct them.
 
 ---
-
-## 11. Documentation Standards
-
-### 11.1 Code Documentation
-
-- **JSDoc**: Document complex functions and hooks.
-- **Why**: Explain the "why" behind complex logic.
-
-### 11.2 System Documentation
-
-- The `/docs` folder is maintained by the user only.
-- Agent must READ and FOLLOW `/docs`, but NEVER modify it.
-
----
-
-## 12. Git Workflow
-
-### 12.1 Commit Messages
-
-- Use Conventional Commits: `type(scope): description`.
-- **Types**: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`.
-
----
-
-## 13. State Management
-
-- **URL State**: Specific filters, pagination, search queries should be in the URL.
-- **Server State**: Use libraries like React Query (or React Router loaders) for data fetching.
-- **Client State**: Use local state (`useState`) for UI-only state; `Zustand` or Context for global app state.
-
----
-
-## Conclusion
-
-Following these principles ensures that the software we build is robust, testable, and pleasant to work with. When in doubt, prioritize readability, reusability, and **ALWAYS consult the `/docs` folder first**.

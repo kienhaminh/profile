@@ -40,9 +40,9 @@ html {
   --input: #e5e5e5;
   --ring: #0a0a0a;
 
-  /* Glow Colors (Light Mode - Subtle) */
-  --glow-1: #1e3a8a; /* blue-900 */
-  --glow-2: #581c87; /* purple-900 */
+  /* Glow Colors (Light Mode - Visible) */
+  --glow-1: #3b82f6; /* blue-500 */
+  --glow-2: #a855f7; /* purple-500 */
 
   /* Charts */
   --chart-1: #0a0a0a;
@@ -92,10 +92,11 @@ html {
   --shadow-2xl: 0 50px 100px -20px rgba(0, 0, 0, 0.1);
 
   --backdrop-blur: 8px;
+  --dot-color: rgba(0, 0, 0, 0.18);
 }
 
 .dark {
-  /* Core Colors - Dark Mode (Zinc palette from profile.html) */
+  /* Core Colors - Dark Mode (Zinc palette from template) */
   --background: #09090b; /* zinc-950 */
   --foreground: #a1a1aa; /* zinc-400 */
 
@@ -119,18 +120,26 @@ html {
 
   /* Semantic */
   --destructive: #ef4444; /* red-500 */
-  --destructive-foreground: #fafafa; /* zinc-50 - white text on red background */
+  --destructive-foreground: #fafafa; /* zinc-50 */
   --border: #27272a; /* zinc-800 */
   --input: #27272a; /* zinc-800 */
   --ring: #f4f4f5; /* zinc-100 */
 
-  /* Glow Colors (Dark Mode) */
-  --glow-1: #1e3a8a; /* blue-900 */
-  --glow-2: #581c87; /* purple-900 */
+  /* Glow Colors (Dark Mode - Visible) */
+  --glow-1: #6366f1; /* purple-500/indigo-500 hybrid */
+  --glow-2: #3b82f6; /* blue-500 */
+  --glow-3: #8b5cf6; /* violet-500 */
 
   /* Gradients */
-  --gradient-subtle: linear-gradient(135deg, var(--glow-1), var(--glow-2));
+  --gradient-subtle: linear-gradient(135deg, var(--glow-1), var(--glow-3));
   --backdrop-blur: 12px;
+
+  /* Hero Gradient */
+  --hero-gradient: linear-gradient(
+    to right,
+    #ffffff 30%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
 
   /* Charts - Zinc-based monochrome */
   --chart-1: #e4e4e7; /* zinc-200 */
@@ -139,7 +148,7 @@ html {
   --chart-4: #52525b; /* zinc-600 */
   --chart-5: #3f3f46; /* zinc-700 */
 
-  /* Sidebar - Matching profile.html */
+  /* Sidebar - Matching template */
   --sidebar: #09090b; /* zinc-950 */
   --sidebar-foreground: #a1a1aa; /* zinc-400 */
   --sidebar-primary: #f4f4f5; /* zinc-100 */
@@ -158,6 +167,7 @@ html {
   --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 35px 60px -15px rgba(0, 0, 0, 0.45);
   --shadow-2xl: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+  --dot-color: rgba(255, 255, 255, 0.25);
 }
 
 /* ==========================================================================
@@ -292,30 +302,134 @@ html {
     pointer-events: none;
   }
 
-  .ambient-glow-blue {
+  /* Individual orbs with different positions and animations */
+  .ambient-orb {
     position: absolute;
-    top: -10%;
-    left: -10%;
-    width: 40%;
-    height: 40%;
-    background: var(--glow-1);
     border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.1;
-    animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    filter: blur(80px); /* Reduced from 120px for better performance */
+    will-change: transform;
+    pointer-events: none;
   }
 
-  .ambient-glow-purple {
-    position: absolute;
-    bottom: -10%;
-    right: -10%;
-    width: 40%;
-    height: 40%;
-    background: var(--glow-2);
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: 0.1;
-    animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  /* Primary orb - Top left blue */
+  .ambient-orb-1 {
+    top: -20%;
+    left: -15%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, var(--glow-1) 0%, transparent 70%);
+    opacity: 0.3;
+    animation: float-1 20s ease-in-out infinite;
+  }
+
+  /* Primary orb - Bottom right purple */
+  .ambient-orb-2 {
+    bottom: -20%;
+    right: -15%;
+    width: 90%;
+    height: 90%;
+    background: radial-gradient(circle, var(--glow-2) 0%, transparent 70%);
+    opacity: 0.25;
+    animation: float-2 25s ease-in-out infinite;
+  }
+
+  /* Accent orb - Center-right teal */
+  .ambient-orb-3 {
+    top: 40%;
+    right: -20%;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(
+      circle,
+      #14b8a6 0%,
+      transparent 70%
+    ); /* teal-500 */
+    opacity: 0.2;
+    animation: float-3 30s ease-in-out infinite;
+  }
+
+  /* Subtle orb - Center left indigo */
+  .ambient-orb-4 {
+    top: 50%;
+    left: -25%;
+    width: 75%;
+    height: 75%;
+    background: radial-gradient(
+      circle,
+      #818cf8 0%,
+      transparent 70%
+    ); /* indigo-400 */
+    opacity: 0.18;
+    animation: float-4 35s ease-in-out infinite;
+  }
+
+  /* Floating animations for orbs */
+  @keyframes float-1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(5%, 3%) scale(1.05);
+    }
+    66% {
+      transform: translate(-3%, 5%) scale(0.95);
+    }
+  }
+
+  @keyframes float-2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(-4%, -3%) scale(1.08);
+    }
+    66% {
+      transform: translate(3%, -5%) scale(0.92);
+    }
+  }
+
+  @keyframes float-3 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-8%, 5%) scale(1.1);
+    }
+  }
+
+  @keyframes float-4 {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    50% {
+      transform: translate(10%, 8%);
+    }
+  }
+
+  /* Dot pattern - covers entire page */
+  .bg-dots {
+    background-image: radial-gradient(
+      circle,
+      var(--dot-color) 1.5px,
+      transparent 1.5px
+    );
+    background-size: 24px 24px;
+  }
+
+  /* Noise texture using SVG data URI */
+  .bg-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .ambient-orb {
+      animation: none !important;
+    }
   }
 
   /* ---------- SCROLLBAR (Exact match to generated-page.html) ---------- */
@@ -334,18 +448,40 @@ html {
     background: var(--muted-foreground);
   }
 
-  /* Selection Style */
-  ::selection {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+  .gradient-text-hero {
+    background: var(--hero-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* ---------- UTILITIES ---------- */
-  .glass-subtle {
-    background: rgba(10, 10, 10, 0.8); /* neutral-950/80 */
-    backdrop-filter: blur(var(--backdrop-blur));
-    -webkit-backdrop-filter: blur(var(--backdrop-blur));
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  .dark .gradient-text-hero {
+    background: linear-gradient(
+      to bottom right,
+      #fff 40%,
+      rgba(255, 255, 255, 0.4)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .cursor-follower {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(
+      circle,
+      rgba(99, 102, 241, 0.08) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+    transition:
+      width 0.3s ease,
+      height 0.3s ease;
   }
 
   .bento-card {

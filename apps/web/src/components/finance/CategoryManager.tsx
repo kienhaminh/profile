@@ -11,7 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Plus, Save, Trash2, X } from 'lucide-react';
+import {
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+  X,
+  Tag,
+  ArrowUpCircle,
+  ArrowDownCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { FinanceCategory, FinanceTransactionType } from '@/types/finance';
 import {
@@ -114,17 +123,18 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
     setEditValue('');
   };
 
-  const renderCategoryRow = (category: FinanceCategory) => {
+  const renderCategoryItem = (category: FinanceCategory) => {
     const isEditing = editingId === category.id;
     const isLoading = savingId === category.id;
+    const typeColor = category.type === 'income' ? 'emerald' : 'rose';
 
     return (
       <div
         key={category.id}
-        className="flex items-center gap-2 p-3 border rounded-lg"
+        className="group relative flex items-center justify-between p-2 pl-3 rounded-lg bg-card/50 border border-border/50 hover:border-border transition-all"
       >
         {isEditing ? (
-          <>
+          <div className="flex-1 flex gap-2 items-center">
             <Input
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
@@ -132,63 +142,59 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
                 if (e.key === 'Enter') handleSave(category.id);
                 if (e.key === 'Escape') handleCancel();
               }}
-              className="flex-1"
+              className="h-8 flex-1"
               autoFocus
               disabled={isLoading}
             />
-            <Select
-              value={editType}
-              onValueChange={(v) => setEditType(v as FinanceTransactionType)}
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="income">Income</SelectItem>
-                <SelectItem value="expense">Expense</SelectItem>
-              </SelectContent>
-            </Select>
             <Button
               size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
               onClick={() => handleSave(category.id)}
               disabled={isLoading}
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
               ) : (
-                <Save className="h-4 w-4" />
+                <Save className="h-4 w-4 text-primary" />
               )}
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleCancel}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={handleCancel}
+            >
               <X className="h-4 w-4" />
             </Button>
-          </>
+          </div>
         ) : (
           <>
-            <span className="flex-1 font-medium">{category.name}</span>
-            <span
-              className={`text-xs px-2 py-1 rounded ${
-                category.type === 'income'
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                  : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
-              }`}
-            >
-              {category.type === 'income' ? 'Income' : 'Expense'}
-            </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => handleEdit(category)}
-            >
-              Edit
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setDeleteId(category.id)}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className={`p-1 rounded-md bg-${typeColor}-500/10`}>
+                <Tag className={`h-3 w-3 text-${typeColor}-500`} />
+              </div>
+              <span className="text-sm font-medium">{category.name}</span>
+            </div>
+
+            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 px-2 text-[10px] uppercase font-bold"
+                onClick={() => handleEdit(category)}
+              >
+                Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => setDeleteId(category.id)}
+              >
+                <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+              </Button>
+            </div>
           </>
         )}
       </div>
@@ -196,90 +202,136 @@ export function CategoryManager({ categories }: CategoryManagerProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Manage Categories</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground mb-4">
-          Add, edit, or remove income and expense categories.
-        </p>
-
-        {/* Add new category */}
-        <div className="flex gap-2 mb-6">
-          <Input
-            placeholder="New category name..."
-            value={newCategoryName}
-            onChange={(e) => setNewCategoryName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-            disabled={isCreating}
-            className="flex-1"
-          />
-          <Select
-            value={newCategoryType}
-            onValueChange={(v) =>
-              setNewCategoryType(v as FinanceTransactionType)
-            }
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            onClick={handleCreate}
-            disabled={isCreating || !newCategoryName.trim()}
-          >
-            {isCreating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-
-        {/* Income Categories */}
-        {incomeCategories.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-              Income Categories
-            </h3>
-            <div className="grid gap-2">
-              {incomeCategories.map(renderCategoryRow)}
+    <div className="space-y-6">
+      {/* Quick Add Card */}
+      <Card className="bg-card/50">
+        <CardContent className="p-4 pt-4">
+          <div className="flex flex-col md:flex-row gap-3 items-center">
+            <div className="flex-1 w-full relative">
+              <Input
+                placeholder="Name your new category..."
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+                disabled={isCreating}
+                className="pl-9"
+              />
+              <Plus className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
+
+            <Select
+              value={newCategoryType}
+              onValueChange={(v) =>
+                setNewCategoryType(v as FinanceTransactionType)
+              }
+            >
+              <SelectTrigger className="w-full md:w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="income">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
+                    <span>Income</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="expense">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownCircle className="h-4 w-4 text-rose-500" />
+                    <span>Expense</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              className="w-full md:w-auto px-6 h-10"
+              onClick={handleCreate}
+              disabled={isCreating || !newCategoryName.trim()}
+            >
+              {isCreating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              Create Category
+            </Button>
           </div>
-        )}
+        </CardContent>
+      </Card>
+
+      {/* Categories Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Income Categories */}
+        <Card className="bg-card/50 overflow-hidden">
+          <CardHeader className="p-4 border-b border-emerald-500/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ArrowUpCircle className="h-4 w-4 text-emerald-500" />
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-emerald-500">
+                  Income Categories
+                </CardTitle>
+              </div>
+              <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-bold">
+                {incomeCategories.length} Total
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 bg-emerald-500/[0.02]">
+            {incomeCategories.length === 0 ? (
+              <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
+                <Plus className="h-8 w-8 mb-2 opacity-20" />
+                <p className="text-xs font-medium">
+                  No income categories found
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {incomeCategories.map(renderCategoryItem)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Expense Categories */}
-        {expenseCategories.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-400">
-              Expense Categories
-            </h3>
-            <div className="grid gap-2">
-              {expenseCategories.map(renderCategoryRow)}
+        <Card className="bg-card/50 overflow-hidden">
+          <CardHeader className="p-4 border-b border-rose-500/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ArrowDownCircle className="h-4 w-4 text-rose-500" />
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-rose-500">
+                  Expense Categories
+                </CardTitle>
+              </div>
+              <span className="text-[10px] bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full font-bold">
+                {expenseCategories.length} Total
+              </span>
             </div>
-          </div>
-        )}
+          </CardHeader>
+          <CardContent className="p-4 bg-rose-500/[0.02]">
+            {expenseCategories.length === 0 ? (
+              <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
+                <Plus className="h-8 w-8 mb-2 opacity-20" />
+                <p className="text-xs font-medium">
+                  No expense categories found
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {expenseCategories.map(renderCategoryItem)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-        {categories.length === 0 && (
-          <p className="text-muted-foreground text-center py-8">
-            No categories yet. Add one above.
-          </p>
-        )}
-
-        <ConfirmDeleteDialog
-          isOpen={!!deleteId}
-          onOpenChange={(open) => !open && setDeleteId(null)}
-          onConfirm={handleDelete}
-          isLoading={isDeleting}
-          title="Delete Category"
-          description="Are you sure you want to delete this category? Transactions using this category will become uncategorized."
-        />
-      </CardContent>
-    </Card>
+      <ConfirmDeleteDialog
+        isOpen={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Delete Category"
+        description="Are you sure you want to delete this category? Transactions using this category will become uncategorized."
+      />
+    </div>
   );
 }
