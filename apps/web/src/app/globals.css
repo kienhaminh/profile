@@ -279,16 +279,17 @@ html {
 
   /* ---------- AMBIENT BACKGROUND ---------- */
   .bg-grid {
-    background-size: 40px 40px;
+    background-size: 50px 50px;
     background-image:
-      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center, black, transparent 80%);
   }
 
   .dark .bg-grid {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
 
   .ambient-glow {
@@ -313,54 +314,24 @@ html {
 
   /* Primary orb - Top left blue */
   .ambient-orb-1 {
-    top: -20%;
-    left: -15%;
-    width: 80%;
-    height: 80%;
+    top: -10%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
     background: radial-gradient(circle, var(--glow-1) 0%, transparent 70%);
-    opacity: 0.3;
+    opacity: 0.2;
     animation: float-1 20s ease-in-out infinite;
   }
 
   /* Primary orb - Bottom right purple */
   .ambient-orb-2 {
-    bottom: -20%;
-    right: -15%;
-    width: 90%;
-    height: 90%;
-    background: radial-gradient(circle, var(--glow-2) 0%, transparent 70%);
-    opacity: 0.25;
-    animation: float-2 25s ease-in-out infinite;
-  }
-
-  /* Accent orb - Center-right teal */
-  .ambient-orb-3 {
-    top: 40%;
-    right: -20%;
+    bottom: -10%;
+    right: -10%;
     width: 70%;
     height: 70%;
-    background: radial-gradient(
-      circle,
-      #14b8a6 0%,
-      transparent 70%
-    ); /* teal-500 */
-    opacity: 0.2;
-    animation: float-3 30s ease-in-out infinite;
-  }
-
-  /* Subtle orb - Center left indigo */
-  .ambient-orb-4 {
-    top: 50%;
-    left: -25%;
-    width: 75%;
-    height: 75%;
-    background: radial-gradient(
-      circle,
-      #818cf8 0%,
-      transparent 70%
-    ); /* indigo-400 */
-    opacity: 0.18;
-    animation: float-4 35s ease-in-out infinite;
+    background: radial-gradient(circle, var(--glow-2) 0%, transparent 70%);
+    opacity: 0.15;
+    animation: float-2 25s ease-in-out infinite;
   }
 
   /* Floating animations for orbs */
@@ -388,36 +359,6 @@ html {
     66% {
       transform: translate(3%, -5%) scale(0.92);
     }
-  }
-
-  @keyframes float-3 {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-    }
-    50% {
-      transform: translate(-8%, 5%) scale(1.1);
-    }
-  }
-
-  @keyframes float-4 {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-    50% {
-      transform: translate(10%, 8%);
-    }
-  }
-
-  /* Dot pattern - covers entire page */
-  .bg-dots {
-    background-image: radial-gradient(
-      circle,
-      var(--dot-color) 1.5px,
-      transparent 1.5px
-    );
-    background-size: 24px 24px;
   }
 
   /* Noise texture using SVG data URI */
@@ -514,7 +455,7 @@ html {
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground antialiased;

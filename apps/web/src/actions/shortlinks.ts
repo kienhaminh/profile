@@ -20,8 +20,8 @@ import { requireAdminAuth } from '@/lib/server-auth';
 export type Shortlink = typeof shortlinks.$inferSelect;
 export type NewShortlink = Omit<
   typeof shortlinks.$inferInsert,
-  'id' | 'createdAt' | 'updatedAt' | 'clickCount'
->;
+  'id' | 'createdAt' | 'updatedAt' | 'clickCount' | 'slug'
+> & { slug?: string };
 
 // Generate a random 6-character slug
 export async function generateSlug(): Promise<string> {

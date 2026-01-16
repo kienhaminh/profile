@@ -2,25 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BlogForm } from '@/components/admin/BlogForm';
+import { BlogForm, type BlogFormData } from '@/components/admin/BlogForm';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, AlertCircle, FileEdit } from 'lucide-react';
 import type { PostStatus } from '@/types/enums';
 import type { Tag } from '@/types/tag';
 import Link from 'next/link';
-
-interface BlogFormData {
-  title: string;
-  slug: string;
-  content: string;
-  status: PostStatus;
-  publishDate?: string;
-  excerpt?: string;
-  readTime?: number;
-  coverImage?: string;
-  tagIds: string[];
-}
 
 interface BlogData {
   id: string;

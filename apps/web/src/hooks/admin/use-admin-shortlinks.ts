@@ -1,11 +1,10 @@
 /**
  * useAdminShortlinks Hook
  *
- * SWR hook for fetching and managing shortlinks.
+ * tRPC hook for fetching and managing shortlinks.
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 
 interface Shortlink {
   id: string;
@@ -21,20 +20,18 @@ interface Shortlink {
   updatedAt: Date | string;
 }
 
-interface ShortlinksResponse {
-  shortlinks: Shortlink[];
-}
-
 export function useAdminShortlinks() {
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<ShortlinksResponse>(API_ENDPOINTS.SHORTLINKS);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getShortlinks.useQuery(undefined, {
+      keepPreviousData: true,
+    });
 
   return {
-    shortlinks: data?.shortlinks ?? [],
+    shortlinks: data ?? [],
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch,
   };
 }
 

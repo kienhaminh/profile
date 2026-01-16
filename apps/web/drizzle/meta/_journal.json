@@ -127,6 +127,13 @@
       "when": 1768387967771,
       "tag": "0017_sticky_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1768490286956,
+      "tag": "0018_open_amazoness",
+      "breakpoints": true
     }
   ]
 }

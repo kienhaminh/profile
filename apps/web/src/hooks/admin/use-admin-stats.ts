@@ -1,11 +1,10 @@
 /**
  * useAdminStats Hook
  *
- * SWR hook for fetching dashboard statistics.
+ * tRPC hook for fetching dashboard statistics.
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 
 interface DashboardStats {
   postsOverTime: Array<{ month: string; count: string; status: string }>;
@@ -27,14 +26,16 @@ interface DashboardStats {
 }
 
 export function useAdminStats() {
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<DashboardStats>(API_ENDPOINTS.STATS);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getDashboardStats.useQuery(undefined, {
+      keepPreviousData: true,
+    });
 
   return {
-    stats: data ?? null,
+    stats: (data as unknown as DashboardStats) ?? null, // Casting since return type should match
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch,
   };
 }

@@ -1,32 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { TagSelect } from './TagSelect';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
-import type { CreateBlogRequest } from '@/lib/validation';
+import { createBlogSchema } from '@/lib/validation';
 import { POST_STATUS, type PostStatus } from '@/types/enums';
 import { Button } from '@/components/ui/button';
-import { Loader2, Wand2, FileText } from 'lucide-react';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Wand2, FileText, AlertCircle, Sparkles } from 'lucide-react';
+import { z } from 'zod';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 
-interface BlogFormData {
-  title: string;
-  slug: string;
-  content: string;
-  status: PostStatus;
-  publishDate?: string;
-  excerpt?: string;
-  readTime?: number;
-  coverImage?: string;
-  tagIds: string[];
-}
+// Define the schema for the form, making authorId optional
+const formSchema = createBlogSchema.extend({
+  authorId: z.string().uuid().optional(),
+});
 
-// Type that matches the form data but allows optional fields for editing
-type BlogFormEditData = Partial<CreateBlogRequest> & {
-  tagIds?: string[];
-};
+export type BlogFormData = z.infer<typeof formSchema>;
 
 interface BlogFormProps {
-  initialData?: BlogFormEditData;
+  initialData?: Partial<BlogFormData>;
   onSubmit: (data: BlogFormData) => Promise<void>;
   onCancel?: () => void;
   mode: 'create' | 'edit';
@@ -45,21 +62,23 @@ export function BlogForm({
   onSubmit,
   onCancel,
   mode,
-}: BlogFormProps) {
-  const [formData, setFormData] = useState<BlogFormData>({
-    title: initialData?.title || '',
-    slug: initialData?.slug || '',
-    content: initialData?.content || '',
-    status: (initialData?.status as PostStatus) || POST_STATUS.DRAFT,
-    publishDate: initialData?.publishDate || '',
-    excerpt: initialData?.excerpt || '',
-    readTime: initialData?.readTime || undefined,
-    coverImage: initialData?.coverImage || '',
-    tagIds: initialData?.tagIds || [],
+}: BlogFormProps): React.ReactElement {
+  const form = useForm<BlogFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: initialData?.title || '',
+      slug: initialData?.slug || '',
+      content: initialData?.content || '',
+      status: (initialData?.status as PostStatus) || POST_STATUS.DRAFT,
+      publishDate: initialData?.publishDate || '',
+      excerpt: initialData?.excerpt || '',
+      readTime: initialData?.readTime || undefined,
+      coverImage: initialData?.coverImage || '',
+      tagIds: initialData?.tagIds || [],
+    },
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Prompt mode state
   const [isPromptMode, setIsPromptMode] = useState(false);
@@ -72,54 +91,32 @@ export function BlogForm({
   });
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Auto-generate slug from title
+  const watchedTitle = form.watch('title');
   useEffect(() => {
-    if (!initialData?.slug && formData.title) {
-      const generatedSlug = formData.title
+    if (!initialData?.slug && watchedTitle) {
+      const generatedSlug = watchedTitle
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .trim()
         .replace(/^-+|-+$/g, '');
-      setFormData((prev) => ({ ...prev, slug: generatedSlug }));
+      form.setValue('slug', generatedSlug, { shouldValidate: true });
     }
-  }, [formData.title, initialData?.slug]);
+  }, [watchedTitle, initialData?.slug, form]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]:
-        type === 'number' ? (value === '' ? undefined : Number(value)) : value,
-    }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleContentChange = (content: string) => {
-    setFormData((prev) => ({ ...prev, content }));
-    if (errors.content) {
-      setErrors((prev) => ({ ...prev, content: '' }));
-    }
-  };
-
-  const handlePromptChange = (field: keyof PromptData, value: string) => {
+  const handlePromptChange = (field: keyof PromptData, value: string): void => {
     setPromptData((prev) => ({ ...prev, [field]: value }));
   };
 
   const generateContentFromPrompt = async () => {
     if (!promptData.prompt.trim()) {
-      setErrors({ prompt: 'Prompt is required' });
+      form.setError('root', { message: 'Prompt is required' });
       return;
     }
 
     setIsGenerating(true);
-    setErrors({});
 
     try {
       const response = await fetch('/api/blog/generate', {
@@ -132,48 +129,22 @@ export function BlogForm({
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to generate content';
-        try {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const error = await response.json();
-            errorMessage = error.message || error.error || errorMessage;
-          } else {
-            // If not JSON, try to get text content
-            const textContent = await response.text();
-            errorMessage = textContent || errorMessage;
-          }
-        } catch {
-          // If parsing fails, use default error message
-          errorMessage = `Server error (${response.status}): ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
+        throw new Error('Failed to generate content');
       }
 
-      // Parse JSON response with error handling
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch {
-        throw new Error('Invalid response format from server');
-      }
-
-      const { data } = responseData;
+      const { data } = await response.json();
 
       // Update form data with generated content
-      setFormData((prev) => ({
-        ...prev,
-        title: data.title || prev.title,
-        content: data.content || prev.content,
-        excerpt: data.excerpt || prev.excerpt,
-        readTime: data.readTime || prev.readTime,
-      }));
+      if (data.title) form.setValue('title', data.title);
+      if (data.content) form.setValue('content', data.content);
+      if (data.excerpt) form.setValue('excerpt', data.excerpt);
+      if (data.readTime) form.setValue('readTime', data.readTime);
 
       // Switch to manual mode after generation
       setIsPromptMode(false);
     } catch (error) {
-      setErrors({
-        prompt:
+      form.setError('root', {
+        message:
           error instanceof Error ? error.message : 'Failed to generate content',
       });
     } finally {
@@ -181,80 +152,18 @@ export function BlogForm({
     }
   };
 
-  const togglePromptMode = () => {
+  const togglePromptMode = (): void => {
     setIsPromptMode((prev) => !prev);
-    if (!isPromptMode) {
-      // Switching to prompt mode - clear any existing errors
-      setErrors({});
-    }
+    form.clearErrors();
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (isPromptMode) {
-      if (!promptData.prompt.trim()) {
-        newErrors.prompt = 'Prompt is required';
-      } else if (promptData.prompt.length < 10) {
-        newErrors.prompt = 'Prompt must be at least 10 characters long';
-      }
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
-    }
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    } else if (formData.title.length > 200) {
-      newErrors.title = 'Title must be 200 characters or less';
-    }
-
-    if (!formData.slug.trim()) {
-      newErrors.slug = 'Slug is required';
-    } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug =
-        'Slug must contain only lowercase letters, numbers, and hyphens';
-    }
-
-    if (!formData.content.trim()) {
-      newErrors.content = 'Content is required';
-    }
-    if (
-      formData.coverImage &&
-      !/^https?:\/\/[^\s]+\.[^\s]+/.test(formData.coverImage)
-    ) {
-      newErrors.coverImage = 'Cover image must be a valid URL';
-    }
-
-    if (
-      formData.readTime &&
-      (formData.readTime <= 0 || !Number.isInteger(formData.readTime))
-    ) {
-      newErrors.readTime = 'Read time must be a positive integer';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    // If in prompt mode, generate content first
-    if (isPromptMode) {
-      await generateContentFromPrompt();
-      return;
-    }
-
+  const onFormSubmit = async (data: BlogFormData) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(formData);
+      await onSubmit(data);
     } catch (error) {
-      setErrors({
-        submit:
+      form.setError('root', {
+        message:
           error instanceof Error ? error.message : 'Failed to save blog post',
       });
     } finally {
@@ -263,375 +172,406 @@ export function BlogForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {errors.submit && (
-        <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-md">
-          <p className="text-sm text-destructive">{errors.submit}</p>
-        </div>
-      )}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-8">
+        {form.formState.errors.root && (
+          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-md flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-destructive" />
+            <p className="text-sm text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          </div>
+        )}
 
-      {/* Mode Toggle */}
-      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-        <div className="flex items-center space-x-3">
-          <FileText
-            className={`h-5 w-5 ${!isPromptMode ? 'text-primary' : 'text-muted-foreground'}`}
-          />
-          <span
-            className={`font-medium ${!isPromptMode ? 'text-primary' : 'text-muted-foreground'}`}
-          >
-            Manual Entry
-          </span>
-        </div>
-        <Button
-          type="button"
-          variant={isPromptMode ? 'default' : 'outline'}
-          size="sm"
-          onClick={togglePromptMode}
-          className="flex items-center space-x-2"
-        >
-          <Wand2 className="h-4 w-4" />
-          <span>AI Generate</span>
-        </Button>
-      </div>
-
-      {isPromptMode ? (
-        /* Prompt Mode Form */
-        <div className="space-y-6">
-          <div>
-            <label
-              htmlFor="prompt"
-              className="block text-sm font-medium text-foreground mb-2"
+        {/* Mode Toggle */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center p-1 bg-muted rounded-lg border border-border">
+            <button
+              type="button"
+              onClick={() => isPromptMode && togglePromptMode()}
+              className={`flex items-center gap-2 py-2 px-6 rounded-md text-sm font-medium transition-colors ${
+                !isPromptMode
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              Prompt <span className="text-destructive">*</span>
-            </label>
-            <textarea
-              id="prompt"
-              value={promptData.prompt}
-              onChange={(e) => handlePromptChange('prompt', e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Describe what you want the blog post to be about. Be specific about the topic, key points to cover, and the desired outcome."
-            />
-            {errors.prompt && (
-              <p className="mt-1 text-sm text-destructive">{errors.prompt}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="topic"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Topic (Optional)
-              </label>
-              <input
-                type="text"
-                id="topic"
-                value={promptData.topic}
-                onChange={(e) => handlePromptChange('topic', e.target.value)}
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="e.g., Web Development, Machine Learning"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="targetAudience"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Target Audience (Optional)
-              </label>
-              <input
-                type="text"
-                id="targetAudience"
-                value={promptData.targetAudience}
-                onChange={(e) =>
-                  handlePromptChange('targetAudience', e.target.value)
-                }
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="e.g., Developers, Beginners, Business Owners"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="tone"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Tone
-              </label>
-              <select
-                id="tone"
-                value={promptData.tone}
-                onChange={(e) =>
-                  handlePromptChange(
-                    'tone',
-                    e.target.value as PromptData['tone']
-                  )
-                }
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="professional">Professional</option>
-                <option value="casual">Casual</option>
-                <option value="technical">Technical</option>
-                <option value="conversational">Conversational</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="length"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Length
-              </label>
-              <select
-                id="length"
-                value={promptData.length}
-                onChange={(e) =>
-                  handlePromptChange(
-                    'length',
-                    e.target.value as PromptData['length']
-                  )
-                }
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="short">Short (800-1200 words)</option>
-                <option value="medium">Medium (1500-2500 words)</option>
-                <option value="long">Long (3000+ words)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              disabled={isGenerating}
-              className="flex items-center space-x-2"
+              <FileText className="h-4 w-4" />
+              <span>Manual</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => !isPromptMode && togglePromptMode()}
+              className={`flex items-center gap-2 py-2 px-6 rounded-md text-sm font-medium transition-colors ${
+                isPromptMode
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {isGenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Wand2 className="h-4 w-4" />
-              )}
-              <span>{isGenerating ? 'Generating...' : 'Generate Content'}</span>
-            </Button>
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isGenerating}
-              >
-                Cancel
-              </Button>
-            )}
+              <Wand2 className="h-4 w-4" />
+              <span>Helper</span>
+            </button>
           </div>
         </div>
-      ) : (
-        <>
-          <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Title <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Enter blog title"
-            />
-            {errors.title && (
-              <p className="mt-1 text-sm text-destructive">{errors.title}</p>
-            )}
-          </div>
 
-          <div>
-            <label
-              htmlFor="slug"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Slug <span className="text-destructive">*</span>
-            </label>
-            <input
-              type="text"
-              id="slug"
-              name="slug"
-              value={formData.slug}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="blog-post-slug"
-            />
-            {errors.slug && (
-              <p className="mt-1 text-sm text-destructive">{errors.slug}</p>
-            )}
-          </div>
+        {isPromptMode ? (
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <CardTitle className="text-xl">AI Content Generator</CardTitle>
+                <CardDescription>
+                  Describe your topic and let AI draft the content for you.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-4">
+                <div className="space-y-2">
+                  <FormLabel className="text-sm font-semibold">
+                    What is this post about?{' '}
+                    <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <Textarea
+                    value={promptData.prompt}
+                    onChange={(e) =>
+                      handlePromptChange('prompt', e.target.value)
+                    }
+                    rows={4}
+                    className="resize-none"
+                    placeholder="e.g. A guide to CSS Grid layout for beginners..."
+                  />
+                </div>
 
-          <div>
-            <label
-              htmlFor="excerpt"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Excerpt
-            </label>
-            <textarea
-              id="excerpt"
-              name="excerpt"
-              value={formData.excerpt}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Brief summary of the blog post"
-            />
-          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <FormLabel>Topic</FormLabel>
+                    <Input
+                      value={promptData.topic}
+                      onChange={(e) =>
+                        handlePromptChange('topic', e.target.value)
+                      }
+                      placeholder="e.g. Web Design"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FormLabel>Target Audience</FormLabel>
+                    <Input
+                      value={promptData.targetAudience}
+                      onChange={(e) =>
+                        handlePromptChange('targetAudience', e.target.value)
+                      }
+                      placeholder="e.g. Developers"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FormLabel>Tone</FormLabel>
+                    <Select
+                      value={promptData.tone}
+                      onValueChange={(v) => handlePromptChange('tone', v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">
+                          Professional
+                        </SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="technical">Technical</SelectItem>
+                        <SelectItem value="conversational">
+                          Conversational
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <FormLabel>Length</FormLabel>
+                    <Select
+                      value={promptData.length}
+                      onValueChange={(v) => handlePromptChange('length', v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select length" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short">Short</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="long">Long</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-          <div>
-            <label
-              htmlFor="content"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Content <span className="text-destructive">*</span>
-            </label>
-            <RichTextEditor
-              value={formData.content}
-              onChange={handleContentChange}
-              placeholder="Write your blog content here..."
-              className="min-h-[400px]"
-            />
-            {errors.content && (
-              <p className="mt-1 text-sm text-destructive">{errors.content}</p>
-            )}
+                <Button
+                  type="button"
+                  onClick={generateContentFromPrompt}
+                  disabled={isGenerating}
+                  className="w-full"
+                  size="lg"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Generate Draft
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-muted-foreground uppercase text-xs tracking-wider font-semibold">
+                        Title
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          className="text-2xl font-bold py-6 px-4 border-transparent hover:border-border focus:border-border bg-transparent shadow-none rounded-none border-b transition-colors"
+                          placeholder="Enter your title..."
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="status"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Status
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value={POST_STATUS.DRAFT}>Draft</option>
-                <option value={POST_STATUS.PUBLISHED}>Published</option>
-                <option value={POST_STATUS.ARCHIVED}>Archived</option>
-              </select>
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="border border-border/40 rounded-lg overflow-hidden min-h-[500px] bg-background">
+                          <RichTextEditor
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Tell your story..."
+                            className="min-h-[500px] prose-lg"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="readTime"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Read Time (minutes)
-              </label>
-              <input
-                type="number"
-                id="readTime"
-                name="readTime"
-                value={formData.readTime || ''}
-                onChange={handleChange}
-                min="1"
-                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                placeholder="5"
-              />
-              {errors.readTime && (
-                <p className="mt-1 text-sm text-destructive">{errors.readTime}</p>
-              )}
+            {/* Right Column: Meta & Settings */}
+            <div className="space-y-6">
+              <Card className="border-border/60 bg-card/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base font-medium">
+                    Publishing
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value={POST_STATUS.DRAFT}>
+                              Draft
+                            </SelectItem>
+                            <SelectItem value={POST_STATUS.PUBLISHED}>
+                              Published
+                            </SelectItem>
+                            <SelectItem value={POST_STATUS.ARCHIVED}>
+                              Archived
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="publishDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Publish Date</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="datetime-local"
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Saving...
+                        </>
+                      ) : mode === 'create' ? (
+                        'Publish Post'
+                      ) : (
+                        'Save Changes'
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/60 bg-card/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base font-medium">
+                    Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="slug"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Slug</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="url-slug"
+                            className="font-mono text-xs"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="excerpt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Exerpt</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            value={field.value || ''}
+                            rows={3}
+                            placeholder="Short summary..."
+                            className="resize-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="readTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Read Time (min)</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            value={field.value || ''}
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ''
+                                  ? undefined
+                                  : Number(e.target.value)
+                              )
+                            }
+                            min="1"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/60 bg-card/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base font-medium">
+                    Media & Tags
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <FormField
+                    control={form.control}
+                    name="coverImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cover Image</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="url"
+                            value={field.value || ''}
+                            placeholder="https://..."
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tagIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <FormControl>
+                          <TagSelect
+                            value={field.value || []}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
             </div>
           </div>
-
-          <div>
-            <label
-              htmlFor="coverImage"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Cover Image URL
-            </label>
-            <input
-              type="url"
-              id="coverImage"
-              name="coverImage"
-              value={formData.coverImage}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="https://example.com/image.jpg"
-            />
-            {errors.coverImage && (
-              <p className="mt-1 text-sm text-destructive">{errors.coverImage}</p>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="publishDate"
-              className="block text-sm font-medium text-foreground mb-2"
-            >
-              Publish Date
-            </label>
-            <input
-              type="datetime-local"
-              id="publishDate"
-              name="publishDate"
-              value={formData.publishDate}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Tags
-            </label>
-            <TagSelect
-              value={formData.tagIds}
-              onChange={(tagIds) =>
-                setFormData((prev) => ({ ...prev, tagIds }))
-              }
-              placeholder="Search or create tags for your blog post..."
-            />
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : mode === 'create' ? (
-                'Create Blog Post'
-              ) : (
-                'Update Blog Post'
-              )}
-            </Button>
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            )}
-          </div>
-        </>
-      )}
-    </form>
+        )}
+      </form>
+    </Form>
   );
 }

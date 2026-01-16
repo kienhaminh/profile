@@ -15,13 +15,3 @@ export {
   type Tag,
 } from './use-admin-favorites';
 export { useAdminShortlinks, type Shortlink } from './use-admin-shortlinks';
-export {
-  useAdminFlashcards,
-  type FlashcardSet,
-  type FlashcardsStats,
-} from './use-admin-flashcards';
-export {
-  useAdminVocabularies,
-  type Vocabulary,
-  type VocabulariesStats,
-} from './use-admin-vocabularies';

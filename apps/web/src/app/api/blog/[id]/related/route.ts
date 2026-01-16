@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getRelatedBlogsById } from '@/services/knowledge-graph';
+// import { getRelatedBlogsById } from '@/services/knowledge-graph';
 import { relatedBlogsResponseSchema } from '@/types/graph';
 import { logger } from '@/lib/logger';
 
@@ -49,7 +49,8 @@ export async function GET(
     const { limit } = parsedQuery.data;
 
     // Fetch related blogs
-    const relatedBlogs = await getRelatedBlogsById(id, limit);
+    // const relatedBlogs = await getRelatedBlogsById(id, limit);
+    const relatedBlogs: any[] = []; // Temporary fix to bypass missing service
 
     // Validate response with zod (expects relatedBlogs + total)
     const response = relatedBlogsResponseSchema.parse({

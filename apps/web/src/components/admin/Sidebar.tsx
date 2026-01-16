@@ -69,21 +69,6 @@ const menuItems: MenuItem[] = [
     icon: Heart,
   },
   {
-    name: 'Knowledge',
-    href: '/admin/knowledge',
-    icon: Brain,
-  },
-  {
-    name: 'Vocabulary',
-    href: '/admin/vocabulary',
-    icon: Brain,
-  },
-  {
-    name: 'Folktales',
-    href: '/admin/history',
-    icon: BookOpen,
-  },
-  {
     name: 'Shortlinks',
     href: '/admin/shortlinks',
     icon: Link2,
@@ -147,7 +132,7 @@ export function Sidebar() {
   const SidebarContent = () => (
     <>
       <div className="p-6 flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded bg-gradient-to-tr from-muted-foreground to-foreground flex items-center justify-center text-background font-semibold text-sm">
+        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm shadow-sm ring-2 ring-background">
           A
         </div>
         <span className="text-foreground font-medium text-sm tracking-tight">
@@ -240,13 +225,16 @@ export function Sidebar() {
         </div>
         <button
           onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all w-full"
+          className="flex items-center gap-3 px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-all w-full group"
         >
-          <LogOut className="w-4 h-4" strokeWidth={1.5} />
+          <LogOut
+            className="w-4 h-4 transition-transform group-hover:-translate-x-1"
+            strokeWidth={1.5}
+          />
           <span>Sign Out</span>
         </button>
         {error && (
-          <p className="text-xs text-red-500 mt-2 bg-red-500/10 p-2 rounded border border-red-500/20">
+          <p className="text-xs text-destructive mt-2 bg-destructive/10 p-2 rounded border border-destructive/20">
             {error}
           </p>
         )}

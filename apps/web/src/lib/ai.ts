@@ -14,7 +14,6 @@ const openai = new OpenAI({
 
 export async function generateText(prompt: string): Promise<string> {
   try {
-    console.log('Attempting to generate text with Gemini...');
     const result = await model.generateContent(prompt);
     const response = result.response;
     return response.text();
@@ -26,7 +25,6 @@ export async function generateText(prompt: string): Promise<string> {
       throw error;
     }
 
-    console.log('Falling back to OpenAI...');
     try {
       const completion = await openai.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],

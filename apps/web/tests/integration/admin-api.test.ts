@@ -5,8 +5,11 @@ import { POST_STATUS } from '@/types/enums';
 vi.mock('next/server', () => ({
   NextRequest: class MockNextRequest {
     json: () => Promise<any>;
-    constructor(public url: string, public init?: RequestInit) {
-      this.json = async () => JSON.parse(init?.body as string || '{}');
+    constructor(
+      public url: string,
+      public init?: RequestInit
+    ) {
+      this.json = async () => JSON.parse((init?.body as string) || '{}');
     }
   },
   NextResponse: {
@@ -20,7 +23,7 @@ vi.mock('next/server', () => ({
 
 // Mock services
 vi.mock('@/services/auth', () => ({
-  verifyCredentials: vi.fn(),
+  authenticateUser: vi.fn(),
   getUserById: vi.fn(),
 }));
 
@@ -34,8 +37,7 @@ vi.mock('@/services/posts', () => ({
 }));
 
 vi.mock('@/lib/auth', () => ({
-  generateToken: vi.fn(),
-  verifyToken: vi.fn(),
+  verifyAdminToken: vi.fn(),
   hashPassword: vi.fn(),
 }));
 
@@ -57,7 +59,7 @@ describe('Admin API Integration Tests', () => {
   const mockUser = {
     id: 'user-1',
     username: 'admin',
-    createdAt: mockDate.toISOString(),
+    createdAt: mockDate,
   };
 
   const mockBlog = {
@@ -89,8 +91,11 @@ describe('Admin API Integration Tests', () => {
 
   describe('POST /api/admin/login', () => {
     it('should authenticate admin user successfully', async () => {
-      vi.mocked(authService.verifyCredentials).mockResolvedValue(mockUser);
-      vi.mocked(authLib.generateToken).mockReturnValue('mock-jwt-token');
+      vi.mocked(authService.authenticateUser).mockResolvedValue({
+        success: true,
+        token: 'mock-jwt-token',
+        user: { id: mockUser.id, username: mockUser.username },
+      });
 
       const credentials = {
         username: 'admin',
@@ -98,26 +103,25 @@ describe('Admin API Integration Tests', () => {
       };
 
       // Simulate login request
-      expect(authService.verifyCredentials).toBeDefined();
-      expect(authLib.generateToken).toBeDefined();
+      expect(authService.authenticateUser).toBeDefined();
 
-      await authService.verifyCredentials(credentials.username, credentials.password);
-      const token = authLib.generateToken({ userId: mockUser.id });
+      const result = await authService.authenticateUser(credentials);
 
-      expect(authService.verifyCredentials).toHaveBeenCalledWith(
-        'admin',
-        'password123'
-      );
-      expect(token).toBe('mock-jwt-token');
+      expect(authService.authenticateUser).toHaveBeenCalledWith(credentials);
+      expect(result.token).toBe('mock-jwt-token');
+      expect(result.success).toBe(true);
     });
 
     it('should reject invalid credentials', async () => {
-      const error = new Error('Invalid credentials');
-      vi.mocked(authService.verifyCredentials).mockRejectedValue(error);
+      vi.mocked(authService.authenticateUser).mockResolvedValue({
+        success: false,
+      });
 
-      await expect(
-        authService.verifyCredentials('admin', 'wrong_password')
-      ).rejects.toThrow('Invalid credentials');
+      const result = await authService.authenticateUser({
+        username: 'admin',
+        password: 'wrong_password',
+      });
+      expect(result.success).toBe(false);
     });
   });
 
@@ -133,7 +137,9 @@ describe('Admin API Integration Tests', () => {
         },
       };
 
-      vi.mocked(postsService.getAllPosts).mockResolvedValue(mockPaginatedResult);
+      vi.mocked(postsService.getAllPosts).mockResolvedValue(
+        mockPaginatedResult
+      );
 
       const result = await postsService.getAllPosts();
 
@@ -152,9 +158,14 @@ describe('Admin API Integration Tests', () => {
         },
       };
 
-      vi.mocked(postsService.getAllPosts).mockResolvedValue(mockPaginatedResult);
+      vi.mocked(postsService.getAllPosts).mockResolvedValue(
+        mockPaginatedResult
+      );
 
-      const result = await postsService.getAllPosts(undefined, { page: 2, limit: 5 });
+      const result = await postsService.getAllPosts(undefined, {
+        page: 2,
+        limit: 5,
+      });
 
       expect(result.pagination.page).toBe(2);
       expect(result.pagination.limit).toBe(5);
@@ -268,11 +279,14 @@ describe('Admin API Integration Tests', () => {
         .mockResolvedValueOnce(mockPublishedPosts)
         .mockResolvedValueOnce(mockDraftPosts);
 
-      const publishedResult = await postsService.getAllPosts(POST_STATUS.PUBLISHED);
+      const publishedResult = await postsService.getAllPosts(
+        POST_STATUS.PUBLISHED
+      );
       const draftResult = await postsService.getAllPosts(POST_STATUS.DRAFT);
 
       const stats = {
-        totalPosts: publishedResult.pagination.total + draftResult.pagination.total,
+        totalPosts:
+          publishedResult.pagination.total + draftResult.pagination.total,
         publishedPosts: publishedResult.pagination.total,
         draftPosts: draftResult.pagination.total,
       };
@@ -285,32 +299,35 @@ describe('Admin API Integration Tests', () => {
 
   describe('Authentication Middleware', () => {
     it('should verify JWT token', async () => {
-      const mockPayload = { userId: 'user-1' };
-      vi.mocked(authLib.verifyToken).mockReturnValue(mockPayload);
+      const mockPayload = { adminId: 'user-1', username: 'admin' };
+      vi.mocked(authLib.verifyAdminToken).mockReturnValue(mockPayload);
 
-      const payload = authLib.verifyToken('valid-jwt-token');
+      const payload = authLib.verifyAdminToken('valid-jwt-token');
 
       expect(payload).toEqual(mockPayload);
     });
 
     it('should reject invalid JWT token', () => {
-      vi.mocked(authLib.verifyToken).mockImplementation(() => {
+      vi.mocked(authLib.verifyAdminToken).mockImplementation(() => {
         throw new Error('Invalid token');
       });
 
-      expect(() => authLib.verifyToken('invalid-token')).toThrow('Invalid token');
+      expect(() => authLib.verifyAdminToken('invalid-token')).toThrow(
+        'Invalid token'
+      );
     });
 
     it('should retrieve user from token payload', async () => {
-      const mockPayload = { userId: 'user-1' };
-      vi.mocked(authLib.verifyToken).mockReturnValue(mockPayload);
+      const mockPayload = { adminId: 'user-1', username: 'admin' };
+      vi.mocked(authLib.verifyAdminToken).mockReturnValue(mockPayload);
       vi.mocked(authService.getUserById).mockResolvedValue(mockUser);
 
-      const payload = authLib.verifyToken('valid-jwt-token');
-      const user = await authService.getUserById(payload.userId);
+      const payload = authLib.verifyAdminToken('valid-jwt-token');
+      const user = await authService.getUserById(payload.adminId);
 
-      expect(user.id).toBe('user-1');
-      expect(user.username).toBe('admin');
+      expect(user).not.toBeNull();
+      expect(user?.id).toBe('user-1');
+      expect(user?.username).toBe('admin');
     });
   });
 });

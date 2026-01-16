@@ -70,3 +70,25 @@ export async function authenticateUser(credentials: {
     return { success: false };
   }
 }
+
+/**
+ * Retrieves a user by their ID
+ */
+export async function getUserById(id: string) {
+  try {
+    const result = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return result[0] || null;
+  } catch (error) {
+    logger.error('Error fetching user by ID', { error, userId: id });
+    return null;
+  }
+}

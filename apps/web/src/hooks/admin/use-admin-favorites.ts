@@ -1,11 +1,10 @@
 /**
  * useAdminFavorites Hook
  *
- * SWR hook for fetching and managing favorites.
+ * tRPC hook for fetching and managing favorites.
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 
 interface FavoriteCategory {
   id: string;
@@ -39,39 +38,29 @@ interface FavoriteWithCategory {
   tags?: Tag[];
 }
 
-interface FavoritesResponse {
-  favorites: FavoriteWithCategory[];
-  categories: FavoriteCategory[];
-  tags: Tag[];
-}
-
 interface UseAdminFavoritesOptions {
   categoryId?: string;
 }
 
 export function useAdminFavorites(options: UseAdminFavoritesOptions = {}) {
-  const params = new URLSearchParams();
-
-  if (options.categoryId) {
-    params.append('categoryId', options.categoryId);
-  }
-
-  const queryString = params.toString();
-  const url = queryString
-    ? `${API_ENDPOINTS.FAVORITES}?${queryString}`
-    : API_ENDPOINTS.FAVORITES;
-
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<FavoritesResponse>(url);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getFavorites.useQuery(
+      {
+        categoryId: options.categoryId,
+      },
+      {
+        keepPreviousData: true,
+      }
+    );
 
   return {
     favorites: data?.favorites ?? [],
     categories: data?.categories ?? [],
     tags: data?.tags ?? [],
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch,
   };
 }
 

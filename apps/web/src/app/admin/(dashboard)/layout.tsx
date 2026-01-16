@@ -1,5 +1,5 @@
 import { Sidebar } from '@/components/admin/Sidebar';
-import { SWRProvider } from '@/components/providers/SWRProvider';
+
 import { getServerAuth } from '@/lib/server-auth';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
@@ -34,9 +34,7 @@ export default async function AdminLayout({
     <div className="flex h-screen overflow-hidden bg-background text-foreground antialiased">
       <Sidebar />
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-6 py-10 md:py-16">
-          <SWRProvider>{children}</SWRProvider>
-        </div>
+        <div className="max-w-7xl mx-auto px-6 py-10 md:py-16">{children}</div>
       </main>
     </div>
   );

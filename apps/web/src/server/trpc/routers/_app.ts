@@ -1,6 +1,7 @@
-import { initTRPC, TRPCError } from '@trpc/server';
+import { router, publicProcedure } from '../trpc';
+import { adminRouter } from './admin';
 import { z } from 'zod';
-import type { Context } from '../context';
+import { TRPCError } from '@trpc/server';
 import type { BlogListItem } from '@/types/blog';
 import { listBlogsInputSchema } from '@/types/blog';
 import { createTagInputSchema } from '@/types/tag';
@@ -19,23 +20,11 @@ import {
   getRecentChatSessions,
 } from '@/services/chat';
 
-const t = initTRPC.context<Context>().create({
-  errorFormatter({ shape }) {
-    return {
-      ...shape,
-      data: {
-        ...shape.data,
-        code: shape.data.code,
-      },
-    };
-  },
-});
-
-export const router = t.router;
-export const publicProcedure = t.procedure;
-
 // Define the appRouter
 export const appRouter = router({
+  // Merge admin router
+  admin: adminRouter,
+
   // Health check procedure
   health: publicProcedure.query(() => {
     return { status: 'ok', timestamp: Date.now() };

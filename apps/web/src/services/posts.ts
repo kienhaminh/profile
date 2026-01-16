@@ -250,7 +250,6 @@ export async function getPostBySlug(slug: string): Promise<Blog> {
       .from(posts)
       .where(eq(posts.slug, slug))
       .limit(1);
-    console.log('result', result);
     if (result.length === 0) {
       throw new NotFoundError(`Post not found: ${slug}`);
     }

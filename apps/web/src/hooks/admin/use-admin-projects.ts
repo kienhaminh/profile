@@ -1,11 +1,10 @@
 /**
  * useAdminProjects Hook
  *
- * SWR hook for fetching and managing admin projects.
+ * tRPC hook for fetching and managing admin projects.
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 import type { ProjectStatus } from '@/types/enums';
 
 interface Project {
@@ -19,38 +18,28 @@ interface Project {
   tags: Array<{ id: string; label: string }>;
 }
 
-interface ProjectsResponse {
-  items: Project[];
-}
-
 interface UseAdminProjectsOptions {
   status?: string;
   search?: string;
 }
 
 export function useAdminProjects(options: UseAdminProjectsOptions = {}) {
-  const params = new URLSearchParams();
-
-  if (options.status && options.status !== 'all') {
-    params.append('status', options.status);
-  }
-  if (options.search) {
-    params.append('search', options.search);
-  }
-
-  const queryString = params.toString();
-  const url = queryString
-    ? `${API_ENDPOINTS.PROJECTS}?${queryString}`
-    : API_ENDPOINTS.PROJECTS;
-
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<ProjectsResponse>(url);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getProjects.useQuery(
+      {
+        status: options.status,
+        search: options.search,
+      },
+      {
+        keepPreviousData: true,
+      }
+    );
 
   return {
     projects: data?.items ?? [],
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch, // Alias refetch as mutate for compatibility
   };
 }

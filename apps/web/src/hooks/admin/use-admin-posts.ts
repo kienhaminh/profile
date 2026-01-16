@@ -1,12 +1,12 @@
 /**
  * useAdminPosts Hook
  *
- * SWR hook for fetching and managing admin posts (blogs).
+ * tRPC hook for fetching and managing admin posts (blogs).
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 import type { Blog } from '@/types/blog';
+import { POST_STATUS } from '@/types/enums';
 
 interface PostsResponse {
   items: Blog[];
@@ -26,35 +26,25 @@ interface UseAdminPostsOptions {
 }
 
 export function useAdminPosts(options: UseAdminPostsOptions = {}) {
-  const params = new URLSearchParams();
-
-  if (options.status && options.status !== 'all') {
-    params.append('status', options.status);
-  }
-  if (options.search) {
-    params.append('search', options.search);
-  }
-  if (options.page) {
-    params.append('page', String(options.page));
-  }
-  if (options.limit) {
-    params.append('limit', String(options.limit));
-  }
-
-  const queryString = params.toString();
-  const url = queryString
-    ? `${API_ENDPOINTS.POSTS}?${queryString}`
-    : API_ENDPOINTS.POSTS;
-
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<PostsResponse>(url);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getPosts.useQuery(
+      {
+        status: options.status as any, // Enum migration handling
+        search: options.search,
+        page: options.page,
+        limit: options.limit,
+      },
+      {
+        keepPreviousData: true,
+      }
+    );
 
   return {
-    posts: data?.items ?? [],
+    posts: data?.data ?? [],
     pagination: data?.pagination,
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch,
   };
 }

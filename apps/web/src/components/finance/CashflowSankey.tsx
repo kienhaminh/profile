@@ -198,8 +198,6 @@ function transformToSankeyData({
     ) ||
     0;
 
-  console.log(totalExchangeFromKRW);
-
   const totalExchangeToVND =
     krwWallet?.exchangeIn ||
     exchanges?.reduce(

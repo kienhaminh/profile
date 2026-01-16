@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
  * Features:
  * - GSAP-animated floating orbs (Aurora/Mesh style)
  * - Subtle parallax scroll effect for depth
- * - Dot pattern overlay with gradient fade
+ * - Grid pattern overlay with gradient fade
  * - Subtle noise texture for depth
  * - Respects reduced motion preferences
  */
@@ -66,8 +66,8 @@ export const AmbientBackground: React.FC = () => {
         },
       });
 
-      // Parallax for dots (even slower)
-      gsap.to('.bg-dots', {
+      // Parallax for grid (even slower)
+      gsap.to('.bg-grid', {
         y: -50,
         ease: 'none',
         scrollTrigger: {
@@ -92,17 +92,15 @@ export const AmbientBackground: React.FC = () => {
         className="absolute inset-0 will-change-transform"
         aria-hidden="true"
       >
-        <div className="absolute inset-0 opacity-40 dark:opacity-60 overflow-hidden">
+        <div className="absolute inset-0 opacity-20 dark:opacity-30 overflow-hidden">
           <div className="ambient-orb ambient-orb-1" />
           <div className="ambient-orb ambient-orb-2" />
-          <div className="ambient-orb ambient-orb-3" />
-          <div className="ambient-orb ambient-orb-4" />
         </div>
       </div>
 
-      {/* Dot pattern - moving even slower for parallax depth */}
+      {/* Grid pattern - moving even slower for parallax depth */}
       <div
-        className="absolute inset-0 bg-dots opacity-[1] will-change-transform"
+        className="absolute inset-0 bg-grid opacity-[0.4] dark:opacity-[0.2] will-change-transform"
         aria-hidden="true"
       />
 

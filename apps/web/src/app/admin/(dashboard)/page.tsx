@@ -25,6 +25,7 @@ import { PostsOverTimeChart } from '@/components/admin/PostsOverTimeChart';
 import { ProjectsStatsChart } from '@/components/admin/ProjectsStatsChart';
 import { formatDistanceToNow } from 'date-fns';
 import { useAdminPosts, useAdminStats } from '@/hooks/admin';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 export default function AdminDashboard() {
   // SWR hooks for data fetching
@@ -103,12 +104,12 @@ export default function AdminDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric Card 1: Total Posts */}
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-background/80 backdrop-blur-sm border border-border/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-md text-primary group-hover:text-primary group-hover:border-primary/50 transition-colors">
               <FileText className="w-4 h-4" />
             </div>
-            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="w-2.5 h-2.5" />
               {stats?.recentActivity.posts_this_week || 0} new
             </span>
@@ -116,18 +117,18 @@ export default function AdminDashboard() {
           <div className="text-muted-foreground text-xs font-medium mb-1">
             Total Posts
           </div>
-          <div className="text-2xl font-semibold text-foreground tracking-tight">
+          <div className="text-2xl font-semibold text-foreground tracking-tight font-mono">
             {stats?.recentActivity.total_posts || posts.length}
           </div>
         </div>
 
         {/* Metric Card 2: Total Projects */}
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-background/80 backdrop-blur-sm border border-border/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-md text-primary group-hover:text-primary group-hover:border-primary/50 transition-colors">
               <FolderKanban className="w-4 h-4" />
             </div>
-            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+            <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
               <TrendingUp className="w-2.5 h-2.5" />
               {stats?.recentActivity.projects_this_week || 0} new
             </span>
@@ -135,37 +136,37 @@ export default function AdminDashboard() {
           <div className="text-muted-foreground text-xs font-medium mb-1">
             Total Projects
           </div>
-          <div className="text-2xl font-semibold text-foreground tracking-tight">
+          <div className="text-2xl font-semibold text-foreground tracking-tight font-mono">
             {stats?.recentActivity.total_projects || 0}
           </div>
         </div>
 
         {/* Metric Card 3: Topics */}
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-background/80 backdrop-blur-sm border border-border/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-md text-primary group-hover:text-primary group-hover:border-primary/50 transition-colors">
               <FolderTree className="w-4 h-4" />
             </div>
           </div>
           <div className="text-muted-foreground text-xs font-medium mb-1">
             Total Topics
           </div>
-          <div className="text-2xl font-semibold text-foreground tracking-tight">
+          <div className="text-2xl font-semibold text-foreground tracking-tight font-mono">
             {stats?.recentActivity.total_topics || 0}
           </div>
         </div>
 
         {/* Metric Card 4: Hashtags */}
-        <div className="p-5 rounded-xl bg-card border border-border/60 shadow-sm relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-background/80 backdrop-blur-sm border border-border/60 shadow-sm relative overflow-hidden group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-accent/50 border border-border rounded-md text-muted-foreground group-hover:text-primary group-hover:border-primary/50 transition-colors">
+            <div className="p-2 bg-primary/10 border border-primary/20 rounded-md text-primary group-hover:text-primary group-hover:border-primary/50 transition-colors">
               <Hash className="w-4 h-4" />
             </div>
           </div>
           <div className="text-muted-foreground text-xs font-medium mb-1">
             Total Hashtags
           </div>
-          <div className="text-2xl font-semibold text-foreground tracking-tight">
+          <div className="text-2xl font-semibold text-foreground tracking-tight font-mono">
             {stats?.recentActivity.total_hashtags || 0}
           </div>
         </div>
@@ -209,7 +210,7 @@ export default function AdminDashboard() {
         <div className="bg-card border border-border/60 rounded-xl overflow-hidden">
           {error && (
             <Alert variant="destructive" className="m-4">
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>{error?.message}</AlertDescription>
             </Alert>
           )}
 
@@ -247,11 +248,16 @@ export default function AdminDashboard() {
                   ))
                 ) : posts.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-muted-foreground"
-                    >
-                      No posts found
+                    <td colSpan={5} className="p-0">
+                      <EmptyState
+                        title="No posts found"
+                        description="Get started by creating your first blog post."
+                        action={{
+                          label: 'Create Post',
+                          href: '/admin/blogs/new',
+                        }}
+                        className="my-8 mx-4 border-dashed"
+                      />
                     </td>
                   </tr>
                 ) : (

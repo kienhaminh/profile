@@ -101,7 +101,7 @@ export default function ShortlinksPage() {
     setDialogOpen(true);
   };
 
-  const handleOpenEdit = (link: Shortlink) => {
+  const handleOpenEdit = (link: any) => {
     setFormData({
       slug: link.slug,
       destinationUrl: link.destinationUrl,

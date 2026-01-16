@@ -1,11 +1,10 @@
 /**
  * useAdminAnalytics Hook
  *
- * SWR hook for fetching analytics statistics.
+ * tRPC hook for fetching analytics statistics.
  */
 
-import useSWR from 'swr';
-import { API_ENDPOINTS } from '@/lib/swr';
+import { trpc } from '@/trpc/react';
 
 interface AnalyticsStats {
   overview: {
@@ -19,6 +18,7 @@ interface AnalyticsStats {
     visitors: number;
     sessions: number;
     pageViews: number;
+    views?: number;
   };
   thisWeek: {
     visitors: number;
@@ -61,16 +61,21 @@ interface AnalyticsStats {
 type TimeRange = '24h' | '7d' | '30d';
 
 export function useAdminAnalytics(range: TimeRange = '24h') {
-  const url = `${API_ENDPOINTS.ANALYTICS}?range=${range}`;
-
-  const { data, error, isLoading, isValidating, mutate } =
-    useSWR<AnalyticsStats>(url);
+  const { data, isLoading, isRefetching, error, refetch } =
+    trpc.admin.getAnalytics.useQuery(
+      {
+        range,
+      },
+      {
+        keepPreviousData: true,
+      }
+    );
 
   return {
-    stats: data ?? null,
+    stats: (data as unknown as AnalyticsStats) ?? null,
     isLoading,
-    isValidating,
+    isValidating: isRefetching,
     error,
-    mutate,
+    mutate: refetch,
   };
 }
