@@ -3,11 +3,12 @@
   "ui": "tui",
   "globalEnv": [
     "DATABASE_URL",
-    "ADMIN_USERNAME",
-    "ADMIN_PASSWORD",
-    "ADMIN_JWT_SECRET",
-    "JWT_EXPIRES_IN",
-    "CSRF_SECRET"
+    "JWT_SECRET",
+    "JWT_EXPIRATION",
+    "NEXT_PUBLIC_SITE_URL",
+    "OPENAI_API_KEY",
+    "GOOGLE_API_KEY",
+    "NEXT_PUBLIC_SITE_URL"
   ],
   "tasks": {
     "build": {

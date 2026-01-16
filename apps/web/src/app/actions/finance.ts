@@ -848,7 +848,8 @@ export async function deleteRecurringTransaction(id: string) {
  * Called automatically when visiting the finance page.
  */
 export async function generateRecurringTransactions(
-  month?: string
+  month?: string,
+  shouldRevalidate = true
 ): Promise<{ generated: number; skipped: number }> {
   await requireAdminAuth();
 
@@ -906,7 +907,7 @@ export async function generateRecurringTransactions(
     generated++;
   }
 
-  if (generated > 0) {
+  if (generated > 0 && shouldRevalidate) {
     revalidatePath('/admin/finance');
   }
 

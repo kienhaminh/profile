@@ -4,11 +4,14 @@ import {
   getExchanges,
   getWalletBalances,
   getRecurringTransactions,
+  generateRecurringTransactions,
+  getCategories,
 } from '@/app/actions/finance';
 import { FinanceCharts } from '@/components/finance/FinanceStats';
 import { CashflowSankey } from '@/components/finance/CashflowSankey';
 import { BudgetProgress } from '@/components/finance/BudgetProgress';
 import { WalletCards } from '@/components/finance/WalletCards';
+import { FinanceFilters } from '@/components/finance/FinanceFilters';
 import {
   getCurrentMonth,
   parseFinanceParams,
@@ -24,14 +27,24 @@ export default async function FinanceOverviewPage({
   const filter = await parseFinanceParams(searchParams);
   const currentMonth = getCurrentMonth();
 
-  const [stats, budgetProgress, exchanges, wallets, recurringTransactions] =
-    await Promise.all([
-      getFinanceStats(filter),
-      getBudgetProgress(currentMonth),
-      getExchanges(currentMonth),
-      getWalletBalances(currentMonth),
-      getRecurringTransactions(),
-    ]);
+  // Auto-generate recurring transactions for current month
+  await generateRecurringTransactions(undefined, false);
+
+  const [
+    stats,
+    budgetProgress,
+    exchanges,
+    wallets,
+    recurringTransactions,
+    categories,
+  ] = await Promise.all([
+    getFinanceStats(filter),
+    getBudgetProgress(currentMonth),
+    getExchanges(currentMonth),
+    getWalletBalances(currentMonth),
+    getRecurringTransactions(),
+    getCategories(),
+  ]);
 
   // Filter wallet to match current currency
   const currentCurrency = filter.currency || 'KRW';
@@ -39,6 +52,7 @@ export default async function FinanceOverviewPage({
 
   return (
     <div className="space-y-6">
+      <FinanceFilters categories={categories} />
       {/* Row 1: Unified Wallet + Budget Status */}
       <Card className="bg-card/50">
         <CardContent className="p-4">

@@ -44,13 +44,11 @@ export function RecurringManager({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Group by type
-  const incomeRecurring = recurringTransactions.filter(
-    (r) => r.type === 'income'
-  );
-  const expenseRecurring = recurringTransactions.filter(
-    (r) => r.type === 'expense'
-  );
+  // Sort by date then type
+  const sortedRecurring = [...recurringTransactions].sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'income' ? -1 : 1;
+    return a.dayOfMonth - b.dayOfMonth;
+  });
 
   const handleToggleActive = (recurring: FinanceRecurringTransaction) => {
     startTransition(async () => {
@@ -141,127 +139,32 @@ export function RecurringManager({
     }
   };
 
-  const renderRecurringCard = (recurring: FinanceRecurringTransaction) => {
-    const isIncome = recurring.type === 'income';
-    const category = categories.find((c) => c.id === recurring.categoryId);
-
-    return (
-      <div
-        key={recurring.id}
-        className={`p-4 border rounded-lg transition-opacity ${
-          !recurring.isActive ? 'opacity-50' : ''
-        }`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              {isIncome ? (
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-rose-500" />
-              )}
-              <h3 className="font-semibold truncate">{recurring.name}</h3>
-            </div>
-
-            <div
-              className={`text-lg font-bold ${
-                isIncome ? 'text-emerald-600' : 'text-rose-600'
-              }`}
-            >
-              {isIncome ? '+' : '-'}
-              {formatCurrency(recurring.amount, recurring.currency)}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                <span>
-                  {recurring.frequency === 'monthly'
-                    ? `${recurring.dayOfMonth}${getDaySuffix(
-                        recurring.dayOfMonth
-                      )} of month`
-                    : `Yearly on ${recurring.monthOfYear}/${recurring.dayOfMonth}`}
-                </span>
-                {recurring.frequency === 'yearly' && (
-                  <Badge variant="outline" className="text-xs ml-1">
-                    Yearly
-                  </Badge>
-                )}
-              </div>
-
-              {category && (
-                <Badge variant="outline" className="text-xs">
-                  {category.name}
-                </Badge>
-              )}
-
-              {recurring.priority && (
-                <Badge
-                  variant="secondary"
-                  className={`text-xs ${
-                    recurring.priority === 'must_have'
-                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                      : recurring.priority === 'nice_to_have'
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                  }`}
-                >
-                  {recurring.priority.replace('_', ' ')}
-                </Badge>
-              )}
-            </div>
-
-            {recurring.description && (
-              <p className="text-sm text-muted-foreground mt-1 truncate">
-                {recurring.description}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={recurring.isActive}
-              onCheckedChange={() => handleToggleActive(recurring)}
-              disabled={isPending}
-            />
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => handleEdit(recurring)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setDeleteId(recurring.id)}
-            >
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recurring Transactions</CardTitle>
+      <Card className="overflow-hidden border-none bg-background/40 backdrop-blur-md shadow-2xl border border-white/5">
+        <CardHeader className="flex flex-row items-center justify-between px-6 py-4 border-b border-muted/20">
+          <div>
+            <CardTitle className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+              Recurring Transactions
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              Automated income and expenses for your budget.
+            </p>
+          </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleGenerate}
               disabled={isGenerating}
+              className="h-8 text-xs font-semibold hover:bg-primary/10 transition-all duration-300"
             >
               {isGenerating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
               ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-3.5 w-3.5" />
               )}
-              Generate Now
+              Generate
             </Button>
             <Button
               size="sm"
@@ -269,52 +172,164 @@ export function RecurringManager({
                 setEditingRecurring(undefined);
                 setDialogOpen(true);
               }}
+              className="h-8 text-xs font-semibold shadow-lg hover:shadow-primary/20 transition-all duration-300"
             >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Recurring
+              <Plus className="mr-2 h-3.5 w-3.5" />
+              Add New
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-sm text-muted-foreground">
-            Set up recurring income and expenses that generate automatically
-            each month on the specified day.
-          </p>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <div className="min-w-[800px]">
+              {/* Header */}
+              <div className="grid grid-cols-[48px_1fr_120px_100px_140px_80px_80px] gap-4 px-6 py-3 bg-muted/20 text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground/60 border-b border-muted/20">
+                <div className="flex justify-center">Type</div>
+                <div>Plan Name</div>
+                <div>Category</div>
+                <div>Schedule</div>
+                <div className="text-right">Amount</div>
+                <div className="text-center">Active</div>
+                <div className="text-right">Actions</div>
+              </div>
 
-          {/* Income Section */}
-          {incomeRecurring.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Recurring Income ({incomeRecurring.length})
-              </h3>
-              <div className="grid gap-3">
-                {incomeRecurring.map(renderRecurringCard)}
+              {/* Rows */}
+              <div className="divide-y divide-muted/10">
+                {sortedRecurring.length > 0 ? (
+                  sortedRecurring.map((recurring) => {
+                    const isIncome = recurring.type === 'income';
+                    const category = categories.find(
+                      (c) => c.id === recurring.categoryId
+                    );
+
+                    return (
+                      <div
+                        key={recurring.id}
+                        className={`grid grid-cols-[48px_1fr_120px_100px_140px_80px_80px] gap-4 px-6 py-3 items-center hover:bg-muted/30 transition-all group ${
+                          !recurring.isActive ? 'opacity-60 bg-muted/5' : ''
+                        }`}
+                      >
+                        {/* Type Icon */}
+                        <div className="flex justify-center">
+                          <div
+                            className={`p-1.5 rounded-full ${
+                              isIncome
+                                ? 'bg-emerald-500/10 text-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                                : 'bg-rose-500/10 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)]'
+                            }`}
+                          >
+                            {isIncome ? (
+                              <TrendingUp className="h-3.5 w-3.5" />
+                            ) : (
+                              <TrendingDown className="h-3.5 w-3.5" />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Name & Description */}
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm truncate">
+                            {recurring.name}
+                          </div>
+                          {recurring.description && (
+                            <div className="text-[11px] text-muted-foreground truncate max-w-[200px]">
+                              {recurring.description}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Category */}
+                        <div className="min-w-0">
+                          {category ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-2 h-5 font-bold bg-background/50 border-muted/50 text-muted-foreground group-hover:text-foreground transition-colors"
+                            >
+                              {category.name}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-[10px]">
+                              —
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Schedule */}
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                          <Calendar className="h-3 w-3 opacity-50" />
+                          <span>
+                            {recurring.frequency === 'monthly'
+                              ? `${recurring.dayOfMonth}${getDaySuffix(
+                                  recurring.dayOfMonth
+                                )}`
+                              : `${recurring.monthOfYear}/${recurring.dayOfMonth}`}
+                          </span>
+                          {recurring.frequency === 'yearly' && (
+                            <span className="text-[9px] bg-blue-500/20 text-blue-400 px-1 rounded uppercase font-bold border border-blue-500/20">
+                              Yearly
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Amount */}
+                        <div
+                          className={`text-right font-bold tabular-nums text-sm ${
+                            isIncome ? 'text-emerald-500' : 'text-rose-500'
+                          }`}
+                        >
+                          {isIncome ? '+' : '-'}
+                          {formatCurrency(recurring.amount, recurring.currency)}
+                        </div>
+
+                        {/* Active Switch */}
+                        <div className="flex justify-center">
+                          <Switch
+                            checked={recurring.isActive}
+                            onCheckedChange={() =>
+                              handleToggleActive(recurring)
+                            }
+                            className="scale-75 data-[state=checked]:bg-emerald-500"
+                          />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 rounded-full hover:bg-muted"
+                            onClick={() => handleEdit(recurring)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 rounded-full hover:bg-rose-500/10 hover:text-rose-500"
+                            onClick={() => setDeleteId(recurring.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="flex justify-center mb-3">
+                      <RefreshCw className="h-10 w-10 opacity-10 animate-spin-slow" />
+                    </div>
+                    <p className="text-sm font-medium">
+                      No recurring transactions found
+                    </p>
+                    <p className="text-[11px]">
+                      Add recurring income or expenses to automate your budget.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-
-          {/* Expense Section */}
-          {expenseRecurring.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                <TrendingDown className="h-4 w-4" />
-                Recurring Expenses ({expenseRecurring.length})
-              </h3>
-              <div className="grid gap-3">
-                {expenseRecurring.map(renderRecurringCard)}
-              </div>
-            </div>
-          )}
-
-          {recurringTransactions.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No recurring transactions yet.</p>
-              <p className="text-sm">
-                Add your first recurring income or expense above.
-              </p>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 

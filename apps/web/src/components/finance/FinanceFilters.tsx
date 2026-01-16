@@ -207,7 +207,7 @@ export function FinanceFilters({ categories }: FinanceFiltersProps) {
 
   // Full filters for other pages
   return (
-    <div className="flex flex-wrap gap-3 items-center mb-6 p-4 bg-muted/30 rounded-2xl border border-border/50">
+    <div className="flex flex-wrap gap-3 items-center mb-6">
       <div className="w-full md:w-auto">{currencyFilter}</div>
 
       <Select

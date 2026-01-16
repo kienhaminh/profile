@@ -33,7 +33,7 @@ export default async function AdminLayout({
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground antialiased">
       <Sidebar />
-      <main className="flex-1 min-w-0 overflow-y-auto">
+      <main className="flex-1 min-w-0 overflow-y-auto scrollbar-gutter-stable">
         <div className="max-w-7xl mx-auto px-6 py-10 md:py-16">{children}</div>
       </main>
     </div>

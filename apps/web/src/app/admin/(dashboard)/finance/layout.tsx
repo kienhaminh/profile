@@ -12,7 +12,6 @@ export default async function FinanceLayout({
   return (
     <div className="space-y-6">
       <FinanceHeader />
-      <FinanceFilters categories={categories} />
       {children}
     </div>
   );

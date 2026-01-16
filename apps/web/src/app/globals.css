@@ -6,6 +6,10 @@ html {
   scroll-behavior: smooth;
 }
 
+.scrollbar-gutter-stable {
+  scrollbar-gutter: stable both-edges;
+}
+
 /* ==========================================================================
    DESIGN TOKENS - NEUTRAL & PREMIUM
    Derived from generated-page.html
@@ -375,11 +379,11 @@ html {
 
   /* ---------- SCROLLBAR (Exact match to generated-page.html) ---------- */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--background);
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: var(--border);
@@ -450,6 +454,19 @@ html {
   select:focus,
   textarea:focus {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
 
